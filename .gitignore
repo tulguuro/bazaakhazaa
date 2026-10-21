@@ -1,0 +1,4 @@
+# source manuscript stays local
+*.docx
+~$*
+.claude/
