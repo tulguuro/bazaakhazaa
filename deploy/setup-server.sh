@@ -18,7 +18,10 @@ else
   git clone --depth 1 "$REPO" "$SITE_DIR"
 fi
 
-install -m 644 "$HERE/nginx-bazaakhazaa.conf" /etc/nginx/sites-available/bazaakhazaa
+# certbot rewrites the live config for HTTPS, so only install it the first time
+if [ ! -f /etc/nginx/sites-available/bazaakhazaa ]; then
+  install -m 644 "$HERE/nginx-bazaakhazaa.conf" /etc/nginx/sites-available/bazaakhazaa
+fi
 ln -sf /etc/nginx/sites-available/bazaakhazaa /etc/nginx/sites-enabled/bazaakhazaa
 rm -f /etc/nginx/sites-enabled/default
 nginx -t
@@ -31,3 +34,7 @@ if command -v ufw >/dev/null && ufw status | grep -q "Status: active"; then
 fi
 
 echo "site ready: $(git -C "$SITE_DIR" log -1 --format='%h %s')"
+
+# HTTPS, once both A records point here (run once; renewal is automatic):
+#   certbot --nginx -d bazaakhazaa.world -d www.bazaakhazaa.world \
+#     --redirect --agree-tos --register-unsafely-without-email -n
