@@ -191,7 +191,7 @@ const BUILDERS = {
   // Тэнгэр: the Milky Way ("Тэнгэрийн оёдол") and loose stars
   stars(s) {
     const band = s.share(0.55);
-    const a = 0.42;
+    const a = 0.5; // matches the roll of the Milky Way dome in cosmos.js
     const ca = Math.cos(a);
     const sa = Math.sin(a);
     const cool = hex('#cdd8ff');
@@ -199,12 +199,13 @@ const BUILDERS = {
     for (let k = 0; k < band; k++) {
       const u = (rnd() * 2 - 1) * 12;
       const v = gauss() * 0.6 * (1 - (0.45 * Math.abs(u)) / 12);
-      const bright = rnd() < 0.03 ? 1.5 : 0.3 + rnd() * 0.5;
+      // faint sparkle over the photographed Milky Way, not a band of its own
+      const bright = rnd() < 0.02 ? 0.9 : 0.12 + rnd() * 0.25;
       s.add(ca * u - sa * v, sa * u + ca * v, -2.5 - rnd() * 7, mix(cool, warm, rnd() * 0.5), bright);
     }
     const loose = s.share(0.3);
     for (let k = 0; k < loose; k++) {
-      s.add((rnd() * 2 - 1) * 11, (rnd() * 2 - 1) * 6.5, -1 - rnd() * 9, cool, 0.25 + rnd() * 0.55);
+      s.add((rnd() * 2 - 1) * 11, (rnd() * 2 - 1) * 6.5, -1 - rnd() * 9, cool, 0.15 + rnd() * 0.35);
     }
   },
 
@@ -330,7 +331,7 @@ const BUILDERS = {
       const dir = rnd() < 0.5 ? -1 : 1;
       const t = rnd();
       const a = (j / K) * TAU + dir * t * 0.42;
-      s.add(R * Math.cos(a), base + t * wallH, R * Math.sin(a), lattice, 0.7);
+      s.add(R * Math.cos(a), base + t * wallH, R * Math.sin(a), lattice, 0.5);
     }
     const nWall = s.share(0.06);
     for (let k = 0; k < nWall; k++) {
@@ -343,7 +344,7 @@ const BUILDERS = {
       const a = (((rnd() * P) | 0) / P) * TAU;
       const t = rnd();
       const r = R + (rT - R) * t;
-      s.add(r * Math.cos(a), top + (roofY - top) * t, r * Math.sin(a), pole, 0.75);
+      s.add(r * Math.cos(a), top + (roofY - top) * t, r * Math.sin(a), pole, 0.5);
     }
     const nRoof = s.share(0.05);
     for (let k = 0; k < nRoof; k++) {
@@ -356,7 +357,7 @@ const BUILDERS = {
     for (let k = 0; k < nToono; k++) {
       if (rnd() < 0.65) {
         const a = rnd() * TAU;
-        s.add(rT * Math.cos(a), roofY, rT * Math.sin(a), toono, 1.1);
+        s.add(rT * Math.cos(a), roofY, rT * Math.sin(a), toono, 0.9);
       } else {
         const u = rnd() * 2 - 1;
         const y = roofY + 0.14 * (1 - u * u);
@@ -367,7 +368,7 @@ const BUILDERS = {
     const nDoor = s.share(0.04);
     for (let k = 0; k < nDoor; k++) {
       const a = Math.PI / 2 + (rnd() - 0.5) * 0.36;
-      s.add(R * 1.02 * Math.cos(a), base + rnd() * 0.95, R * 1.02 * Math.sin(a), door, 0.85);
+      s.add(R * 1.02 * Math.cos(a), base + rnd() * 0.95, R * 1.02 * Math.sin(a), door, 0.7);
     }
     const nBeam = s.share(0.17);
     for (let k = 0; k < nBeam; k++) {
@@ -382,7 +383,7 @@ const BUILDERS = {
         y = roofY - rnd() * (roofY - base);
         r = rT * (1 + (roofY - y) * 0.35) * Math.sqrt(rnd());
       }
-      s.add(r * Math.cos(a), y, r * Math.sin(a), beam, 0.55 + 0.5 * (1 - r / (rT * 1.6)));
+      s.add(r * Math.cos(a), y, r * Math.sin(a), beam, 0.35 + 0.4 * (1 - r / (rT * 1.6)));
     }
     disc(s, s.share(0.04), 0.9, base, hex('#ffcf7a'), 0.6);
   },
@@ -405,7 +406,9 @@ const BUILDERS = {
       const a = dirs[k % 5];
       const y = L0 + rnd() * (L1 - L0);
       const r = radius(y);
-      s.add(r * Math.cos(a) + gauss() * 0.008, y, r * Math.sin(a) + gauss() * 0.008, shaft, 0.75);
+      // five shafts crowd together at the knot, so dim them there
+      const glow = 0.2 + 0.4 * Math.min(1, Math.abs(y - knot) / 0.8);
+      s.add(r * Math.cos(a) + gauss() * 0.008, y, r * Math.sin(a) + gauss() * 0.008, shaft, glow);
     }
     const nHead = s.share(0.12);
     for (let k = 0; k < nHead; k++) {
@@ -414,7 +417,7 @@ const BUILDERS = {
       const w = 0.13 * Math.sin(Math.PI * Math.pow(t, 0.6)) * (1 - t * 0.2);
       const off = (rnd() * 2 - 1) * w;
       const r = radius(L1);
-      s.add(r * Math.cos(a) - Math.sin(a) * off, L1 + t * 0.62, r * Math.sin(a) + Math.cos(a) * off, head, 0.95);
+      s.add(r * Math.cos(a) - Math.sin(a) * off, L1 + t * 0.62, r * Math.sin(a) + Math.cos(a) * off, head, 0.8);
     }
     const nFletch = s.share(0.16);
     for (let k = 0; k < nFletch; k++) {
@@ -432,7 +435,7 @@ const BUILDERS = {
       const t = rnd();
       const a = t * 7 * TAU;
       const r = 0.15 + gauss() * 0.01;
-      s.add(r * Math.cos(a), knot - 0.18 + t * 0.36, r * Math.sin(a), tie, 1.05);
+      s.add(r * Math.cos(a), knot - 0.18 + t * 0.36, r * Math.sin(a), tie, 0.45);
     }
     const nDust = s.share(0.06);
     for (let k = 0; k < nDust; k++) {
@@ -497,6 +500,13 @@ const BUILDERS = {
     cluster(s, s.share(0.04), 0, 0, 0, 0.09, gold, 1.4);
     polygon(3, 0.75, 1, 0.1, blue, 0.8);
     polygon(5, 1.45, 2, 0.14, amber, 0.75);
+    // 7 planets of the week: Sun, Moon, Mars, Mercury, Jupiter, Venus, Saturn
+    const planets = ['#ffd36b', '#e9efff', '#ff7a4d', '#9fe3c8', '#ffcf9a', '#fff1c9', '#d8c08e'].map(hex);
+    const seven = Math.floor(s.share(0.05) / 7);
+    for (let j = 0; j < 7; j++) {
+      const a = Math.PI / 2 + (j / 7) * TAU;
+      cluster(s, seven, 1.8 * Math.cos(a), 1.8 * Math.sin(a), lift(1.8), 0.07, planets[j], 1.2);
+    }
     const nine = Math.floor(s.share(0.09) / 9);
     for (let j = 0; j < 9; j++) {
       const a = Math.PI / 2 + (j / 9) * TAU;

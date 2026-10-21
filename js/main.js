@@ -9,7 +9,7 @@ const progress = document.querySelector('.progress');
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 // How far (radians) each shape turns while its chapter is being read.
-const SPIN = { stars: 0.15, wolf: 0.45, pair: 0.35, sea: 0.25, mountain: 0.5, ger: 1.3, arrows: 1.5, worlds: 1.3, mandala: 0.5, dial: 0.7 };
+const SPIN = { stars: 0.15, wolf: 0.45, pair: 0.35, sea: 0.25, mountain: 0.5, ger: 1.3, arrows: 1.5, worlds: 1.3, mandala: 0.3, dial: 0.6 };
 const DOLLY = 0.9;
 
 const clamp01 = (v) => Math.min(1, Math.max(0, v));
@@ -75,7 +75,7 @@ const navButtons = chapters.map((ch, i) => {
   button.type = 'button';
   button.innerHTML = `<span class="label">${ch.dataset.title}</span><span class="dot"></span>`;
   button.setAttribute('aria-label', ch.dataset.title);
-  button.addEventListener('click', () => window.scrollTo({ top: keyScroll(i), behavior: reduceMotion ? 'auto' : 'smooth' }));
+  button.addEventListener('click', () => scrollToY(keyScroll(i)));
   nav.append(button);
   return button;
 });
@@ -92,21 +92,21 @@ function updateNav(f) {
 }
 
 // ---------- cards ----------
+// The hero fades with the scroll; every other card plays its staggered
+// entrance (CSS) while the reader is inside its chapter.
 function updateCards() {
   chapters.forEach((ch, i) => {
     const card = cards[i];
-    let vis;
-    if (card.classList.contains('card--flow')) {
-      vis = smoothstep(vh * 0.98, vh * 0.7, card.getBoundingClientRect().top);
-    } else {
-      const r = ch.getBoundingClientRect();
-      const u = (vh * 0.5 - r.top) / r.height;
-      const fadeIn = i === 0 ? 1 : smoothstep(0.14, 0.26, u);
-      vis = fadeIn * (1 - smoothstep(0.58, 0.7, u));
+    const r = ch.getBoundingClientRect();
+    const u = (vh * 0.5 - r.top) / r.height;
+    if (i === 0) {
+      const vis = 1 - smoothstep(0.45, 0.62, u);
+      card.style.opacity = vis.toFixed(3);
+      card.style.setProperty('--shift', `${((1 - vis) * -40).toFixed(1)}px`);
+      return;
     }
-    card.style.opacity = vis.toFixed(3);
-    card.style.setProperty('--shift', `${((1 - vis) * 28).toFixed(1)}px`);
-    card.classList.toggle('is-hidden', vis < 0.02);
+    const last = i === chapters.length - 1;
+    card.classList.toggle('is-in', u > 0.2 && (last || u < 0.64));
   });
 }
 
@@ -121,6 +121,22 @@ if (window.matchMedia('(pointer: fine)').matches && !reduceMotion) {
     },
     { passive: true },
   );
+}
+
+// ---------- smooth scrolling ----------
+// Lenis eases wheel scrolling; touch and keyboard keep native behaviour.
+let lenis = null;
+if (!reduceMotion) {
+  import('https://cdn.jsdelivr.net/npm/lenis@1.1.13/dist/lenis.mjs')
+    .then(({ default: Lenis }) => {
+      lenis = new Lenis({ lerp: 0.09, wheelMultiplier: 0.9 });
+    })
+    .catch((err) => console.warn('Smooth scrolling disabled:', err));
+}
+
+function scrollToY(top) {
+  if (lenis) lenis.scrollTo(top, { duration: 1.8 });
+  else window.scrollTo({ top, behavior: reduceMotion ? 'auto' : 'smooth' });
 }
 
 // ---------- 3D scene ----------
@@ -145,26 +161,33 @@ window.addEventListener('resize', layout);
 document.fonts?.ready.then(layout);
 new ResizeObserver(layout).observe(document.querySelector('main'));
 
-const cur = target(window.scrollY + vh / 2);
+const scrollFraction = () => {
+  const max = document.documentElement.scrollHeight - vh;
+  return max > 0 ? clamp01(window.scrollY / max) : 0;
+};
+const cur = { ...target(window.scrollY + vh / 2), scroll: scrollFraction() };
 let last = performance.now();
 
 function tick(now) {
   const dt = Math.min(0.25, (now - last) / 1000);
   last = now;
 
+  lenis?.raf(now);
   const t = target(window.scrollY + vh / 2);
-  const k = reduceMotion ? 1 : 1 - Math.exp(-dt * 5);
+  // Lenis already eases the scroll, so the scene follows it more tightly.
+  const k = reduceMotion ? 1 : 1 - Math.exp(-dt * (lenis ? 9 : 5));
   cur.f += (t.f - cur.f) * k;
   cur.rot += (t.rot - cur.rot) * k;
   cur.dolly += (t.dolly - cur.dolly) * k;
+  const s = scrollFraction();
+  cur.scroll += (s - cur.scroll) * k;
   const km = 1 - Math.exp(-dt * 3);
   mouse.x += (mouse.tx - mouse.x) * km;
   mouse.y += (mouse.ty - mouse.y) * km;
 
   updateCards();
   updateNav(cur.f);
-  const max = document.documentElement.scrollHeight - vh;
-  progress.style.transform = `scaleX(${max > 0 ? clamp01(window.scrollY / max) : 0})`;
+  progress.style.transform = `scaleX(${s})`;
 
   scene?.frame(now / 1000, cur, mouse);
   requestAnimationFrame(tick);

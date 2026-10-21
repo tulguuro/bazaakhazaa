@@ -11,153 +11,106 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500&family=Noto+Sans+Mongolian&display=swap">
   <link rel="stylesheet" href="css/style.css">
   <script type="importmap">
-    { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js" } }
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+      }
+    }
   </script>
 </head>
 <body>
   <canvas id="scene" aria-hidden="true"></canvas>
   <div class="veil" aria-hidden="true"></div>
   <div class="progress" aria-hidden="true"></div>
-  <div class="loader" aria-hidden="true">Тэнгэрийн одод цуглаж байна…</div>
+  <div class="grain" aria-hidden="true"></div>
+  <div class="loader" aria-hidden="true">
+    <span class="loader__mark" lang="mn-Mong">ᠲᠩᠷᠢ</span>
+    <span class="loader__text">Тэнгэрийн одод цуглаж байна</span>
+    <span class="loader__bar"></span>
+  </div>
   <nav class="chapters" aria-label="Бүлгүүд"></nav>
 
   <main>
     <section class="chapter hero" id="ehlel" data-shape="stars" data-side="center" data-title="Эхлэл">
       <span class="mongol" lang="mn-Mong" aria-hidden="true">ᠮᠣᠩᠭᠣᠯ&#x202F;ᠤᠨ ᠨᠢᠭᠤᠴᠠ ᠲᠣᠪᠴᠢᠶᠠᠨ</span>
       <div class="card">
-        <p class="kicker">Тоон зурхай · Бөөгийн шүтлэг · Монгол домог</p>
+        <p class="kicker">Тоон зурхай · Бөөгийн шүтлэг · Домог</p>
         <h1>Тэнгэрээс заяат гэрэл</h1>
-        <p class="lead">Монголчуудын угийн домог, Хөх Мөнх Тэнгэрийн шүтлэг, тоон зурхай гурав нэг л утсаар холбогддог. Доош гүйлгэж, тэр утсыг даган үзээрэй.</p>
+        <p class="lead">Домог, шүтлэг, тоо — нэг л утас.</p>
         <p class="scroll-hint">Доош гүйлгэ</p>
       </div>
     </section>
 
     <section class="chapter" id="borte-chono" data-shape="wolf" data-side="left" data-title="Бөртэ чоно">
-      <div class="card">
+      <div class="card" data-num="I">
         <p class="kicker">I · Дээд тэнгэрээс</p>
         <h2>Бөртэ чоно</h2>
-        <p>Эрт урьд цагт дээд тэнгэрээс заяатай төрсөн Бөртэ чоно байжээ. «Бөртэ» гэдэг нь хөх саарал, цоохор зүсийг хэлнэ.</p>
-        <p>Тэнгэрийн оёдлын одод цуглан бүрэлдсэн мэт тэрээр Хөх Мөнх Тэнгэрийн элч. Эр хүч, гал голомтын бэлгэдэл юм.</p>
-        <p class="source">Монголын нууц товчоо, §1</p>
+        <p>Дээд тэнгэрээс заяатай төрсөн Бөртэ чоно — Хөх Мөнх Тэнгэрийн элч.</p>
       </div>
     </section>
 
     <section class="chapter" id="gua-maral" data-shape="pair" data-side="right" data-title="Гуа марал">
-      <div class="card">
+      <div class="card" data-num="II">
         <p class="kicker">II · Газар эх</p>
         <h2>Гуа марал</h2>
-        <p>Түүний гэргий нь Гуа марал буюу үзэсгэлэнт эм буга ажээ.</p>
-        <p>Бөөгийн шүтлэгт Тэнгэр эцэг, Этүгэн эх хоёрын хослол бүх амьдралын эх сурвалж болдог. Чоно бол тэнгэрийн, марал бол газрын эрчим. Эр, эм хоёр хүчний нэгдлээс удам эхэлдэг.</p>
-        <p class="note">Зарим судлаач Бөртэ чоно, Гуа марлыг хүний нэр гэж тайлбарладаг. Домогт тэд чоно, марал болж дүрслэгддэг.</p>
-        <p class="source">Монголын нууц товчоо, §1</p>
+        <p>Түүний гэргий Гуа марал. Тэнгэр эцэг, Этүгэн эх хоёрын нэгдэл.</p>
       </div>
     </section>
 
     <section class="chapter" id="tengis" data-shape="sea" data-side="left" data-title="Тэнгис">
-      <div class="card">
+      <div class="card" data-num="III">
         <p class="kicker">III · Их аян</p>
         <h2>Тэнгисийг гэтэлсэн нь</h2>
-        <p>Тэд хамтдаа тэнгисийг гэтэлж, шинэ нутгийг зорьжээ.</p>
-        <p>Ус гэтлэх нь олон ард түмний домогт нэг ертөнцөөс нөгөөд шилжиж, шинээр эхлэхийн бэлгэдэл болдог. Энэ тэнгисийг зарим судлаач Байгаль нуур гэж таамагладаг.</p>
-        <p class="source">Монголын нууц товчоо, §1</p>
+        <p>Тэд хамтдаа тэнгисийг гэтэлж, шинэ нутаг зорьжээ.</p>
       </div>
     </section>
 
     <section class="chapter" id="burkhan-khaldun" data-shape="mountain" data-side="right" data-title="Бурхан Халдун">
-      <div class="card">
+      <div class="card" data-num="IV">
         <p class="kicker">IV · Тахилгат уул</p>
         <h2>Бурхан Халдун</h2>
-        <p>Онон мөрний эх, Бурхан Халдун ууланд нутаглаж, Батачихан хэмээх хүүтэй болжээ. Түүнээс үе улиран удам залгамжилсаар Монголын язгуур овгууд үүсчээ.</p>
-        <p>Бурхан Халдун бол тэнгэр, газар хоёр уулзах тахилгат уул. Хожим Тэмүжин энэ ууланд хоргодож аврагдаад, түүнийг үе улиран тахихаар тангараглажээ.</p>
-        <p class="source">Монголын нууц товчоо, §1, §103</p>
+        <p>Онон мөрний эх, Бурхан Халдунд нутаглаж, Батачихан хүүтэй болжээ.</p>
       </div>
     </section>
 
     <section class="chapter" id="alan-gua" data-shape="ger" data-side="left" data-title="Алан гуа">
-      <div class="card">
+      <div class="card" data-num="V">
         <p class="kicker">V · Тооноор орсон гэрэл</p>
         <h2>Алан гуа</h2>
-        <p>Олон үеийн дараа Добун мэргэний гэргий Алан гуа нөхрөө нас барсны хойно Бугу хатаги, Бухату салжи, Бодончар гурван хүүг төрүүлжээ.</p>
-        <p>Тэрээр хөвгүүддээ ингэж өгүүлжээ: шөнө бүр шар цайвар гэгээтэй хүн гэрийн тооноор орж ирэн хэвлийг минь илэхэд гэрэл нь хэвлийд минь шингэдэг байлаа. Буцахдаа нар, сарын туяагаар шар нохой мэт гарч одно. Иймээс эд бол тэнгэрийн хөвгүүд.</p>
-        <p>Бодончараас Боржигин овог, улмаар Чингис хаан төрсөн.</p>
-        <p class="source">Монголын нууц товчоо, §17–21</p>
+        <p>Шөнө бүр тооноор орж ирсэн гэрлээс Алан гуа гурван хүү төрүүлжээ — тэнгэрийн хөвгүүд.</p>
       </div>
     </section>
 
     <section class="chapter" id="tavan-sum" data-shape="arrows" data-side="right" data-title="Таван сум">
-      <div class="card">
-        <p class="kicker">VI · Эв нэгдлийн сургаал</p>
+      <div class="card" data-num="VI">
+        <p class="kicker">VI · Эв нэгдэл</p>
         <h2>Таван сум</h2>
-        <p>Хаврын нэгэн өдөр Алан гуа таван хүүгээ эгнүүлэн суулгаж, нэг нэг сум хугалуулахад тэд амархан хугалжээ. Дараа нь таван сумыг хамт боож өгөхөд хэн ч хугалж чадсангүй.</p>
-        <blockquote>Салвал ганц сум мэт амархан хугарна. Нэгдвэл таван сум мэт хэн ч та нарыг хугалж чадахгүй.</blockquote>
-        <p class="note">Алан гуагийн сургаалыг чөлөөтэй хүүрнэв.</p>
-        <p class="source">Монголын нууц товчоо, §19–22</p>
+        <p>Ганц сум амархан хугарна. Нэгдсэн таван сумыг хэн ч хугалж чадахгүй.</p>
       </div>
     </section>
 
     <section class="chapter" id="gurvan-yertonts" data-shape="worlds" data-side="left" data-title="Гурван ертөнц">
-      <div class="card">
+      <div class="card" data-num="VII">
         <p class="kicker">VII · Бөөгийн сансар</p>
-        <h2>Гурван ертөнц, 99 тэнгэр</h2>
-        <p>Бөөгийн шүтлэгт ертөнц гурван давхар. Дээд ертөнцөд тэнгэрүүд, дунд ертөнцөд хүн төрөлхтөн, доод ертөнцөд Эрлэг хааны орон оршино.</p>
-        <p>Дээд ертөнцөд 99 тэнгэр байдаг: баруун этгээдийн 55 цагаан, зүүн этгээдийн 44 хар тэнгэр. Бөө гурван ертөнцийг холбосон тэнхлэгээр аялж, тэнгэр, хүн хоёрын хооронд элч болдог.</p>
-        <p>Гэрийн тооно бол дээд ертөнц рүү нээгдсэн цонх. Алан гуагийн гэрэл яг тэр замаар орж ирсэн.</p>
+        <h2>Гурван ертөнц</h2>
+        <p>Дээд, дунд, доод ертөнц. Дээр нь 99 тэнгэр: 55 цагаан, 44 хар.</p>
       </div>
     </section>
 
-    <section class="chapter chapter--tall" id="toon-utas" data-shape="mandala" data-side="left" data-title="Тоон утас">
-      <div class="card card--flow">
+    <section class="chapter" id="toon-utas" data-shape="mandala" data-side="left" data-title="Тоон утас">
+      <div class="card" data-num="VIII">
         <p class="kicker">VIII · Тоон утас</p>
         <h2>Тоо бол домгийн хэл</h2>
-        <p>Домог, шүтлэг хоёрын бэлгэдэл тоогоор дамжин хадгалагддаг. Тоон зурхай яг энэ хэлийг хүний төрсөн өдрөөр уншдаг.</p>
-        <ul class="numbers">
-          <li><b>1</b><span>Хөх Мөнх Тэнгэр, бүхний эх</span></li>
-          <li><b>2</b><span>Тэнгэр ба Этүгэн · Чоно ба марал</span></li>
-          <li><b>3</b><span>Гурван ертөнц · Гэрлээс төрсөн гурван хүү</span></li>
-          <li><b>5</b><span>Таван сум · Таван махбод: мод, гал, шороо, төмөр, ус</span></li>
-          <li><b>9</b><span>Есөн хөлт цагаан туг · Тэнгэрийн бэлгэдэлт тоо</span></li>
-          <li><b>12</b><span>Арван хоёр жилийн хүрдэн</span></li>
-          <li><b>99</b><span>55 цагаан, 44 хар тэнгэр</span></li>
-          <li><b>22</b><span>Энэ насны зорилгын 22 зам</span></li>
-        </ul>
+        <p>Тоон зурхай энэ хэлийг таны төрсөн өдрөөр уншдаг.</p>
       </div>
     </section>
 
-    <section class="chapter chapter--tall" id="22-zam" data-shape="dial" data-side="left" data-title="22 зам">
-      <div class="card card--flow">
+    <section class="chapter chapter--last" id="22-zam" data-shape="dial" data-side="left" data-title="22 зам">
+      <div class="card" data-num="IX">
         <p class="kicker">IX · Таны зам</p>
-        <h2>Энэ насны 22 зорилго</h2>
-        <p>Домгийн тэмдгүүд «Энэ насны зорилго, үүрэг даалгавар» бичвэрийн 22 замд дахин сонсогддог.</p>
-        <ul class="links">
-          <li><span>Тэнгэрээс заяат чоно</span><b>17 · Од</b></li>
-          <li><span>Гэрлийн хүний нар, сарын туяа</span><b>18 · Сар, 19 · Нар</b></li>
-          <li><span>Алан гуа эхийн хүч</span><b>3 · Хатан</b></li>
-          <li><span>Гал голомтын эзэн</span><b>4 · Эр хүн</b></li>
-        </ul>
-        <ol class="paths">
-          <li><b>1</b>Гайхамшиг</li>
-          <li><b>2</b>Итгэл</li>
-          <li class="on"><b>3</b>Хатан</li>
-          <li class="on"><b>4</b>Эр хүн</li>
-          <li><b>5</b>Мэдлэг ба хууль</li>
-          <li><b>6</b>Хайр</li>
-          <li><b>7</b>Дайчин</li>
-          <li><b>8</b>Үйлийн үр</li>
-          <li><b>9</b>Мэргэн үг</li>
-          <li><b>10</b>Урсгал</li>
-          <li><b>11</b>Хүч</li>
-          <li><b>12</b>Өөр өнцөг</li>
-          <li><b>13</b>Дахин төрөх</li>
-          <li><b>14</b>Урлаг</li>
-          <li><b>15</b>Их боломж</li>
-          <li><b>16</b>Сэрэлт</li>
-          <li class="on"><b>17</b>Од</li>
-          <li class="on"><b>18</b>Сар</li>
-          <li class="on"><b>19</b>Нар</li>
-          <li><b>20</b>Зөн совин</li>
-          <li><b>21</b>Олон түмэн</li>
-          <li><b>22</b>Эрх чөлөө</li>
-        </ol>
+        <h2>Энэ насны 22 зам</h2>
+        <p>Домгийн од, сар, нар 17, 18, 19-р замд дахин гэрэлтдэг.</p>
         <button class="cta" type="button" disabled>Төрсөн өдрөөрөө замаа олох · удахгүй</button>
       </div>
     </section>
@@ -165,9 +118,9 @@
 
   <footer class="colophon">
     <span class="mongol" lang="mn-Mong" aria-hidden="true">ᠲᠩᠷᠢ</span>
-    <p>Эх сурвалж: «Монголын нууц товчоо» (XIII зуун), §1, §17–22, §103. Домгийг эх сурвалжаас чөлөөтэй хүүрнэв.</p>
-    <p>22 замын бичвэр: «Энэ насны зорилго, үүрэг даалгавар».</p>
-    <p>Тоо, тэмдгийн давхцлын тайлал нь энэ сайтын үзэл юм.</p>
+    <p>Домог: «Монголын нууц товчоо» (XIII зуун), §1, §17–22. Эх сурвалжаас чөлөөтэй хүүрнэв. Зарим судлаач Бөртэ чоно, Гуа марлыг хүний нэр гэж үздэг.</p>
+    <p>22 замын бичвэр: «Энэ насны зорилго, үүрэг даалгавар». Тоо, тэмдгийн давхцлын тайлал нь энэ сайтын үзэл юм.</p>
+    <p class="credits">Зураг: Тэнгэрийн оёдол, гаригуудын текстур — <a href="https://www.solarsystemscope.com/textures/">Solar System Scope</a> (CC BY 4.0, NASA-ийн өгөгдөлд суурилсан). M51 галактик — NASA, ESA, S. Beckwith (STScI), Hubble Heritage Team (STScI/AURA), <a href="https://esahubble.org/images/heic0506a/">ESA/Hubble</a> (CC BY 4.0).</p>
   </footer>
 
   <script type="module" src="js/main.js"></script>
