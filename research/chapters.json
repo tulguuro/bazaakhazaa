@@ -1,0 +1,70 @@
+{
+ "about": "Destiny Matrix report structure: 9 parts, 38 chapters, each with the matrix position it reads, the formula, and the question the position answers. Mapped from the user's own datemyst.com report (15.09.1989) on 2026-11-13 and checked against our calculator. Positions use our keys (matrix.js); `site` is datemyst's letter. Questions are written in our own words in Mongolian.",
+ "letters": {
+  "A": "left — day", "B": "top — month", "C": "right — year sum", "D": "bottom — A+B+C", "E": "centre",
+  "F": "tl — A+B (father line, 10 years)", "G": "tr — B+C (mother line, 30 years)", "I": "br — C+D (father line, 50 years)", "H": "bl — D+A (mother line, 70 years)",
+  "J": "bottom.inner — D+E (entry to the relationship channel)", "R": "bottom.mid — J+D",
+  "N": "right.inner — C+E (entry to the money channel)", "Q": "right.mid — N+C",
+  "L": "loveMoney.mid — J+N", "K": "loveMoney.love — J+L", "M": "loveMoney.money — L+N",
+  "T": "top.inner — B+E", "P": "top.mid — B+T", "S": "left.inner — A+E", "O": "left.mid — A+S",
+  "U": "familyCentre — F+G+H+I", "W·X": "the two heart points (Anahata row)"
+ },
+ "parts": [
+  {"title": "Хэн бэ", "chapters": [
+   {"name": "Зан чанарын онцлог", "en": "Personality Traits", "at": ["left"], "site": "A", "asks": "Та яаж үйлдэж, бусад таныг хэрхэн хардаг вэ?"},
+   {"name": "Дотоод зан чанар", "en": "Inner Personality", "at": ["top"], "site": "B", "asks": "Хэн ч харахгүй үед таны дотор юу болдог вэ?"},
+   {"name": "Харилцааны хэв маяг", "en": "Personal Communication", "at": ["centre"], "site": "E", "asks": "Та яаж ярьж, яаж сонсож, юуг хэлэлгүй үлдээдэг вэ?"},
+   {"name": "Биеийн үйлийн үр", "en": "Body Karma", "at": ["right"], "site": "C", "asks": "Бие, эрч хүчээ хэрхэн авч явдаг, тэр зуршил хаанаас ирсэн бэ?"}
+  ]},
+  {"title": "Удмын үйлийн үр", "chapters": [
+   {"name": "Үйлийн үрийн сүүл", "en": "Karmic Tail", "at": ["bottom.inner", "bottom.mid", "bottom"], "site": "J · R · D", "asks": "Үйлийн үрийн гурван тоо хамтдаа ямар түүх өгүүлдэг вэ?"},
+   {"name": "Өнгөрснөөс үлдсэн шарх", "en": "Wound from the Past", "at": ["bottom.inner"], "site": "J = D+E", "asks": "Давтагдаж буй хэв маяг хаанаас эхтэй вэ?"},
+   {"name": "Одоогийн цуурай", "en": "Echo in the Present", "at": ["bottom.mid"], "site": "R = J+D", "asks": "Тэр хэв маяг өнөөдөр, энгийн нэг долоо хоногт ямар харагддаг вэ?"},
+   {"name": "Чөлөөлөх түлхүүр", "en": "Key to Liberation", "at": ["bottom"], "site": "D", "asks": "Энэ хэв маягийг юу яг тайлдаг вэ?"},
+   {"name": "Сүнслэг үйлийн үр", "en": "Spiritual Karma", "at": ["top"], "site": "B", "asks": "Удмаасаа ямар итгэл үнэмшил тээж явдаг вэ?"},
+   {"name": "Эцгийн үйлийн үр", "en": "Father's Karma", "at": ["tl"], "site": "F = A+B", "asks": "Эцгийн удмаар танд юу ирсэн бэ?"},
+   {"name": "Эхийн үйлийн үр", "en": "Mother's Karma", "at": ["tr"], "site": "G = B+C", "asks": "Эхийн удмаар танд юу ирсэн бэ?"}
+  ]},
+  {"title": "Сүнс ба тав тухын бүс", "chapters": [
+   {"name": "Тав тухын бүс", "en": "Comfort Zone", "at": ["centre"], "site": "E", "asks": "Та хаана амардаг, тэндээс юу таныг гаргахгүй байлгадаг вэ?"},
+   {"name": "Удмын тав тухын бүс", "en": "Family Comfort Zone", "at": ["familyCentre"], "site": "U = F+G+H+I", "asks": "Таны удамд юуг аюулгүй гэж үздэг байсан бэ?"},
+   {"name": "Сүнсний гол зорилго", "en": "Main Soul Mission", "at": ["right"], "site": "C", "asks": "Та юуны төлөө ирсэн, таны дараа юу үлдэх ёстой вэ?"},
+   {"name": "Сүнсний гол сорилт", "en": "Main Soul Challenge", "at": ["bottom"], "site": "D", "asks": "Насан туршдаа юутай тэмцэж явдаг вэ?"}
+  ]},
+  {"title": "Мөнгө", "chapters": [
+   {"name": "Санхүүгийн чулуу", "en": "Financial Stone", "at": ["right"], "site": "C", "asks": "Мөнгө олохоос өмнө та юун дээр зогсож байна вэ?"},
+   {"name": "Санхүүгийн эхлэл", "en": "Financial Start", "at": ["right.inner"], "site": "N = C+E", "asks": "Таны мөнгөний урсгал хаанаас эхэлдэг вэ?"},
+   {"name": "Санхүүгийн эрчим", "en": "Financial Energy", "at": ["right.mid"], "site": "Q = N+C", "asks": "Энэ замд хэр их түлш байгаа, юу түүнийг шатаадаг вэ?"},
+   {"name": "Мөнгө ба хүмүүс", "en": "Money and people", "at": ["loveMoney.mid"], "site": "L = J+N", "asks": "Мөнгө ба ойр дотны хүмүүс хаана уулзаж, юу тэнд шийдэгддэг вэ?"},
+   {"name": "Санхүүгийн суваг", "en": "Financial Channel", "at": ["loveMoney.money"], "site": "M = L+N", "asks": "Ямар ажлаар мөнгө танд ирдэг, та мөнгөний талаар юу боддог вэ?"}
+  ]},
+  {"title": "Харилцаа", "chapters": [
+   {"name": "Идеал хань", "en": "Ideal Partner", "at": ["loveMoney.love"], "site": "K = J+L", "asks": "Энэ эрчим хэнтэй өсөж, хэнтэй бүдгэрдэг вэ?"},
+   {"name": "Харилцааны суваг", "en": "Relationship Channel", "at": ["bottom.inner"], "site": "J = D+E", "asks": "Та харилцаанд хэрхэн ордог, тэнд юу давтагддаг вэ?"},
+   {"name": "Бэлгийн энерги", "en": "Sexuality", "at": ["centre", "bottom", "bottom.inner"], "site": "E · D · J", "asks": "Хэн нэгэнтэй тайвширч, сэтгэлээ нээхэд танд юу хэрэгтэй вэ?"}
+  ]},
+  {"title": "Авьяас", "chapters": [
+   {"name": "Авьяас", "en": "Talents", "at": ["top"], "site": "B", "asks": "Танд юу үнэгүй ирдэг, түүнийгээ ашиглахгүй байгаагаа яаж мэдэх вэ?"},
+   {"name": "Оюуны авьяас", "en": "Intellectual Talents", "at": ["top.mid"], "site": "P = B+T", "asks": "Таны оюун ухаан хэрхэн ажилладаг вэ?"},
+   {"name": "Нийгмийн авьяас", "en": "Social Talents", "at": ["top.inner"], "site": "T = B+E", "asks": "Та хүмүүсийн дунд юу авчирдаг вэ?"},
+   {"name": "Эцгээс өгсөн авьяас", "en": "Father's Talents", "at": ["tl"], "site": "F", "asks": "Эцгийн удмаас ирсэн ямар сайн зүйл ашиглагдалгүй хэвтэж байна вэ?"},
+   {"name": "Эхээс өгсөн авьяас", "en": "Mother's Talents", "at": ["tr"], "site": "G", "asks": "Эхийн удмаас ирсэн ямар сайн зүйл ашиглагдалгүй хэвтэж байна вэ?"}
+  ]},
+  {"title": "Эцэг эх ба хүүхэд", "chapters": [
+   {"name": "Эцэг эхтэй харилцаа", "en": "Relationships with Parents", "at": ["left", "left.inner", "left.mid"], "site": "A · S · O", "asks": "Энэ эрчим эцэг эхтэйгээ хэрхэн таарч байсан бэ?"},
+   {"name": "Хүүхэдтэй харилцаа", "en": "Relationships with Children", "at": ["left", "left.inner", "left.mid"], "site": "A · S · O", "asks": "Энэ эрчим хүүхэд, залуу үеийнхэнд хэрхэн ханддаг вэ?"}
+  ]},
+  {"title": "Амьдралын мөчлөг", "chapters": [
+   {"name": "Одоогийн насны эрчим", "en": "Current age energy", "at": ["ring"], "site": "age ring, clockwise from A = 0", "asks": "Одоогийн энэ үе танд юу зааж байна вэ?", "note": "datemyst looks up by whole years"},
+   {"name": "Дараагийн эрчим", "en": "Next energy", "at": ["ring"], "site": "age ring", "asks": "Удахгүй ямар эрчим эхлэх вэ?"},
+   {"name": "Найман арван жил", "en": "Your eight decades", "at": ["left", "tl", "top", "tr", "right", "br", "bottom", "bl"], "site": "A, F, B, G, C, I, D, H", "asks": "Арван жил бүр ямар эрчмээр явдаг вэ?"}
+  ]},
+  {"title": "Хувь заяа ба удмын хөтөлбөр", "chapters": [
+   {"name": "Хувийн зорилго", "en": "Personal Destiny", "at": ["purposes.personal"], "site": "(B+D) + (A+C)", "asks": "Та өөр дотроо юуг эмх цэгцтэй болгох гэж ирсэн бэ?"},
+   {"name": "Нийгмийн зорилго", "en": "Social Destiny", "at": ["purposes.social"], "site": "(F+I) + (G+H)", "asks": "Хүмүүс болон удамдаа юу өгөх гэж ирсэн бэ?"},
+   {"name": "Сүнслэг зорилго", "en": "Spiritual Destiny", "at": ["purposes.spiritual"], "site": "хувийн + нийгмийн", "asks": "Энэ хоёр замыг юу холбодог вэ?"},
+   {"name": "Гаригийн зорилго", "en": "Planetary Soul Destiny", "at": ["purposes.planetary"], "site": "нийгмийн + сүнслэг", "asks": "Таны замын хамгийн өргөн хүрээ юу вэ?"},
+   {"name": "Удмын хөтөлбөр, хоёр шугам", "en": "Family programmes, both lines", "at": ["tl", "br", "tr", "bl", "familyCentre"], "site": "F, I, G, H (+ U), repeats dropped", "asks": "Удмын хоёр шугамаар ямар хөтөлбөр дамжиж ирсэн бэ?"}
+  ]}
+ ]
+}

@@ -3,7 +3,8 @@
 // (data/readings.json, built by tools/extract_readings.py) and the arithmetic.
 import { VARIANTS, computeMatrix, isValidDate } from './matrix.js';
 import { renderGuide, renderHand } from './draw.js';
-import { chakraOrgansHtml, dateStamp, differenceHtml, healthHtml, libraryHtml, personText, pointsHtml, readingHtml, tasksHtml } from './report.js';
+import { CHAPTERS } from './chapters.js';
+import { chakraOrgansHtml, chaptersHtml, pythagorasHtml, dateStamp, differenceHtml, healthHtml, libraryHtml, personText, pointsHtml, readingHtml, tasksHtml, wireBook } from './report.js';
 
 const DEFAULT_DATE = { year: 1989, month: 3, day: 15 };
 // Both types are valid readings of the same birth date; each is drawn like its source chart.
@@ -21,6 +22,12 @@ const TYPES = {
 };
 const $ = (id) => document.getElementById(id);
 
+// the chapter texts written for this project (texts/<chapter id>.json); a missing file is skipped
+const CHAPTER_FILES = CHAPTERS.flatMap((part) => part.chapters.map((chapter) => chapter.id));
+const chapterTexts = Promise.all(CHAPTER_FILES.map((id) =>
+  fetch(`texts/${id}.json`).then((r) => (r.ok ? r.json() : null)).catch(() => null)))
+  .then((list) => Object.fromEntries(list.filter(Boolean).map((t) => [t.id, t])));
+
 const readings = fetch('data/readings.json')
   .then((response) => (response.ok ? response.json() : null))
   .catch(() => null);
@@ -36,6 +43,7 @@ function stateFromUrl() {
 }
 
 const state = stateFromUrl();
+wireBook($('reading'));
 
 async function show() {
   const { date, type } = state;
@@ -53,9 +61,10 @@ async function show() {
   $('health').innerHTML = healthHtml(guide);
   $('difference').innerHTML = differenceHtml(hand, guide);
   const data = await readings;
-  $('reading').innerHTML = readingHtml(hand, data);
+  $('reading').innerHTML = readingHtml(hand, data) + chaptersHtml(hand, await chapterTexts);
   $('library').innerHTML = libraryHtml(hand, data);
   $('chakra-organs').innerHTML = chakraOrgansHtml(data);
+  $('pythagoras').innerHTML = pythagorasHtml(date, data);
   document.title = `${dateStamp(date)} · ${TYPES[type].title}`;
   history.replaceState(null, '', `#d=${dateStamp(date, '-')}&t=${type}`);
 }

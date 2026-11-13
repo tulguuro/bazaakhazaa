@@ -7,7 +7,8 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { VARIANTS, computeMatrix, isValidDate } from '../matrix/matrix.js';
 import { renderGuide, renderHand } from '../matrix/draw.js';
-import { chakraOrgansHtml, dateStamp, differenceHtml, esc, healthHtml, personText, pointsHtml, readingHtml, tasksHtml } from '../matrix/report.js';
+import { CHAPTERS } from '../matrix/chapters.js';
+import { chakraOrgansHtml, chaptersHtml, pythagorasHtml, dateStamp, differenceHtml, esc, healthHtml, personText, pointsHtml, readingHtml, tasksHtml, wireBook } from '../matrix/report.js';
 
 const args = process.argv.slice(2);
 const [dateArg = '', type = 'hand'] = args.filter((arg) => !arg.startsWith('--'));
@@ -33,6 +34,12 @@ const hand = computeMatrix(date, 'hand');
 const guide = computeMatrix(date, 'guide');
 const readings = JSON.parse(readFileSync(readingsFile, 'utf8'));
 const css = readFileSync(join(matrixDir, 'matrix.css'), 'utf8');
+// the chapter texts written for this project
+const chapterTexts = Object.fromEntries(CHAPTERS.flatMap((part) => part.chapters.map((chapter) => chapter.id))
+  .map((id) => join(matrixDir, 'texts', `${id}.json`))
+  .filter((file) => existsSync(file))
+  .map((file) => JSON.parse(readFileSync(file, 'utf8')))
+  .map((t) => [t.id, t]));
 const title = type === 'hand' ? 'Гар зургийн матриц' : 'Зааврын матриц';
 const chart = type === 'hand' ? renderHand(hand) : renderGuide(guide);
 const health = type === 'guide'
@@ -60,7 +67,7 @@ ${personText(person) ? `<p class="person">${esc(personText(person))}</p>` : ''}
 <section class="charts">
 <figure class="chart"><figcaption><h2>${title}</h2></figcaption><div class="paper">${chart}</div></figure>
 </section>
-<section class="block"><h2>Тайлбар</h2><div id="reading">${readingHtml(hand, readings)}</div></section>
+<section class="block"><h2>Тайлбар</h2><div id="reading">${readingHtml(hand, readings)}${chaptersHtml(hand, chapterTexts)}</div></section>
 <section class="block">
 <h2>Тооцоолол</h2>
 <div class="columns">
@@ -69,8 +76,10 @@ ${personText(person) ? `<p class="person">${esc(personText(person))}</p>` : ''}
 </div>
 ${health}
 </section>
+<section class="block"><h2>Пифагорын матрикс</h2>${pythagorasHtml(date, readings)}</section>
 <section class="block"><h2>Хоёр төрлийн зөрүү</h2><div id="difference">${differenceHtml(hand, guide)}</div></section>
 </main>
+<script>(${wireBook.toString()})(document.getElementById('reading'));</script>
 </body>
 </html>
 `;

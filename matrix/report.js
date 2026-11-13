@@ -1,18 +1,13 @@
 // The text sections of a reading as HTML strings: the arithmetic, the
 // difference between the two variants and the readings from the manuscript.
 // Shared by the page and by the standalone export (tools/render_report.mjs).
-import { formula, reduce, ringLabel, ringPointAt } from './matrix.js';
+import { PYTHAGORAS_LINES, formula, pythagoras, reduce, ringPointAt } from './matrix.js';
 import { HAND_LETTERS as L, POINT_AGES, POINT_MEANINGS } from './draw.js';
+import { TALENTS } from './talents.js';
+import { CHAPTERS } from './chapters.js';
 
 export const esc = (value) => String(value).replace(/[&<>"]/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[ch]);
 
-// The readings name each of the nine main numbers by its meaning and age,
-// not by its letter (the user's wish, 2026-11-13).
-const PLACES = {
-  centre: 'Амин сүнс · төв',
-  ...Object.fromEntries(Object.entries(POINT_MEANINGS).map(([key, { word }]) => [key, `${word} · ${POINT_AGES[key]} нас`])),
-};
-const POINT_ORDER = ['centre', 'left', 'top', 'right', 'bottom', 'tl', 'tr', 'br', 'bl'];
 const DIAGONAL_NAMES = { tl: 'Зүүн дээд шугам (Е)', tr: 'Баруун дээд шугам (Ж)', br: 'Баруун доод шугам (И)', bl: 'Зүүн доод шугам (З)' };
 const CHAKRAS = {
   Sahasrara: 'Сахасрара', Ajna: 'Аджна', Vishuddha: 'Вишудха', Anahata: 'Анахата',
@@ -103,7 +98,8 @@ export function tasksHtml(hand, guide, type = 'hand', today = new Date()) {
   const bottom = hand.lines.bottom.inner;
   const right = hand.lines.right.inner;
   const rows = [
-    row('Энэ насны зорилго · Д-3', t.life, lifeSteps(hand)),
+    row('Амин тоо · энэ насны эрчим · нийлбэр тоо', coreNumbers(hand).map((n) => n.value).join(' · '), lifeSteps(hand)),
+    row('Үйлийн үр', hand.karma.join(' · '), 'Г цэг ба түүнээс төв рүү чиглэсэн шугамын хоёр тоо, гаднаас дотогш'),
     row('Хамгийн их нөлөөтэй тоо', hand.dominant.values.join(' · '), `${hand.dominant.total} тооноос ${hand.dominant.count} удаа давтагдсан`),
     linkRow('Тэнгэр газрын холбоос', hand.skyEarth, 'Б + Г (20 ба 60 нас)'),
     linkRow('Хувь заяаны тэмцэл', hand.fate, 'А + В (0 ба 40 нас)'),
@@ -127,7 +123,7 @@ export function tasksHtml(hand, guide, type = 'hand', today = new Date()) {
     rows.push(row('Дотоод хүчний код · Д-1 · Д-2 · Д-3', `${p.centre} · ${guide.familyCentre} · ${guide.innerPower}`, `төв, удмын төв, хоёрын нийлбэр (${formula(p.centre, guide.familyCentre)})`));
   }
   const now = currentAge(hand, today);
-  if (now) rows.push(row('Энэ насны тоо', now.value, `${now.years} настай · насны хүрээн дээрх ${now.label} насны цэг`));
+  if (now) rows.push(row('Одоогийн насны тоо', now.value, `${now.years} настай · насны хүрээн дээрх ${now.label} насны цэг`));
   return rows.join('');
 }
 
@@ -155,43 +151,6 @@ export function chakraOrgansHtml(data) {
 const paragraphs = (lines) => lines.map((line) => `<p>${esc(line)}</p>`).join('');
 const NO_DATA = '<p>Тайлбарын өгөгдөл олдсонгүй. tools/extract_readings.py-г ажиллуулж data/readings.json файлыг үүсгэнэ үү.</p>';
 
-const PURPOSE_PLACE = 'энэ насны чухал даалгавар';
-
-// Every distinct number of a matrix with the places where it appears: the
-// personal purpose first, then the nine main numbers in chart order, then
-// the other tasks.
-function energiesOf(hand, now = null) {
-  const p = hand.points;
-  const t = hand.purposes;
-  const holders = [
-    ...(hand.dominant?.values ?? []).map((value) => [value, `хамгийн их нөлөөтэй (${hand.dominant.count} удаа)`]),
-    ...(now ? [[now.value, `энэ насны тоо (${now.years} нас)`]] : []),
-    [t.life, 'энэ насны зорилго'],
-    ...[
-      [hand.skyEarth, 'тэнгэр газрын холбоос'], [hand.fate, 'хувь заяаны тэмцэл'],
-      [hand.fatherLine, 'эцгийн удмын хувь заяа'], [hand.motherLine, 'эхийн удмын хувь заяа'],
-      [hand.familyMen, 'удмын эрчүүд'], [hand.familyWomen, 'удмын эмэгтэйчүүд'],
-    ].flatMap(([link, name]) => [
-      [link.value, name],
-      ...(link.detail ? [[link.detail.value, `${name} (дэлгэрэнгүй)`]] : []),
-    ]),
-    [t.personal, PURPOSE_PLACE],
-    ...POINT_ORDER.map((key) => [p[key], PLACES[key]]),
-    [t.sky, 'тэнгэр'], [t.earth, 'газар'], [t.father, 'эцэг'], [t.mother, 'эх'],
-    [t.spiritual, 'сүнслэг оюунлаг даалгавар'], [hand.loveMoney.mid, 'сахиусан тэнгэр'], [hand.loveMoney.love, 'хайр дурлал'], [hand.loveMoney.money, 'мөнгө санхүү'],
-  ];
-  const byEnergy = new Map();
-  for (const [value, where] of holders) byEnergy.set(value, [...(byEnergy.get(value) ?? []), where]);
-  // the green circles of the age ring: each number with the ages it covers
-  const ages = new Map();
-  for (const decade of hand.ring) {
-    decade.points.forEach((value, index) => ages.set(value, [...(ages.get(value) ?? []), ringLabel(decade.age, index)]));
-  }
-  for (const [value, labels] of ages) {
-    byEnergy.set(value, [...(byEnergy.get(value) ?? []), `насны хүрээ: ${labels.join('; ')} нас`]);
-  }
-  return byEnergy;
-}
 
 // The manuscript has two separate parts. The 22 readings are the positive
 // and negative sides of each energy and belong to every number of a matrix.
@@ -200,34 +159,84 @@ function energiesOf(hand, now = null) {
 const traits = (energy) => `<h4>Эерэг тал</h4>${paragraphs(energy.positive)}<h4>Сөрөг тал</h4>${paragraphs(energy.negative)}`;
 const purposeTitle = (data, n) => (data.purposes[n].name ? `${n} · ${data.purposes[n].name}` : String(n));
 
+// Talents (авьяас): from God on the top line, from the mother on her line,
+// from the father on his line. A number repeated within a group is shown
+// once; the texts are our own (talents.js).
+function talentsHtml(hand) {
+  const groups = [
+    ['Бурхнаас өгсөн авьяас', 'Б шугам', hand.talents.god],
+    ['Эхээс өгсөн авьяас', 'Ж шугам, эхийн удам', hand.talents.mother],
+    ['Эцгээс өгсөн авьяас', 'Е шугам, эцгийн удам', hand.talents.father],
+  ];
+  return '<h3>Авьяас</h3>' + groups.map(([title, where, values]) => {
+    const items = [...new Set(values)].map((n) =>
+      `<p class="place"><b>${esc(TALENTS[n].name)} (${n}).</b> ${esc(TALENTS[n].text)}</p>`).join('');
+    return `<h4>${title} <span class="soft">· ${where}: ${values.join(' · ')}</span></h4>${items}`;
+  }).join('');
+}
+
 // `data` is the parsed readings.json, or null when it has not been built.
 // First the life purpose text for the personal purpose number, then the
 // 22-readings entry of every number in the matrix. The personal purpose and
 // the nine main numbers start open; numbers that only come from the other
 // tasks start folded.
+// The three numbers that carry the 22 readings (the user's rule,
+// 2026-11-13): Д-1 the soul number (амин тоо, the centre), Д-2 this life's
+// energy (энэ насны эрчим, the four corners З + Е + Ж + И reduced) and Д-3
+// the sum (нийлбэр тоо, Д-1 + Д-2), which also selects the life purpose text.
+export function coreNumbers(hand) {
+  const p = hand.points;
+  const d1 = p.centre;
+  const d2 = reduce(p.bl + p.tl + p.tr + p.br);
+  return [
+    { key: 'Д-1', name: 'Амин тоо', value: d1, how: 'төвийн тоо' },
+    { key: 'Д-2', name: 'Энэ насны эрчим', value: d2, how: `${L.bl} + ${L.tl} + ${L.tr} + ${L.br}: ${formula(p.bl, p.tl, p.tr, p.br)}` },
+    { key: 'Д-3', name: 'Нийлбэр тоо', value: hand.purposes.life, how: `Д-1 + Д-2: ${formula(d1, d2)}` },
+  ];
+}
+
+// What the other numbers stand for: the eight outer points with their
+// meaning and age, and the marks inside the chart. No 22 readings here.
+function placesHtml(hand) {
+  const outer = AROUND_ORDER.map((key) => {
+    const { word, text } = POINT_MEANINGS[key];
+    const karma = key === 'bottom' ? ` Үйлийн үрийг Г ба түүнээс төв рүү чиглэсэн шугамын хоёр тоогоор уншина: ${hand.karma.join(' · ')}.` : '';
+    return `<p class="place"><b>${hand.points[key]} · ${esc(word)} · ${POINT_AGES[key]} нас.</b> ${esc(text)}${esc(karma)}</p>`;
+  });
+  const inner = [
+    ['Амин сүнс', hand.points.centre], ['Хайр дурлал', hand.loveMoney.love],
+    ['Сахиусан тэнгэр', hand.loveMoney.mid], ['Мөнгө санхүү', hand.loveMoney.money],
+  ].map(([name, value]) => `<p class="place"><b>${value} · ${name}</b></p>`);
+  return [...outer, ...inner].join('');
+}
+const AROUND_ORDER = ['left', 'tl', 'top', 'tr', 'right', 'br', 'bottom', 'bl'];
+
+// `data` is the parsed readings.json, or null when it has not been built.
+// First the life purpose text for Д-3, then the 22 readings of Д-1, Д-2 and
+// Д-3 (a number shared by two of them is written once), then what the other
+// points mean.
 export function readingHtml(hand, data, today = new Date()) {
   if (!data) return NO_DATA;
-  const now = currentAge(hand, today);
+  const core = coreNumbers(hand);
   const life = hand.purposes.life;
   let out = `<h3>Энэ насны зорилго, үүрэг даалгавар</h3><article class="purpose life"><span class="number">${esc(purposeTitle(data, life))}</span>`
-    + `<p class="soft">${esc(lifeSteps(hand))}</p>${paragraphs(data.purposes[life].text)}</article>`;
+    + `<p class="soft">Нийлбэр тоо Д-3 = Д-1 + Д-2: ${esc(formula(core[0].value, core[1].value))}</p>${paragraphs(data.purposes[life].text)}</article>`;
+
+  out += '<h3>Амин тоо, энэ насны эрчим, нийлбэр тоо</h3>';
+  const byValue = new Map();
+  for (const number of core) byValue.set(number.value, [...(byValue.get(number.value) ?? []), number]);
+  for (const [value, numbers] of byValue) {
+    const label = numbers.map((n) => `${n.key} · ${n.name}`).join(' · ');
+    const how = numbers.map((n) => `${n.key}: ${n.how}`).join(' · ');
+    out += `<details class="energy" open><summary><b>${value}</b><span>${esc(label)}</span></summary><p class="soft">${esc(how)}</p>${traits(data.energies[value])}</details>`;
+  }
+
+  out += talentsHtml(hand);
+  out += `<h3>Цэгүүдийн утга</h3>${placesHtml(hand)}`;
   const { values: strongest, count, total } = hand.dominant;
-  out += `<h3>Хамгийн их нөлөөтэй тоо</h3><article class="purpose life"><span class="number">${strongest.join(' · ')}</span>`
-    + `<p class="soft">Матрицын ${total} тооноос ${strongest.length > 1 ? 'тус бүр ' : ''}${count} удаа давтагдсан тул хамгийн их нөлөөтэй. Тайлбар нь доорх жагсаалтын эхэнд байна.</p></article>`;
-  if (now) {
-    out += `<h3>Энэ насны тоо</h3><article class="purpose life"><span class="number">${now.value}</span>`
-      + `<p class="soft">${now.years} настай: насны хүрээн дээрх ${esc(now.label)} насны цэг. Тайлбар нь доорх жагсаалтад байна.</p></article>`;
-  }
-  const main = new Set([life, ...strongest, ...(now ? [now.value] : []), ...Object.values(hand.points)]);
-  out += '<h3>Матрицад гарсан тоонуудын тайлбар</h3>';
-  for (const [value, places] of energiesOf(hand, now)) {
-    // what the points holding this number mean, before the number's reading
-    const meanings = Object.entries(POINT_MEANINGS)
-      .filter(([key]) => hand.points[key] === value)
-      .map(([key, { word, text }]) => `<p class="place"><b>${esc(word)} · ${POINT_AGES[key]} нас.</b> ${esc(text)}</p>`)
-      .join('');
-    out += `<details class="energy"${main.has(value) ? ' open' : ''}><summary><b>${value}</b><span>${esc(places.join(' · '))}</span></summary>${meanings}${traits(data.energies[value])}</details>`;
-  }
+  const now = currentAge(hand, today);
+  out += `<p class="soft">Хамгийн их нөлөөтэй тоо: ${strongest.join(', ')} (матрицын ${total} тооноос ${count} удаа).`
+    + (now ? ` Одоогийн насны тоо: ${now.value} (${now.years} настай, насны хүрээн дээрх ${esc(now.label)} насны цэг).` : '') + '</p>';
   return `${out}<p class="source">Тайлбарын эх: «${esc(data.source)}», хэвлэмэл хуудастай тулгаж шивэлтийн алдааг зассан.</p>`;
 }
 
@@ -251,11 +260,213 @@ export function allPurposesHtml(data) {
 // this matrix are marked.
 export function libraryHtml(hand, data) {
   if (!data) return NO_DATA;
-  const present = energiesOf(hand);
-  let out = '<p>22 эрчим тус бүрийн эерэг, сөрөг тал. Матриц бодоход эндээс тухайн хүний тоонд таарах нь дээр гарч ирнэ.</p>';
+  const present = new Map();
+  for (const n of coreNumbers(hand)) present.set(n.value, [...(present.get(n.value) ?? []), `${n.key} ${n.name.toLowerCase()}`]);
+  let out = '<p>22 эрчим тус бүрийн эерэг, сөрөг тал. Матрицад эдгээр нь амин тоо, энэ насны эрчим, нийлбэр тоо гэсэн гурван тоонд л уншигдана.</p>';
   for (const number of NUMBERS) {
     const note = present.has(number) ? `энэ матрицад: ${present.get(number).join(' · ')}` : '';
     out += `<details class="energy${present.has(number) ? ' present' : ''}"><summary><b>${number}</b><span>${esc(note)}</span></summary>${traits(data.energies[number])}</details>`;
   }
   return out;
+}
+
+// The nine-cell number matrix: a 3 × 3 grid whose cells repeat their digit
+// as often as it occurs (— when it does not), then what its rows, columns
+// and diagonals add up to. `data.pythagoras` holds the meanings.
+export function pythagorasHtml(date, data) {
+  const meanings = data?.pythagoras;
+  const p = pythagoras(date);
+  const cell = (d) => {
+    const marks = p.counts[d] ? String(d).repeat(p.counts[d]) : '—';
+    const label = meanings ? `<small>${esc(meanings.cells[d].short)}</small>` : '';
+    return `<td><b>${marks}</b>${label}</td>`;
+  };
+  const rows = [0, 1, 2].map((r) => `<tr>${[1 + r, 4 + r, 7 + r].map(cell).join('')}</tr>`).join('');
+  const lineRows = PYTHAGORAS_LINES.map((cells) => row(
+    `${[...cells].join(' ')}${meanings ? ` · ${meanings.lines[cells]}` : ''}`,
+    p.lines[cells],
+    `${[...cells].map((d) => `${d}: ${p.counts[d]}`).join(', ')} удаа`,
+  )).join('');
+  const work = `Огнооны цифрүүд ${[...p.date].join(' ')} · ажлын тоонууд ${p.working.join(', ')}`;
+  const cellMeanings = meanings
+    ? [1, 2, 3, 4, 5, 6, 7, 8, 9].map((d) => row(`${d} · ${meanings.cells[d].short}`, p.counts[d] ? String(d).repeat(p.counts[d]) : '—', meanings.cells[d].long)).join('')
+    : '';
+  return `<p class="soft">${esc(work)}</p><div class="table-wrap"><table class="pyth">${rows}</table></div>`
+    + `<div class="columns"><div><h3>Нүд бүр</h3><dl class="calc">${cellMeanings}</dl></div>`
+    + `<div><h3>Мөр, багана, диагональ</h3><dl class="calc">${lineRows}</dl></div></div>`;
+}
+
+// The reading's contents: the 9 parts and 38 chapters of chapters.js. Each
+// chapter shows the number(s) at its positions; opening it shows its
+// question and, where written (matrix/texts/<id>.json), the card for that
+// number: essence, strength, trap and first step.
+const FIELDS = [['essence', 'Мөн чанар'], ['strength', 'Хүч'], ['trap', 'Хавх'], ['step', 'Эхний алхам']];
+const TAIL_FIELDS = [['past', 'Өнгөрсөн амьдрал'], ['present', 'Энэ амьдралд'], ['trap', 'Хавх'], ['step', 'Чөлөөлөх алхам']];
+
+function nextAge(hand, today) {
+  const now = currentAge(hand, today);
+  if (!now) return null;
+  const age = ageOn(hand.date, today);
+  for (let later = age; later < age + 3; later += 0.05) {
+    const point = ringPointAt(hand, later);
+    if (point.label !== now.label) return { ...point, from: Math.ceil(later * 2) / 2 };
+  }
+  return null;
+}
+
+export function chapterValues(hand, at, today = new Date()) {
+  const p = hand.points;
+  return at.map((key) => {
+    if (key in p) return p[key];
+    if (key === 'familyCentre') return reduce(p.tl + p.tr + p.br + p.bl);
+    const [group, part] = key.split('.');
+    if (group === 'loveMoney') return hand.loveMoney[part];
+    if (group === 'purposes') return hand.purposes[part];
+    if (hand.lines[group]) return hand.lines[group][part];
+    return null;
+  });
+}
+
+// Where each position's number comes from, and its short name when a
+// chapter reads several positions at once.
+const SOURCES = {
+  left: ['Зүүн орой', 'Төрсөн өдөр. 22-оос их бол цифрүүдийг нь нэмнэ (29 → 11).'],
+  top: ['Дээд орой', 'Төрсөн сар.'],
+  right: ['Баруун орой', 'Төрсөн оны цифрүүдийн нийлбэр (22-оос их бол дахин нэмнэ).'],
+  bottom: ['Доод орой', 'Зүүн, дээд, баруун оройн тоонуудын нийлбэр.'],
+  centre: ['Төв', 'Дөрвөн оройн тоонуудын нийлбэр.'],
+  tl: ['Эцгийн удам, 10 нас', 'Зүүн дээд булан: төрсөн өдөр ба сарын нийлбэр.'],
+  tr: ['Эхийн удам, 30 нас', 'Баруун дээд булан: төрсөн сар ба оны тооны нийлбэр.'],
+  br: ['Эцгийн удам, 50 нас', 'Баруун доод булан: баруун ба доод оройн нийлбэр.'],
+  bl: ['Эхийн удам, 70 нас', 'Зүүн доод булан: доод ба зүүн оройн нийлбэр.'],
+  familyCentre: ['Удмын төв', 'Дөрвөн булангийн тоонуудын нийлбэр.'],
+  'bottom.inner': ['Доод дотор тоо', 'Доод орой + төв.'],
+  'bottom.mid': ['Доод дунд тоо', 'Доод дотор тоо + доод орой.'],
+  'right.inner': ['Баруун дотор тоо', 'Баруун орой + төв.'],
+  'right.mid': ['Баруун дунд тоо', 'Баруун дотор тоо + баруун орой.'],
+  'top.inner': ['Дээд дотор тоо', 'Дээд орой + төв.'],
+  'top.mid': ['Дээд дунд тоо', 'Дээд орой + дээд дотор тоо.'],
+  'left.inner': ['Зүүн дотор тоо', 'Зүүн орой + төв.'],
+  'left.mid': ['Зүүн дунд тоо', 'Зүүн орой + зүүн дотор тоо.'],
+  'loveMoney.mid': ['Хайр, мөнгөний уулзвар', 'Доод дотор тоо + баруун дотор тоо.'],
+  'loveMoney.love': ['Хайрын цэг', 'Доод дотор тоо + хайр, мөнгөний уулзвар.'],
+  'loveMoney.money': ['Мөнгөний цэг', 'Хайр, мөнгөний уулзвар + баруун дотор тоо.'],
+  'purposes.personal': ['Хувийн зорилго', '(Дээд + доод орой) + (зүүн + баруун орой).'],
+  'purposes.social': ['Нийгмийн зорилго', '(Эцгийн удмын хоёр булан) + (эхийн удмын хоёр булан).'],
+  'purposes.spiritual': ['Сүнслэг зорилго', 'Хувийн зорилго + нийгмийн зорилго.'],
+  'purposes.planetary': ['Гаригийн зорилго', 'Нийгмийн зорилго + сүнслэг зорилго.'],
+};
+const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII', 'XIII', 'XIV', 'XV', 'XVI', 'XVII', 'XVIII', 'XIX', 'XX', 'XXI', 'XXII'];
+
+function sourceText(chapter) {
+  if (chapter.id === 'age-now' || chapter.id === 'age-next') {
+    return 'Насны хүрээ: зүүн оройгоос (0 нас) цагийн зүүний дагуу, арван жил бүрт долоон цэг.';
+  }
+  if (chapter.at.length === 1) return SOURCES[chapter.at[0]]?.[1] ?? '';
+  if (chapter.id === 'karmic-tails') return 'Доод оройн шугам, төвөөс гадагш: доод дотор тоо, доод дунд тоо, доод орой.';
+  return `${chapter.at.map((key) => SOURCES[key]?.[0]).filter(Boolean).join(' · ')}.`;
+}
+
+const shortTable = (entry, fields) =>
+  `<table class="short">${fields.filter(([key]) => entry[key]).map(([key, label]) => `<tr><th>${label}</th><td>${esc(entry[key])}</td></tr>`).join('')}</table>`;
+
+// The small card standing for one of the 22 energies.
+const arcana = (n, big = false) => (n
+  ? `<span class="arcana${big ? ' big' : ''}"><small>${ROMAN[n - 1]}</small><b>${n}</b>${big ? `<em>${esc(TALENTS[n].name)}</em>` : ''}</span>`
+  : '<span class="arcana"></span>');
+
+function chapterValuesFor(chapter, hand, now, next, today) {
+  if (chapter.id === 'age-now') return now ? [now.value] : [];
+  if (chapter.id === 'age-next') return next ? [next.value] : [];
+  return chapterValues(hand, chapter.at, today);
+}
+
+function isWritten(chapter, values, texts) {
+  const written = texts?.[chapter.id];
+  if (chapter.id === 'karmic-tails') return Boolean(written?.tails?.[values.join('-')]);
+  return Boolean(written?.texts && values.some((n) => written.texts[n]));
+}
+
+function chapterDialogBody(chapter, values, texts, note) {
+  const written = texts?.[chapter.id];
+  let out = `<h3 class="dlg-title">${esc(chapter.name)}</h3><dl class="dlg-meta">`
+    + `<dt>Энэ тоо хаанаас гардаг</dt><dd>${esc(sourceText(chapter))}${note ? ` ${esc(note)}` : ''}</dd>`
+    + `<dt>Энэ байрлал асуудаг</dt><dd>${esc(chapter.asks)}</dd></dl>`;
+  if (chapter.id === 'karmic-tails') {
+    const code = values.join('-');
+    const entry = written?.tails?.[code];
+    return `${out}<div class="dlg-card"><div class="tail">${values.map((n) => arcana(n)).join('')}<em>${esc(code)}</em></div>`
+      + `<div><h4>${entry ? esc(entry.name) : 'Товчхондоо'}</h4>${entry ? shortTable(entry, TAIL_FIELDS) : '<p class="soft">Энэ сүүлний тайлбар бичигдэж байна.</p>'}</div></div>`;
+  }
+  // chapters that read several positions show each position with its own card
+  const many = chapter.at.length > 1 && chapter.id !== 'sexuality';
+  const seen = new Set();
+  values.forEach((n, k) => {
+    const key = chapter.at[k];
+    if (!n || (seen.has(n) && !many)) return;
+    seen.add(n);
+    const where = key in POINT_AGES ? `${POINT_AGES[key]} нас · ${POINT_MEANINGS[key].word}` : SOURCES[key]?.[0] ?? '';
+    const entry = written?.texts?.[n];
+    out += `${many && where ? `<p class="dlg-where">${esc(where)}</p>` : ''}<div class="dlg-card">${arcana(n, true)}<div><h4>Товчхондоо</h4>`
+      + (entry ? shortTable(entry, FIELDS) : `<p>${esc(TALENTS[n].text)}</p><p class="soft">Энэ бүлгийн дэлгэрэнгүй тайлбар бичигдэж байна.</p>`)
+      + '</div></div>';
+  });
+  return out;
+}
+
+// The contents of the reading laid out like a book: the 9 parts in two
+// columns, one row per chapter with its number(s). A row opens the chapter
+// in a dialog (wired by wireBook).
+export function chaptersHtml(hand, texts, today = new Date()) {
+  const now = currentAge(hand, today);
+  const next = nextAge(hand, today);
+  let rows = '';
+  let templates = '';
+  let total = 0;
+  let ready = 0;
+  CHAPTERS.forEach((part, index) => {
+    rows += `<div class="book-part"><header><span>${ROMAN[index]}</span><b>${esc(part.title)}</b><small>${part.chapters.length} бүлэг</small></header>`;
+    for (const chapter of part.chapters) {
+      const values = chapterValuesFor(chapter, hand, now, next, today);
+      let note = '';
+      if (chapter.id === 'age-now' && now) note = `Одоо ${now.years} нас: ${now.label} насны цэг.`;
+      if (chapter.id === 'age-next' && next) note = `${String(next.from).replace('.', ',')} наснаас эхэлнэ.`;
+      const shown = chapter.id === 'karmic-tails' || chapter.id === 'decades' ? values : [...new Set(values)];
+      const written = isWritten(chapter, values, texts);
+      total += 1;
+      ready += written ? 1 : 0;
+      rows += `<button type="button" class="book-row${written ? ' ready' : ''}" data-chapter="${chapter.id}">`
+        + `${arcana(values[0])}<span class="name">${esc(chapter.name)}</span><span class="nums">${shown.join(' · ')}</span>`
+        + `<span class="badge">${written ? 'Унших' : 'Удахгүй'}</span></button>`;
+      templates += `<template data-chapter="${chapter.id}" data-part="${ROMAN[index]} · ${esc(part.title)}">${chapterDialogBody(chapter, values, texts, note)}</template>`;
+    }
+    rows += '</div>';
+  });
+  return '<section class="book"><h3>Агуулга</h3>'
+    + `<p class="soft">${total} бүлгээс ${ready} нь бичигдсэн · бүлэг дээр дарж нээнэ</p>`
+    + `<div class="book-progress"><i style="width:${Math.round((ready / total) * 100)}%"></i></div>`
+    + `<div class="book-paper">${rows}</div>${templates}`
+    + `<dialog class="book-dialog"><header><div><small></small><b>${dateStamp(hand.date)}</b></div>`
+    + '<button type="button" class="close" aria-label="Хаах">×</button></header><div class="dlg-body"></div>'
+    + '<footer><button type="button" class="close">Хаах</button></footer></dialog></section>';
+}
+
+// Opens a chapter row in the dialog. Self-contained so the standalone
+// export can inline it with toString().
+export function wireBook(root) {
+  root.addEventListener('click', (event) => {
+    const row = event.target.closest('.book-row');
+    const book = event.target.closest('.book');
+    if (row && book) {
+      const dialog = book.querySelector('.book-dialog');
+      const template = book.querySelector(`template[data-chapter="${row.dataset.chapter}"]`);
+      dialog.querySelector('header small').textContent = template.dataset.part;
+      dialog.querySelector('.dlg-body').innerHTML = template.innerHTML;
+      dialog.showModal();
+      dialog.querySelector('.dlg-body').scrollTop = 0;
+      return;
+    }
+    const open = event.target.closest('dialog.book-dialog[open]');
+    if (open && (event.target.closest('.close') || event.target === open)) open.close();
+  });
 }

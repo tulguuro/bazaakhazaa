@@ -9,3 +9,5 @@ matrix/out/
 print-corrections.json
 # transcription of the printed chakra table, also source material
 chakra-organs.json
+# meanings of the nine-cell matrix, also transcribed source material
+pythagoras.json

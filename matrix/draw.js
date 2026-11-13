@@ -204,10 +204,10 @@ export function renderHand(m, { meanings = null } = {}) {
     // combinations read from the whole chart on the right
     let key = '';
     const leftAt = (row) => [-MARGIN + 40, SIZE - 105 + row * 46];
-    const rightAt = (row) => [SIZE + 20, SIZE - 400 + row * 56];
+    const rightAt = (row) => [SIZE + 20, SIZE - 440 + row * 56];
     const keyText = (at, label, value) =>
       text(move(at, [1, 0], 40), `${label} · ${value}`, { size: 20, fill: PEN.ink, weight: 600, anchor: 'start' });
-    const subText = (at, value) => text(move(at, [1, 0.62], 40), value, { size: 17, fill: PEN.navy, weight: 500, anchor: 'start' });
+    const subText = (at, value) => text(move(at, [1, 0.7], 40), value, { size: 17, fill: PEN.navy, weight: 500, anchor: 'start' });
     key += circle(leftAt(0), 16, { fill: PEN.paper, stroke: PEN.green, width: 5 }) + keyText(leftAt(0), 'Амин сүнс', m.points.centre);
     key += heart(leftAt(1), 18, { fill: PEN.paper, stroke: PEN.orange, width: 3 }) + keyText(leftAt(1), 'Хайр дурлал', m.loveMoney.love);
     key += circle(leftAt(2), 16, { fill: PEN.paper, stroke: PEN.violet, width: 3 }) + keyText(leftAt(2), 'Сахиусан тэнгэр', m.loveMoney.mid);
@@ -242,6 +242,10 @@ export function renderHand(m, { meanings = null } = {}) {
     }
     if (m.familyWomen) {
       key += edge(rightAt(row)) + keyText(rightAt(row), 'Удмын эмэгтэйчүүд', m.familyWomen.value) + detailText(rightAt(row), m.familyWomen, '50–70 нас');
+      row++;
+    }
+    if (m.karma) {
+      key += bar(rightAt(row), [0, 1]) + keyText(rightAt(row), 'Үйлийн үр', m.karma.join(' · ')) + subText(rightAt(row), 'Г ба түүний шугам, 60 нас');
       row++;
     }
     if (m.dominant) {

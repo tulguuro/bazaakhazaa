@@ -21,6 +21,8 @@ TARGET = ROOT / 'matrix' / 'data' / 'readings.json'
 CORRECTIONS = ROOT / 'print-corrections.json'
 # the printed table of chakras and organs, transcribed from a photo
 CHAKRAS = ROOT / 'chakra-organs.json'
+# meanings of the nine-cell number matrix, transcribed from photos
+PYTHAGORAS = ROOT / 'pythagoras.json'
 
 W = '{http://schemas.openxmlformats.org/wordprocessingml/2006/main}'
 
@@ -132,6 +134,9 @@ def main():
         'purposes': {str(n): {'name': purposes[n]['name'], 'text': purposes[n]['text']} for n in range(1, 23)},
         'energies': {str(n): energies[n] for n in range(1, 23)},
     }
+    if PYTHAGORAS.exists():
+        table = json.loads(PYTHAGORAS.read_text(encoding='utf-8'))
+        data['pythagoras'] = {'cells': table['cells'], 'lines': table['lines']}
     if CHAKRAS.exists():
         table = json.loads(CHAKRAS.read_text(encoding='utf-8'))
         data['chakras'] = {'title': table['title'], 'rows': table['chakras']}

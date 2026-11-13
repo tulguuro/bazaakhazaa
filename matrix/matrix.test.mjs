@@ -147,3 +147,28 @@ test('the detailed number of each link adds every number between its two points 
   assert.deepEqual(detail(m.familyWomen), [117, 9, 11]);
   assert.equal(computeMatrix({ year: 1987, month: 7, day: 23 }, 'guide').skyEarth.detail, undefined);
 });
+
+test('the nine-cell matrix counts the digits of the date and four working numbers (23 July 1987)', async () => {
+  const { pythagoras } = await import('./matrix.js');
+  const p = pythagoras({ year: 1987, month: 7, day: 23 });
+  assert.deepEqual(p.working, [37, 10, 33, 6]);
+  assert.deepEqual(p.counts, { 1: 2, 2: 1, 3: 4, 4: 0, 5: 0, 6: 1, 7: 3, 8: 1, 9: 1 });
+  assert.equal(p.lines['147'], 5);
+  assert.equal(p.lines['357'], 7);
+  // a day with a leading zero uses its first non-zero digit
+  // 0+5+1+1+1+9+8+5 = 30, minus twice 5
+  assert.deepEqual(pythagoras({ year: 1985, month: 11, day: 5 }).working, [30, 3, 20, 2]);
+});
+
+test('the karma is Г with the two numbers on its line towards the centre (23 July 1987: 19 · 22 · 3)', () => {
+  for (const variant of ['hand', 'guide']) {
+    assert.deepEqual(computeMatrix({ year: 1987, month: 7, day: 23 }, variant).karma, [19, 22, 3]);
+  }
+});
+
+test('talents come from the top line, the mother\'s line and the father\'s line (15 March 1989)', () => {
+  for (const variant of ['hand', 'guide']) {
+    const { talents } = computeMatrix({ year: 1989, month: 3, day: 15 }, variant);
+    assert.deepEqual(talents, { god: [3, 15, 12], mother: [12, 6, 21], father: [18, 9, 9] });
+  }
+});

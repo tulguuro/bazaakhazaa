@@ -199,6 +199,14 @@ export function computeMatrix({ year, month, day }, variant = 'hand') {
     purposes,
   };
 
+  // the karma (үйлийн үр, the user's reading): the bottom point Г and the two
+  // numbers on its line towards the centre, read together from outside in
+  matrix.karma = [d, lines.bottom.mid, lines.bottom.inner];
+  // talents (авьяас), read like the Destiny Matrix calculators: from God on
+  // the top line Б, from the mother on her line Ж, from the father on his
+  // line Е — each the point, its mid and its inner number
+  const along = (key) => [matrix.points[key], lines[key].mid, lines[key].inner];
+  matrix.talents = { god: along('top'), mother: along('tr'), father: along('tl') };
   // the base number of each of the user's links: its two points added
   matrix.skyEarth = skyEarthLink(matrix);
   matrix.fate = fateStruggle(matrix);
@@ -252,4 +260,27 @@ export function ringPointAt(matrix, age) {
   });
   if (within >= 9.5) return { label: String(decade.age + 10), value: decade.to };
   return { label: ringLabel(decade.age, index), value: decade.points[index] };
+}
+
+// The nine-cell number matrix (Pythagoras square), by the common method
+// until the user's source says otherwise: write out the birth date's digits,
+// then four working numbers — the digit sum of the date, its digit sum, the
+// first minus twice the day's first non-zero digit, and that number's digit
+// sum — and count how often each digit 1–9 occurs. The cells sit in three
+// columns 1 2 3 · 4 5 6 · 7 8 9, so rows read 1 4 7 · 2 5 8 · 3 6 9.
+export const PYTHAGORAS_LINES = ['147', '258', '369', '123', '456', '789', '159', '357'];
+
+export function pythagoras({ year, month, day }) {
+  const date = `${String(day).padStart(2, '0')}${String(month).padStart(2, '0')}${year}`;
+  const first = digitSum(Number(date));
+  const second = digitSum(first);
+  const dayLead = Number(String(day).replace(/^0/, '')[0]);
+  const third = Math.abs(first - 2 * dayLead);
+  const fourth = digitSum(third);
+  const working = [first, second, third, fourth];
+  const counts = Object.fromEntries([1, 2, 3, 4, 5, 6, 7, 8, 9].map((d) => [d, 0]));
+  for (const ch of date + working.join('')) if (ch !== '0') counts[ch] += 1;
+  const lines = Object.fromEntries(PYTHAGORAS_LINES.map((cells) =>
+    [cells, [...cells].reduce((sum, d) => sum + counts[d], 0)]));
+  return { date, working, counts, lines };
 }
