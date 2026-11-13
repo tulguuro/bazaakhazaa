@@ -2,7 +2,9 @@
 // everything the site has written about it (texts/by-number/<n>.json, built
 // by tools/build_number_pages.mjs).
 import { TALENTS } from './talents.js';
-import { FIELDS, ROMAN, TAIL_FIELDS, arcana, esc, longHtml, shortTable } from './report.js';
+import { FIELDS, ROMAN, TAIL_FIELDS, arcana, esc, genderHtml, longHtml, shortTable } from './report.js';
+
+const bothGenders = (entry) => (entry ? genderHtml(entry, 'male') + genderHtml(entry, 'female') : '');
 
 const $ = (id) => document.getElementById(id);
 const SECTIONS = [
@@ -43,7 +45,7 @@ function chaptersHtml(page) {
     for (const c of part.chapters) {
       out += `<details class="energy chapter-read"><summary><span>${esc(c.name)}</span></summary>`
         + `<dl class="dlg-meta"><dt>Энэ тоо хаанаас гардаг</dt><dd>${esc(c.source)}</dd><dt>Энэ байрлал асуудаг</dt><dd>${esc(c.asks)}</dd></dl>`
-        + `${c.short ? shortTable(c.short, FIELDS) : ''}${longHtml(c.long)}</details>`;
+        + `${c.short ? shortTable(c.short, FIELDS) : ''}${longHtml(c.long)}${bothGenders(c.gender)}</details>`;
     }
   }
   return out;
@@ -52,7 +54,7 @@ function chaptersHtml(page) {
 function tailsHtml(page) {
   if (!page.tails.length) return '';
   return `<h3>Энэ тоо орсон үйлийн үрийн сүүл</h3>${page.tails.map((t) =>
-    `<details class="energy chapter-read"><summary><b>${esc(t.code)}</b><span>${esc(t.name)}</span></summary>${shortTable(t, TAIL_FIELDS)}${longHtml(t.long)}</details>`).join('')}`;
+    `<details class="energy chapter-read"><summary><b>${esc(t.code)}</b><span>${esc(t.name)}</span></summary>${shortTable(t, TAIL_FIELDS)}${longHtml(t.long)}${bothGenders(t.gender)}</details>`).join('')}`;
 }
 
 function linksHtml(page) {
@@ -87,6 +89,7 @@ function profileHtml(page) {
     + `<ul class="chips">${p.keywords.map((k) => `<li>${esc(k)}</li>`).join('')}</ul></div></div>`
     + `<div class="profile-text">${paragraphs(p.overview)}</div>`
     + `<div class="profile-sections">${SECTIONS.map(([key, title]) => (p.sections[key] ? `<section><h3>${title}</h3>${paragraphs(p.sections[key])}</section>` : '')).join('')}</div>`
+    + (page.gender ? `<h3>Эрэгтэй ба эмэгтэй хүнд</h3>${bothGenders(page.gender)}` : '')
     + `<h3>Танд тохирох зүйлс</h3>${listCards(p)}`
     + compatHtml(page) + chaptersHtml(page) + tailsHtml(page) + linksHtml(page) + pairsHtml(page);
 }

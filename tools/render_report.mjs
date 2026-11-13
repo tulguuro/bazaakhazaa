@@ -1,7 +1,7 @@
 // Write one self-contained HTML reading for a birth date into matrix/out/:
 // the drawing of the chosen matrix type, the readings from the manuscript
 // and the arithmetic.
-// Usage: node tools/render_report.mjs 1989-03-15 [hand|guide] [--clan=…] [--father=…] [--name=…]
+// Usage: node tools/render_report.mjs 1989-03-15 [hand|guide] [--clan=…] [--father=…] [--name=…] [--gender=male|female]
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -18,7 +18,7 @@ const person = Object.fromEntries(
 const match = /^(\d{1,4})-(\d{1,2})-(\d{1,2})$/.exec(dateArg);
 const [year, month, day] = match ? match.slice(1).map(Number) : [];
 if (!match || !isValidDate(year, month, day) || !VARIANTS.includes(type)) {
-  console.error('Usage: node tools/render_report.mjs YYYY-MM-DD [hand|guide] [--clan=…] [--father=…] [--name=…]');
+  console.error('Usage: node tools/render_report.mjs YYYY-MM-DD [hand|guide] [--clan=…] [--father=…] [--name=…] [--gender=male|female]');
   process.exit(1);
 }
 
@@ -45,6 +45,14 @@ const longIndex = join(matrixDir, 'texts', 'long', 'index.json');
 for (const id of existsSync(longIndex) ? JSON.parse(readFileSync(longIndex, 'utf8')) : []) {
   if (chapterTexts[id]) chapterTexts[id].long = JSON.parse(readFileSync(join(matrixDir, 'texts', 'long', `${id}.json`), 'utf8')).texts;
 }
+// the male / female notes
+for (const [id, t] of Object.entries(chapterTexts)) {
+  const file = join(matrixDir, 'texts', 'gender', `${id}.json`);
+  try {
+    if (existsSync(file)) t.gender = JSON.parse(readFileSync(file, 'utf8')).texts;
+  } catch { /* still being written */ }
+}
+const gender = { male: 'male', female: 'female', m: 'male', f: 'female' }[person.gender] ?? '';
 // the six links
 chapterTexts.links = Object.fromEntries(['sky-earth', 'fate-struggle', 'father-line', 'mother-line', 'family-men', 'family-women']
   .map((id) => join(matrixDir, 'texts', 'links', `${id}.json`))
@@ -86,7 +94,7 @@ ${personText(person) ? `<p class="person">${esc(personText(person))}</p>` : ''}
 <section class="charts">
 <figure class="chart"><figcaption><h2>${title}</h2></figcaption><div class="paper">${chart}</div></figure>
 </section>
-<section class="block"><h2>Тайлбар</h2><div id="reading">${readingHtml(hand, readings)}${chaptersHtml(hand, chapterTexts)}</div></section>
+<section class="block"><h2>Тайлбар</h2><div id="reading">${readingHtml(hand, readings)}${chaptersHtml(hand, chapterTexts, new Date(), gender)}</div></section>
 <section class="block">
 <h2>Тооцоолол</h2>
 <div class="columns">

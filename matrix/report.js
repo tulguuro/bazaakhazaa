@@ -401,7 +401,16 @@ export function longHtml(long) {
     + '</div>';
 }
 
-function chapterDialogBody(chapter, values, texts, note) {
+// The note for the reader's gender (texts/gender/<id>.json), shown under the
+// neutral text only when a gender was chosen.
+export const GENDER_TITLES = { male: 'Эрэгтэй хүний хувьд', female: 'Эмэгтэй хүний хувьд' };
+
+export function genderHtml(entry, gender) {
+  const text = gender && entry?.[gender];
+  return text ? `<div class="gender-note"><h5>${GENDER_TITLES[gender]}</h5>${String(text).split(/\n\n+/).map((p) => `<p>${esc(p)}</p>`).join('')}</div>` : '';
+}
+
+function chapterDialogBody(chapter, values, texts, note, gender = '') {
   const written = texts?.[chapter.id];
   let out = `<h3 class="dlg-title">${esc(chapter.name)}</h3><dl class="dlg-meta">`
     + `<dt>Энэ тоо хаанаас гардаг</dt><dd>${esc(sourceText(chapter))}${note ? ` ${esc(note)}` : ''}</dd>`
@@ -411,7 +420,7 @@ function chapterDialogBody(chapter, values, texts, note) {
     const entry = written?.tails?.[code];
     return `${out}<div class="dlg-card"><div class="tail">${values.map((n) => arcana(n)).join('')}<em>${esc(code)}</em></div>`
       + `<div><h4>${entry ? esc(entry.name) : 'Товчхондоо'}</h4>${entry ? shortTable(entry, TAIL_FIELDS) : '<p class="soft">Энэ сүүлний тайлбар бичигдэж байна.</p>'}</div></div>`
-      + longHtml(written?.long?.[code]);
+      + longHtml(written?.long?.[code]) + genderHtml(written?.gender?.[code], gender);
   }
   // chapters that read several positions show each position with its own card
   const many = chapter.at.length > 1 && chapter.id !== 'sexuality';
@@ -424,7 +433,7 @@ function chapterDialogBody(chapter, values, texts, note) {
     const entry = written?.texts?.[n];
     out += `${many && where ? `<p class="dlg-where">${esc(where)}</p>` : ''}<div class="dlg-card">${arcana(n, true)}<div><h4>Товчхондоо</h4>`
       + (entry ? shortTable(entry, FIELDS) : `<p>${esc(TALENTS[n].text)}</p><p class="soft">Энэ бүлгийн дэлгэрэнгүй тайлбар бичигдэж байна.</p>`)
-      + `</div></div>${longHtml(written?.long?.[n])}<p class="more"><a href="numbers.html#n=${n}">${n} · ${esc(TALENTS[n].name)} эрчмийн тухай бүгдийг унших</a></p>`;
+      + `</div></div>${longHtml(written?.long?.[n])}${genderHtml(written?.gender?.[n], gender)}<p class="more"><a href="numbers.html#n=${n}">${n} · ${esc(TALENTS[n].name)} эрчмийн тухай бүгдийг унших</a></p>`;
   });
   if (PAIR_CHAPTERS.includes(chapter.id)) out += pairsHtml(values, texts?.pairs);
   return out;
@@ -515,7 +524,7 @@ function nowCardHtml(hand, texts, now, next) {
 // The contents of the reading laid out like a book: the 9 parts in two
 // columns, one row per chapter with its number(s). A row opens the chapter
 // in a dialog (wired by wireBook).
-export function chaptersHtml(hand, texts, today = new Date()) {
+export function chaptersHtml(hand, texts, today = new Date(), gender = '') {
   const now = currentAge(hand, today);
   const next = nextAge(hand, today);
   let rows = '';
@@ -536,7 +545,7 @@ export function chaptersHtml(hand, texts, today = new Date()) {
       rows += `<button type="button" class="book-row${written ? ' ready' : ''}" data-chapter="${chapter.id}">`
         + `${arcana(values[0])}<span class="name">${esc(chapter.name)}</span><span class="nums">${shown.join(' · ')}</span>`
         + `<span class="badge">${written ? 'Унших' : 'Удахгүй'}</span></button>`;
-      templates += `<template data-chapter="${chapter.id}" data-part="${ROMAN[index]} · ${esc(part.title)}">${chapterDialogBody(chapter, values, texts, note)}</template>`;
+      templates += `<template data-chapter="${chapter.id}" data-part="${ROMAN[index]} · ${esc(part.title)}">${chapterDialogBody(chapter, values, texts, note, gender)}</template>`;
     }
     rows += '</div>';
   });

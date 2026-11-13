@@ -1438,3 +1438,39 @@ h3 {
   color: var(--paper-ink);
   font: 600 1.05rem/1.3 var(--serif);
 }
+
+/* ---------- gender ---------- */
+
+.date-form select {
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #0d1430;
+  color: var(--ink);
+  font: 500 1rem/1.2 var(--sans);
+}
+
+.date-form select:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+
+.gender-note {
+  margin: 4px 0 20px;
+  padding: 10px 16px;
+  border-left: 3px solid var(--paper-gold);
+  background: rgba(184, 138, 46, 0.08);
+  border-radius: 0 10px 10px 0;
+}
+
+.gender-note h5 {
+  margin: 0 0 4px;
+  color: var(--paper-gold);
+  font: 600 0.74rem/1.4 var(--sans);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.gender-note p {
+  margin: 0 0 6px;
+}

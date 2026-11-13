@@ -29,7 +29,7 @@ const tails = read('karmic-tails.json');
 const tailsLong = read('long', 'karmic-tails.json');
 
 for (let n = 1; n <= 22; n += 1) {
-  const page = { n, profile: read('numbers', `${n}.json`), parts: [], tails: [], links: [], compat: [], pairs: [] };
+  const page = { n, profile: read('numbers', `${n}.json`), gender: read('gender', 'profiles.json')?.texts?.[n] ?? null, parts: [], tails: [], links: [], compat: [], pairs: [] };
   CHAPTERS.forEach((part, index) => {
     const chapters = [];
     for (const chapter of part.chapters) {
@@ -39,13 +39,13 @@ for (let n = 1; n <= 22; n += 1) {
       if (!long) continue;
       chapters.push({
         id: chapter.id, name: chapter.name, asks: chapter.asks, source: sourceText(chapter),
-        short: read(`${chapter.id}.json`)?.texts?.[n] ?? null, long,
+        short: read(`${chapter.id}.json`)?.texts?.[n] ?? null, long, gender: read('gender', `${chapter.id}.json`)?.texts?.[n] ?? null,
       });
     }
     if (chapters.length) page.parts.push({ index, title: part.title, chapters });
   });
   for (const [code, entry] of Object.entries(tails?.tails ?? {})) {
-    if (code.split('-').map(Number).includes(n)) page.tails.push({ code, ...entry, long: tailsLong?.texts?.[code] ?? null });
+    if (code.split('-').map(Number).includes(n)) page.tails.push({ code, ...entry, long: tailsLong?.texts?.[code] ?? null, gender: read('gender', 'karmic-tails.json')?.texts?.[code] ?? null });
   }
   for (const id of LINK_IDS) {
     const link = read('links', `${id}.json`);

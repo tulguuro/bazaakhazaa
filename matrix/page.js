@@ -40,6 +40,10 @@ const chapterTexts = Promise.all(CHAPTER_FILES.map((id) =>
     const pairs = await Promise.all(Array.from({ length: 22 }, (_, k) => fetch(`texts/pairs/${k + 1}.json`)
       .then((r) => (r.ok ? r.json() : null)).catch(() => null)));
     texts.pairs = Object.fromEntries(pairs.filter(Boolean).map((p) => [p.a, p.pairs]));
+    // the male / female notes: texts/gender/index.json lists the chapters that have them
+    const genderIds = await fetch('texts/gender/index.json').then((r) => (r.ok ? r.json() : [])).catch(() => []);
+    await Promise.all(genderIds.filter((id) => texts[id]).map((id) => fetch(`texts/gender/${id}.json`).then((r) => (r.ok ? r.json() : null)).catch(() => null)
+      .then((g) => { if (g && texts[id]) texts[id].gender = g.texts; })));
     return texts;
   });
 
@@ -54,7 +58,8 @@ function stateFromUrl() {
   const match = /^(\d{1,4})-(\d{1,2})-(\d{1,2})$/.exec(params.get('d') ?? '');
   const [year, month, day] = match ? match.slice(1).map(Number) : [];
   const type = VARIANTS.includes(params.get('t')) ? params.get('t') : 'hand';
-  return { date: match && isValidDate(year, month, day) ? { year, month, day } : DEFAULT_DATE, type, person: {} };
+  const gender = { m: 'male', f: 'female' }[params.get('g')] ?? '';
+  return { date: match && isValidDate(year, month, day) ? { year, month, day } : DEFAULT_DATE, type, gender, person: {} };
 }
 
 const state = stateFromUrl();
@@ -76,12 +81,12 @@ async function show() {
   $('health').innerHTML = healthHtml(guide);
   $('difference').innerHTML = differenceHtml(hand, guide);
   const data = await readings;
-  $('reading').innerHTML = readingHtml(hand, data) + chaptersHtml(hand, await chapterTexts);
+  $('reading').innerHTML = readingHtml(hand, data) + chaptersHtml(hand, await chapterTexts, new Date(), state.gender);
   $('library').innerHTML = libraryHtml(hand, data);
   $('chakra-organs').innerHTML = chakraOrgansHtml(data);
   $('pythagoras').innerHTML = pythagorasHtml(date, data);
   document.title = `${dateStamp(date)} · ${TYPES[type].title}`;
-  history.replaceState(null, '', `#d=${dateStamp(date, '-')}&t=${type}`);
+  history.replaceState(null, '', `#d=${dateStamp(date, '-')}&t=${type}${state.gender ? `&g=${state.gender[0]}` : ''}`);
 }
 
 const form = $('date-form');
@@ -100,6 +105,11 @@ form.addEventListener('submit', (event) => {
   error.hidden = true;
   state.date = date;
   state.person = Object.fromEntries(Object.entries(personFields).map(([key, input]) => [key, input.value]));
+  state.gender = $('gender').value;
+  show();
+});
+$('gender').addEventListener('change', () => {
+  state.gender = $('gender').value;
   show();
 });
 for (const input of Object.values(fields)) {
@@ -121,13 +131,14 @@ function sync() {
   for (const [key, input] of Object.entries(fields)) input.value = state.date[key];
   for (const [key, input] of Object.entries(personFields)) input.value = state.person[key] ?? '';
   for (const radio of typeRadios) radio.checked = radio.value === state.type;
+  $('gender').value = state.gender;
   show();
 }
 
 // A link or a typed address can change the fragment without reloading the page.
 window.addEventListener('hashchange', () => {
   const next = stateFromUrl();
-  if (dateStamp(next.date) === dateStamp(state.date) && next.type === state.type) return;
+  if (dateStamp(next.date) === dateStamp(state.date) && next.type === state.type && next.gender === state.gender) return;
   Object.assign(state, next);
   sync();
 });
