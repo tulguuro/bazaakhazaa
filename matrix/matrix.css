@@ -1,0 +1,470 @@
+:root {
+  --bg: #03050d;
+  --ink: #eef1fb;
+  --text: #d7dcee;
+  --muted: #a7b0c9;
+  --gold: #f2c66d;
+  --line: rgba(255, 255, 255, 0.14);
+  --serif: "Cormorant Garamond", "Noto Serif", Georgia, serif;
+  --sans: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  color-scheme: dark;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  color: var(--text);
+  font: 400 1rem/1.65 var(--sans);
+  background: radial-gradient(120% 60% at 50% 0%, #0c1836 0%, #050817 55%, var(--bg) 100%) fixed var(--bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+.sheet {
+  width: min(1100px, 100%);
+  margin: 0 auto;
+  padding: clamp(28px, 6vw, 64px) clamp(16px, 4vw, 40px) 96px;
+}
+
+.kicker {
+  margin: 0 0 8px;
+  color: var(--gold);
+  font: 500 0.74rem/1.4 var(--sans);
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+}
+
+h1,
+h2 {
+  margin: 0;
+  color: var(--ink);
+  font-family: var(--serif);
+  font-weight: 600;
+  text-wrap: balance;
+}
+
+/* the serif's default figures are old-style: "1" reads as a small "I" */
+h1,
+h2,
+.number,
+summary b {
+  font-variant-numeric: lining-nums;
+}
+
+h1 {
+  font-size: clamp(2.2rem, 5vw, 3.4rem);
+  line-height: 1.05;
+}
+
+h2 {
+  font-size: clamp(1.6rem, 3vw, 2.1rem);
+  line-height: 1.15;
+}
+
+h3 {
+  margin: 28px 0 10px;
+  color: var(--gold);
+  font: 600 0.82rem/1.4 var(--sans);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.soft {
+  color: var(--muted);
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+/* ---------- date form ---------- */
+
+.date-form {
+  display: grid;
+  gap: 14px;
+  margin-top: 24px;
+}
+
+.date-form .row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.date-form input[type="text"] {
+  width: 11rem;
+}
+
+.person {
+  margin: 6px 0 0;
+  color: var(--gold);
+  font-weight: 500;
+}
+
+.date-form label {
+  display: grid;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 0.8rem;
+  letter-spacing: 0.06em;
+}
+
+.date-form input {
+  width: 6.5rem;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--ink);
+  font: 500 1.05rem/1.2 var(--sans);
+  font-variant-numeric: tabular-nums;
+}
+
+.date-form input:focus-visible,
+.date-form button:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+
+.date-form button {
+  padding: 11px 22px;
+  border: 1px solid rgba(242, 198, 109, 0.6);
+  border-radius: 999px;
+  background: rgba(242, 198, 109, 0.14);
+  color: #fff1cf;
+  font: 600 0.95rem/1.2 var(--sans);
+  cursor: pointer;
+}
+
+.date-form button:hover {
+  background: rgba(242, 198, 109, 0.24);
+}
+
+.error {
+  margin: 12px 0 0;
+  color: #ff9a8c;
+  font-size: 0.9rem;
+}
+
+/* ---------- matrix type switch ---------- */
+
+.types {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  margin: 24px 0 0;
+  padding: 0;
+  border: 0;
+}
+
+.types legend {
+  float: left;
+  margin-right: 4px;
+  padding: 0;
+  color: var(--muted);
+  font-size: 0.8rem;
+  letter-spacing: 0.06em;
+}
+
+.types label {
+  position: relative;
+  cursor: pointer;
+}
+
+.types input {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.types span {
+  display: block;
+  padding: 9px 18px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--text);
+  font-weight: 500;
+}
+
+.types input:checked + span {
+  border-color: var(--gold);
+  background: var(--gold);
+  color: #1b1405;
+  font-weight: 600;
+}
+
+.types input:focus-visible + span {
+  outline: 2px solid var(--gold);
+  outline-offset: 3px;
+}
+
+.types label:hover input:not(:checked) + span {
+  border-color: rgba(242, 198, 109, 0.6);
+}
+
+.jump {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 22px;
+  margin-top: 22px;
+  font-size: 0.9rem;
+}
+
+.jump a {
+  color: var(--gold);
+  text-underline-offset: 4px;
+}
+
+/* ---------- charts ---------- */
+
+.charts {
+  display: grid;
+  gap: 48px;
+  margin-top: 48px;
+}
+
+.chart {
+  min-width: 0;
+  margin: 0;
+}
+
+.chart figcaption p {
+  max-width: 60ch;
+  margin: 6px 0 16px;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+/* The drawings carry small numbers, so they scroll sideways on phones
+   instead of shrinking past legibility. */
+.paper {
+  overflow-x: auto;
+  border-radius: 16px;
+}
+
+.paper svg {
+  display: block;
+  width: 100%;
+  min-width: 680px;
+  max-width: 920px;
+  height: auto;
+  margin: 0 auto;
+}
+
+/* ---------- text blocks ---------- */
+
+.block {
+  margin-top: 64px;
+  padding-top: 28px;
+  border-top: 1px solid var(--line);
+}
+
+.block > p,
+#difference p,
+#library > p {
+  max-width: 68ch;
+}
+
+#reading {
+  margin-top: 20px;
+}
+
+/* jump links land below the top edge instead of flush against it */
+.block h2,
+.charts {
+  scroll-margin-top: 24px;
+}
+
+#difference ul {
+  margin: 12px 0 0;
+  padding-left: 1.2em;
+}
+
+.columns {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));
+  gap: 0 48px;
+}
+
+.calc {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 8px 14px;
+  margin: 0;
+}
+
+@media (max-width: 559px) {
+  .calc {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2px 0;
+  }
+
+  .calc dd {
+    margin-bottom: 10px;
+  }
+}
+
+.calc dt {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.calc dd {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.calc dd b {
+  color: var(--gold);
+  font-weight: 700;
+}
+
+.calc dd small {
+  display: block;
+  color: var(--muted);
+  font-size: 0.84rem;
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+.health {
+  border-collapse: collapse;
+  min-width: 420px;
+  font-variant-numeric: tabular-nums;
+}
+
+.health th,
+.health td {
+  padding: 7px 18px 7px 0;
+  border-bottom: 1px solid var(--line);
+  text-align: right;
+}
+
+.health th:first-child,
+.health td:first-child {
+  text-align: left;
+}
+
+.health thead th {
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.health tbody tr:last-child td {
+  border-bottom: 0;
+  color: var(--gold);
+  font-weight: 600;
+}
+
+/* ---------- reading ---------- */
+
+.purpose h3 {
+  margin-top: 0;
+}
+
+.purpose p,
+.energy p {
+  max-width: 70ch;
+  margin: 0 0 12px;
+}
+
+.purpose .number,
+.energy summary b {
+  color: var(--gold);
+  font-family: var(--serif);
+  font-weight: 600;
+}
+
+.purpose .number {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 2.6rem;
+  line-height: 1;
+}
+
+.energy {
+  border-top: 1px solid var(--line);
+}
+
+.energy:last-of-type {
+  border-bottom: 1px solid var(--line);
+}
+
+.energy summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 14px;
+  padding: 14px 0;
+  cursor: pointer;
+}
+
+.energy summary b {
+  min-width: 1.6em;
+  font-size: 1.7rem;
+  line-height: 1;
+}
+
+.energy summary span {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+/* in the full list, numbers that appear in the current matrix */
+#library .energy:not(.present) summary b {
+  color: var(--muted);
+}
+
+#library .energy.present summary span {
+  color: var(--text);
+}
+
+#library,
+#difference {
+  margin-top: 16px;
+}
+
+/* the full list of 22: one article per number */
+.purpose + .purpose {
+  margin-top: 40px;
+  padding-top: 28px;
+  border-top: 1px solid var(--line);
+}
+
+.purpose {
+  scroll-margin-top: 24px;
+}
+
+/* what the point holding the number means, above its reading */
+.energy .place {
+  padding-left: 12px;
+  border-left: 2px solid var(--gold);
+  color: var(--text);
+}
+
+.energy .place b {
+  color: var(--gold);
+}
+
+.purpose h4,
+.energy h4 {
+  margin: 4px 0 4px;
+  color: var(--ink);
+  font-size: 0.9rem;
+}
+
+.source {
+  margin-top: 28px;
+  color: var(--muted);
+  font-size: 0.84rem;
+}

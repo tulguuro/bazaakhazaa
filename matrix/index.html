@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="mn">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Матрицын тооцоолуур</title>
+  <meta name="robots" content="noindex">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Inter:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="matrix.css">
+</head>
+<body>
+  <main class="sheet">
+    <header class="intro">
+      <p class="kicker">Хувь тавилангийн матриц</p>
+      <h1>Төрсөн өдрийн матриц</h1>
+      <form id="date-form" class="date-form" novalidate>
+        <div class="row">
+          <label>Он <input id="year" type="number" inputmode="numeric" min="1" max="9999" required></label>
+          <label>Сар <input id="month" type="number" inputmode="numeric" min="1" max="12" required></label>
+          <label>Өдөр <input id="day" type="number" inputmode="numeric" min="1" max="31" required></label>
+        </div>
+        <div class="row">
+          <label>Овог <input id="clan" type="text" autocomplete="off"></label>
+          <label>Эцгийн нэр <input id="father" type="text" autocomplete="off"></label>
+          <label>Нэр <input id="name" type="text" autocomplete="off"></label>
+          <button type="submit">Тооцоолох</button>
+        </div>
+      </form>
+      <p id="date-error" class="error" role="alert" hidden></p>
+      <fieldset id="types" class="types">
+        <legend>Матрицын төрөл</legend>
+        <label><input type="radio" name="type" value="hand"><span>Гар зургийн</span></label>
+        <label><input type="radio" name="type" value="guide"><span>Зааврын</span></label>
+      </fieldset>
+      <nav class="jump" aria-label="Хуудасны хэсгүүд">
+        <a href="#charts">Матриц</a>
+        <a href="#reading-title">Тайлбар</a>
+        <a href="#calc-title">Тооцоолол</a>
+        <a href="#difference-title">Хоёр төрлийн зөрүү</a>
+        <a href="#library-title">Бүх 22 тайлбар</a>
+      </nav>
+    </header>
+
+    <section id="charts" class="charts" aria-label="Матрицын зураг">
+      <figure class="chart">
+        <figcaption>
+          <h2 id="chart-title"></h2>
+          <p id="person" class="person" hidden></p>
+          <p id="chart-caption"></p>
+        </figcaption>
+        <div id="chart" class="paper"></div>
+      </figure>
+    </section>
+
+    <section class="block" aria-labelledby="reading-title">
+      <h2 id="reading-title">Тайлбар</h2>
+      <div id="reading"></div>
+    </section>
+
+    <section class="block" aria-labelledby="calc-title">
+      <h2 id="calc-title">Тооцоолол</h2>
+      <div class="columns">
+        <div>
+          <h3>Үндсэн есөн тоо</h3>
+          <dl id="calc-points" class="calc"></dl>
+        </div>
+        <div>
+          <h3>Шугам ба даалгаврууд</h3>
+          <dl id="calc-tasks" class="calc"></dl>
+        </div>
+      </div>
+      <div id="health-block">
+        <h3>Эрүүл мэндийн хүснэгт</h3>
+        <div class="table-wrap">
+          <table id="health" class="health"></table>
+        </div>
+        <div id="chakra-organs"></div>
+      </div>
+    </section>
+
+    <section class="block" aria-labelledby="difference-title">
+      <h2 id="difference-title">Хоёр төрлийн зөрүү</h2>
+      <div id="difference"></div>
+    </section>
+
+    <section class="block" aria-labelledby="library-title">
+      <h2 id="library-title">Бүх 22 тайлбар</h2>
+      <div id="library"></div>
+    </section>
+  </main>
+
+  <script type="module" src="page.js"></script>
+</body>
+</html>

@@ -1,4 +1,11 @@
-# source manuscript stays local
+# source manuscript stays local, and so does the text extracted from it
 *.docx
 ~$*
+matrix/data/
+# drawings exported for one birth date
+matrix/out/
 .claude/
+# corrections quote the manuscript, which stays out of git like the .docx
+print-corrections.json
+# transcription of the printed chakra table, also source material
+chakra-organs.json
