@@ -118,7 +118,10 @@ test('life purpose is Д-3 = Д-1 + Д-2 (user chart for 23 July 1987)', () => {
 
 test('the most repeated of the 108 numbers is the most influential (23 July 1987: 11, 12 times)', () => {
   const { dominant } = computeMatrix({ year: 1987, month: 7, day: 23 }, 'hand');
-  assert.deepEqual(dominant, { values: [11], count: 12, total: 108 });
+  const { ranked, ...top } = dominant;
+  assert.deepEqual(top, { values: [11], count: 12, total: 108 });
+  assert.deepEqual(ranked[0], { value: 11, count: 12 });
+  assert.equal(ranked.reduce((sum, r) => sum + r.count, 0), 108);
 });
 
 test('the base number of each link is its two points added (23 July 1987)', () => {

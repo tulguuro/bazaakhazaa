@@ -26,7 +26,22 @@ const $ = (id) => document.getElementById(id);
 const CHAPTER_FILES = CHAPTERS.flatMap((part) => part.chapters.map((chapter) => chapter.id));
 const chapterTexts = Promise.all(CHAPTER_FILES.map((id) =>
   fetch(`texts/${id}.json`).then((r) => (r.ok ? r.json() : null)).catch(() => null)))
-  .then((list) => Object.fromEntries(list.filter(Boolean).map((t) => [t.id, t])));
+  .then((list) => Object.fromEntries(list.filter(Boolean).map((t) => [t.id, t])))
+  // the long texts: texts/long/index.json lists the chapters that have one
+  .then(async (texts) => {
+    const ids = await fetch('texts/long/index.json').then((r) => (r.ok ? r.json() : [])).catch(() => []);
+    await Promise.all(ids.map((id) => fetch(`texts/long/${id}.json`).then((r) => (r.ok ? r.json() : null)).catch(() => null)
+      .then((long) => { if (long && texts[id]) texts[id].long = long.texts; })));
+    // the six links
+    const linkIds = ['sky-earth', 'fate-struggle', 'father-line', 'mother-line', 'family-men', 'family-women'];
+    const links = await Promise.all(linkIds.map((id) => fetch(`texts/links/${id}.json`).then((r) => (r.ok ? r.json() : null)).catch(() => null)));
+    texts.links = Object.fromEntries(links.filter(Boolean).map((l) => [l.id, l]));
+    // how two energies combine inside one matrix: texts/pairs/<a>.json
+    const pairs = await Promise.all(Array.from({ length: 22 }, (_, k) => fetch(`texts/pairs/${k + 1}.json`)
+      .then((r) => (r.ok ? r.json() : null)).catch(() => null)));
+    texts.pairs = Object.fromEntries(pairs.filter(Boolean).map((p) => [p.a, p.pairs]));
+    return texts;
+  });
 
 const readings = fetch('data/readings.json')
   .then((response) => (response.ok ? response.json() : null))

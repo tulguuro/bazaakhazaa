@@ -36,7 +36,9 @@ function ageOn(date, today) {
 function currentAge(hand, today = new Date()) {
   const age = ageOn(hand.date, today);
   if (!(age >= 0 && age < 80)) return null;
-  return { ...ringPointAt(hand, age), years: Math.floor(age) };
+  // whole years, as datemyst and mind.university count: at 37 the point
+  // for age 37 applies until the next birthday (owner's choice, 2026-11-13)
+  return { ...ringPointAt(hand, Math.floor(age)), years: Math.floor(age) };
 }
 
 // The life purpose in the user's three steps: Д-1 the centre, Д-2 the four
@@ -300,16 +302,15 @@ export function pythagorasHtml(date, data) {
 // chapter shows the number(s) at its positions; opening it shows its
 // question and, where written (matrix/texts/<id>.json), the card for that
 // number: essence, strength, trap and first step.
-const FIELDS = [['essence', 'Мөн чанар'], ['strength', 'Хүч'], ['trap', 'Хавх'], ['step', 'Эхний алхам']];
-const TAIL_FIELDS = [['past', 'Өнгөрсөн амьдрал'], ['present', 'Энэ амьдралд'], ['trap', 'Хавх'], ['step', 'Чөлөөлөх алхам']];
+export const FIELDS = [['essence', 'Мөн чанар'], ['strength', 'Хүч'], ['trap', 'Хавх'], ['step', 'Эхний алхам']];
+export const TAIL_FIELDS = [['past', 'Өнгөрсөн амьдрал'], ['present', 'Энэ амьдралд'], ['trap', 'Хавх'], ['step', 'Чөлөөлөх алхам']];
 
 function nextAge(hand, today) {
   const now = currentAge(hand, today);
   if (!now) return null;
-  const age = ageOn(hand.date, today);
-  for (let later = age; later < age + 3; later += 0.05) {
-    const point = ringPointAt(hand, later);
-    if (point.label !== now.label) return { ...point, from: Math.ceil(later * 2) / 2 };
+  for (let year = now.years + 1; year <= now.years + 3; year += 1) {
+    const point = ringPointAt(hand, year);
+    if (point.label !== now.label) return { ...point, from: year };
   }
   return null;
 }
@@ -356,9 +357,9 @@ const SOURCES = {
   'purposes.spiritual': ['Сүнслэг зорилго', 'Хувийн зорилго + нийгмийн зорилго.'],
   'purposes.planetary': ['Гаригийн зорилго', 'Нийгмийн зорилго + сүнслэг зорилго.'],
 };
-const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII', 'XIII', 'XIV', 'XV', 'XVI', 'XVII', 'XVIII', 'XIX', 'XX', 'XXI', 'XXII'];
+export const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII', 'XIII', 'XIV', 'XV', 'XVI', 'XVII', 'XVIII', 'XIX', 'XX', 'XXI', 'XXII'];
 
-function sourceText(chapter) {
+export function sourceText(chapter) {
   if (chapter.id === 'age-now' || chapter.id === 'age-next') {
     return 'Насны хүрээ: зүүн оройгоос (0 нас) цагийн зүүний дагуу, арван жил бүрт долоон цэг.';
   }
@@ -367,11 +368,11 @@ function sourceText(chapter) {
   return `${chapter.at.map((key) => SOURCES[key]?.[0]).filter(Boolean).join(' · ')}.`;
 }
 
-const shortTable = (entry, fields) =>
+export const shortTable = (entry, fields) =>
   `<table class="short">${fields.filter(([key]) => entry[key]).map(([key, label]) => `<tr><th>${label}</th><td>${esc(entry[key])}</td></tr>`).join('')}</table>`;
 
 // The small card standing for one of the 22 energies.
-const arcana = (n, big = false) => (n
+export const arcana = (n, big = false) => (n
   ? `<span class="arcana${big ? ' big' : ''}"><small>${ROMAN[n - 1]}</small><b>${n}</b>${big ? `<em>${esc(TALENTS[n].name)}</em>` : ''}</span>`
   : '<span class="arcana"></span>');
 
@@ -387,6 +388,19 @@ function isWritten(chapter, values, texts) {
   return Boolean(written?.texts && values.some((n) => written.texts[n]));
 }
 
+// The long text under a card (matrix/texts/long/<id>.json): an opening
+// paragraph and three titled sections.
+const LONG_SECTIONS = [['gives', 'Энэ эрчим танд юу өгдөг'], ['costs', 'Энэ эрчмийн үнэ'], ['key', 'Өсөлтийн түлхүүр']];
+
+export function longHtml(long) {
+  if (!long) return '';
+  return `<div class="dlg-long">${long.intro ? `<p class="lead">${esc(long.intro)}</p>` : ''}`
+    + LONG_SECTIONS.filter(([key]) => long[key]?.length)
+      .map(([key, title]) => `<h5>${title}</h5>${long[key].map((line) => `<p>${esc(line)}</p>`).join('')}`).join('')
+    + (long.questions?.length ? `<h5>Өөрөөсөө асуух асуулт</h5><ul>${long.questions.map((q) => `<li>${esc(q)}</li>`).join('')}</ul>` : '')
+    + '</div>';
+}
+
 function chapterDialogBody(chapter, values, texts, note) {
   const written = texts?.[chapter.id];
   let out = `<h3 class="dlg-title">${esc(chapter.name)}</h3><dl class="dlg-meta">`
@@ -396,7 +410,8 @@ function chapterDialogBody(chapter, values, texts, note) {
     const code = values.join('-');
     const entry = written?.tails?.[code];
     return `${out}<div class="dlg-card"><div class="tail">${values.map((n) => arcana(n)).join('')}<em>${esc(code)}</em></div>`
-      + `<div><h4>${entry ? esc(entry.name) : 'Товчхондоо'}</h4>${entry ? shortTable(entry, TAIL_FIELDS) : '<p class="soft">Энэ сүүлний тайлбар бичигдэж байна.</p>'}</div></div>`;
+      + `<div><h4>${entry ? esc(entry.name) : 'Товчхондоо'}</h4>${entry ? shortTable(entry, TAIL_FIELDS) : '<p class="soft">Энэ сүүлний тайлбар бичигдэж байна.</p>'}</div></div>`
+      + longHtml(written?.long?.[code]);
   }
   // chapters that read several positions show each position with its own card
   const many = chapter.at.length > 1 && chapter.id !== 'sexuality';
@@ -409,8 +424,91 @@ function chapterDialogBody(chapter, values, texts, note) {
     const entry = written?.texts?.[n];
     out += `${many && where ? `<p class="dlg-where">${esc(where)}</p>` : ''}<div class="dlg-card">${arcana(n, true)}<div><h4>Товчхондоо</h4>`
       + (entry ? shortTable(entry, FIELDS) : `<p>${esc(TALENTS[n].text)}</p><p class="soft">Энэ бүлгийн дэлгэрэнгүй тайлбар бичигдэж байна.</p>`)
-      + '</div></div>';
+      + `</div></div>${longHtml(written?.long?.[n])}<p class="more"><a href="numbers.html#n=${n}">${n} · ${esc(TALENTS[n].name)} эрчмийн тухай бүгдийг унших</a></p>`;
   });
+  if (PAIR_CHAPTERS.includes(chapter.id)) out += pairsHtml(values, texts?.pairs);
+  return out;
+}
+
+// Chapters that show several numbers also show how each two of them work
+// together in one person (texts/pairs/<a>.json, every pair a ≤ b).
+const PAIR_CHAPTERS = ['sexuality', 'parents', 'children', 'family-programmes'];
+
+function pairsHtml(values, pairs) {
+  if (!pairs) return '';
+  const distinct = [...new Set(values.filter(Boolean))].sort((x, y) => x - y);
+  let out = '';
+  for (let i = 0; i < distinct.length; i += 1) {
+    for (let j = i + 1; j < distinct.length; j += 1) {
+      const [a, b] = [distinct[i], distinct[j]];
+      const pair = pairs[a]?.[b];
+      if (!pair) continue;
+      out += `<div class="pair"><h5>${a} + ${b} · ${esc(TALENTS[a].name)} ба ${esc(TALENTS[b].name)}</h5><p>${esc(pair.together)}</p>`
+        + `<table class="short"><tr><th>Бэлэг</th><td>${esc(pair.gift)}</td></tr><tr><th>Зөрчил</th><td>${esc(pair.tension)}</td></tr>`
+        + `<tr><th>Тэнцвэр</th><td>${esc(pair.balance)}</td></tr></table></div>`;
+    }
+  }
+  return out ? `<div class="dlg-pairs"><h4>Эрчмүүдийн хослол</h4>${out}</div>` : '';
+}
+
+// The owner's six links as a tenth part of the contents. Each has a base
+// number (its two points added) and a detailed number (every number between
+// them); texts in matrix/texts/links/<id>.json.
+const LINKS = [
+  ['sky-earth', 'skyEarth', 'Б + Г · 20 ба 60 нас'],
+  ['fate-struggle', 'fate', 'А + В · 0 ба 40 нас'],
+  ['father-line', 'fatherLine', 'Е + И · 10 ба 50 нас'],
+  ['mother-line', 'motherLine', 'Ж + З · 30 ба 70 нас'],
+  ['family-men', 'familyMen', 'Е + Ж · 10 ба 30 нас'],
+  ['family-women', 'familyWomen', 'И + З · 50 ба 70 нас'],
+];
+const LINK_FIELDS = [['essence', 'Мөн чанар'], ['gift', 'Бэлэг'], ['trap', 'Хавх'], ['step', 'Эхний алхам']];
+
+function linkParts(hand, links) {
+  if (!links) return null;
+  let rows = '';
+  let templates = '';
+  let count = 0;
+  for (const [id, key, points] of LINKS) {
+    const file = links[id];
+    const link = hand[key];
+    if (!file || !link) continue;
+    count += 1;
+    const base = link.value;
+    const detail = link.detail?.value;
+    const entry = file.texts[base];
+    rows += `<button type="button" class="book-row ready" data-chapter="link-${id}">${arcana(base)}<span class="name">${esc(file.name)}</span>`
+      + `<span class="nums">${detail ? `${base} · ${detail}` : base}</span><span class="badge">Унших</span></button>`;
+    let body = `<h3 class="dlg-title">${esc(file.name)}</h3><dl class="dlg-meta"><dt>Энэ тоо хаанаас гардаг</dt>`
+      + `<dd>${esc(points)}. Үндсэн тоо нь хоёр цэгийн нийлбэр${detail ? `, дэлгэрэнгүй тоо нь хоёр цэгийн хоорондох бүх тооны нийлбэр (${link.detail.sum} → ${detail})` : ''}.</dd>`
+      + `<dt>Энэ холбоос юуг уншдаг</dt><dd>${esc(file.about)}</dd></dl>`
+      + `<p class="dlg-where">Үндсэн тоо</p><div class="dlg-card">${arcana(base, true)}<div><h4>Товчхондоо</h4>${entry ? shortTable(entry, LINK_FIELDS) : ''}</div></div>`;
+    if (detail && file.texts[detail]) {
+      body += `<p class="dlg-where">Дэлгэрэнгүй тоо</p><div class="dlg-card">${arcana(detail, true)}<div><h4>Далд давхарга</h4><p>${esc(file.texts[detail].deeper)}</p></div></div>`;
+    }
+    templates += `<template data-chapter="link-${id}" data-part="X · Зургаан холбоос">${body}</template>`;
+  }
+  if (!count) return null;
+  return { rows: `<div class="book-part"><header><span>X</span><b>Зургаан холбоос</b><small>${count} холбоос</small></header>${rows}</div>`, templates, count };
+}
+
+// Above the contents: the energy of the period the person is in now, with a
+// button that opens its full chapter, and the numbers repeated most often.
+function nowCardHtml(hand, texts, now, next) {
+  let out = '';
+  if (now) {
+    const entry = texts?.['age-now']?.texts?.[now.value];
+    out += `<div class="now-card">${arcana(now.value, true)}<div>`
+      + `<small>Таны одоогийн эрчим · ${now.years} нас</small><h4>${now.value} · ${esc(TALENTS[now.value].name)}</h4>`
+      + (entry ? shortTable(entry, FIELDS) : `<p>${esc(TALENTS[now.value].text)}</p>`)
+      + '<footer><button type="button" class="now-read" data-chapter="age-now">Дэлгэрэнгүй унших</button>'
+      + (next ? `<span>${String(next.from).replace('.', ',')} нас хүртэл, дараа нь <b>${next.value} · ${esc(TALENTS[next.value].name)}</b></span>` : '')
+      + '</footer></div></div>';
+  }
+  const strong = (hand.dominant?.ranked ?? []).slice(0, 6);
+  if (strong.length) {
+    out += `<div class="strong"><h4>Хүчтэй эрчмүүд</h4><ul>${strong.map((r) => `<li>${arcana(r.value)}<span><b>${r.value} · ${esc(TALENTS[r.value].name)}</b><small>матрицад ${r.count} удаа</small></span></li>`).join('')}</ul></div>`;
+  }
   return out;
 }
 
@@ -442,7 +540,14 @@ export function chaptersHtml(hand, texts, today = new Date()) {
     }
     rows += '</div>';
   });
-  return '<section class="book"><h3>Агуулга</h3>'
+  const extra = linkParts(hand, texts?.links);
+  if (extra) {
+    rows += extra.rows;
+    templates += extra.templates;
+    total += extra.count;
+    ready += extra.count;
+  }
+  return `<section class="book">${nowCardHtml(hand, texts, now, next)}<h3>Агуулга</h3>`
     + `<p class="soft">${total} бүлгээс ${ready} нь бичигдсэн · бүлэг дээр дарж нээнэ</p>`
     + `<div class="book-progress"><i style="width:${Math.round((ready / total) * 100)}%"></i></div>`
     + `<div class="book-paper">${rows}</div>${templates}`
@@ -455,7 +560,7 @@ export function chaptersHtml(hand, texts, today = new Date()) {
 // export can inline it with toString().
 export function wireBook(root) {
   root.addEventListener('click', (event) => {
-    const row = event.target.closest('.book-row');
+    const row = event.target.closest('button[data-chapter]');
     const book = event.target.closest('.book');
     if (row && book) {
       const dialog = book.querySelector('.book-dialog');

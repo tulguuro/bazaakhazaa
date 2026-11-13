@@ -40,6 +40,25 @@ const chapterTexts = Object.fromEntries(CHAPTERS.flatMap((part) => part.chapters
   .filter((file) => existsSync(file))
   .map((file) => JSON.parse(readFileSync(file, 'utf8')))
   .map((t) => [t.id, t]));
+// the long texts of the chapters listed as finished in texts/long/index.json
+const longIndex = join(matrixDir, 'texts', 'long', 'index.json');
+for (const id of existsSync(longIndex) ? JSON.parse(readFileSync(longIndex, 'utf8')) : []) {
+  if (chapterTexts[id]) chapterTexts[id].long = JSON.parse(readFileSync(join(matrixDir, 'texts', 'long', `${id}.json`), 'utf8')).texts;
+}
+// the six links
+chapterTexts.links = Object.fromEntries(['sky-earth', 'fate-struggle', 'father-line', 'mother-line', 'family-men', 'family-women']
+  .map((id) => join(matrixDir, 'texts', 'links', `${id}.json`))
+  .filter((file) => existsSync(file))
+  .map((file) => JSON.parse(readFileSync(file, 'utf8')))
+  .map((l) => [l.id, l]));
+// how two energies combine inside one matrix (skipped while a file is still being written)
+chapterTexts.pairs = {};
+for (let a = 1; a <= 22; a += 1) {
+  const file = join(matrixDir, 'texts', 'pairs', `${a}.json`);
+  try {
+    if (existsSync(file)) chapterTexts.pairs[a] = JSON.parse(readFileSync(file, 'utf8')).pairs;
+  } catch { /* still being written */ }
+}
 const title = type === 'hand' ? 'Гар зургийн матриц' : 'Зааврын матриц';
 const chart = type === 'hand' ? renderHand(hand) : renderGuide(guide);
 const health = type === 'guide'

@@ -50,7 +50,9 @@ export function dominantNumber(hand) {
   for (const value of values) counts.set(value, (counts.get(value) ?? 0) + 1);
   const count = Math.max(...counts.values());
   const top = [...counts].filter(([, n]) => n === count).map(([value]) => value).sort((x, y) => x - y);
-  return { values: top, count, total: values.length };
+  // every number with how often it occurs, most frequent first
+  const ranked = [...counts].sort((x, y) => y[1] - x[1] || x[0] - y[0]).map(([value, n]) => ({ value, count: n }));
+  return { values: top, count, total: values.length, ranked };
 }
 
 // The user's links (2026-11-13). Each joins two main points and has two
