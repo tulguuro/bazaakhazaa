@@ -450,15 +450,61 @@ function pairsHtml(values, pairs) {
   for (let i = 0; i < distinct.length; i += 1) {
     for (let j = i + 1; j < distinct.length; j += 1) {
       const [a, b] = [distinct[i], distinct[j]];
-      const pair = pairs[a]?.[b];
-      if (!pair) continue;
-      out += `<div class="pair"><h5>${a} + ${b} · ${esc(TALENTS[a].name)} ба ${esc(TALENTS[b].name)}</h5><p>${esc(pair.together)}</p>`
-        + `<table class="short"><tr><th>Бэлэг</th><td>${esc(pair.gift)}</td></tr><tr><th>Зөрчил</th><td>${esc(pair.tension)}</td></tr>`
-        + `<tr><th>Тэнцвэр</th><td>${esc(pair.balance)}</td></tr></table></div>`;
+      out += pairHtml(a, b, pairs[a]?.[b]);
     }
   }
   return out ? `<div class="dlg-pairs"><h4>Эрчмүүдийн хослол</h4>${out}</div>` : '';
 }
+
+const pairHtml = (a, b, pair) => (pair
+  ? `<div class="pair"><h5>${a} + ${b} · ${esc(TALENTS[a].name)} ба ${esc(TALENTS[b].name)}</h5><p>${esc(pair.together)}</p>`
+    + `<table class="short"><tr><th>Бэлэг</th><td>${esc(pair.gift)}</td></tr><tr><th>Зөрчил</th><td>${esc(pair.tension)}</td></tr>`
+    + `<tr><th>Тэнцвэр</th><td>${esc(pair.balance)}</td></tr></table></div>`
+  : '');
+
+// The main points of the chart read two at a time: how the numbers of, say,
+// the centre and the top work together in one person. Pairs that the six
+// links already read (А + В, Б + Г, the family corners) are left out.
+const POINT_NAMES = {
+  centre: 'Амин тоо', top: 'Авьяас', left: 'Зан чанар', right: 'Сүнсний зорилго', bottom: 'Сүнсний сорилт',
+  'loveMoney.love': 'Тохирох хань', 'loveMoney.money': 'Санхүүгийн суваг',
+};
+const POINT_PAIRS = [
+  ['centre', 'top'], ['centre', 'left'], ['centre', 'right'], ['centre', 'bottom'],
+  ['left', 'top'], ['top', 'right'], ['right', 'bottom'], ['left', 'bottom'],
+  ['centre', 'loveMoney.love'], ['right', 'loveMoney.money'],
+];
+
+function pointPairParts(hand, pairs, roman) {
+  if (!pairs) return null;
+  let rows = '';
+  let templates = '';
+  let count = 0;
+  const part = `${roman} · Гол цэгүүдийн хослол`;
+  for (const [p, q] of POINT_PAIRS) {
+    const [x, y] = chapterValues(hand, [p, q]);
+    const [a, b] = x <= y ? [x, y] : [y, x];
+    const pair = pairs[a]?.[b];
+    if (!pair) continue;
+    count += 1;
+    const id = `pair-${p}-${q}`;
+    const name = `${POINT_NAMES[p]} ба ${POINT_NAMES[q].toLowerCase()}`;
+    rows += `<button type="button" class="book-row ready" data-chapter="${id}">${arcana(x)}<span class="name">${esc(name)}</span>`
+      + `<span class="nums">${x} + ${y}</span><span class="badge">Унших</span></button>`;
+    const where = (key) => (key in HAND_POINT ? `${HAND_POINT[key]} цэг (${SOURCES[key][0].toLowerCase()})` : (SOURCES[key]?.[0] ?? '').toLowerCase());
+    const body = `<h3 class="dlg-title">${esc(name)}</h3><dl class="dlg-meta"><dt>Хаанаас</dt>`
+      + `<dd>${esc(POINT_NAMES[p])}: ${esc(where(p))}, ${x}. ${esc(POINT_NAMES[q])}: ${esc(where(q))}, ${y}.</dd>`
+      + '<dt>Юуг уншдаг</dt><dd>Хоёр цэгийн эрчим нэг хүнд хамт ажиллахдаа юу бүтээж, хаана мөргөлддөгийг.</dd></dl>'
+      + `<div class="dlg-card">${arcana(x, true)}<div><h4>${esc(POINT_NAMES[p])}</h4><p>${esc(TALENTS[x].text)}</p></div></div>`
+      + `<div class="dlg-card">${arcana(y, true)}<div><h4>${esc(POINT_NAMES[q])}</h4><p>${esc(TALENTS[y].text)}</p></div></div>`
+      + `<div class="dlg-pairs"><h4>Хамтдаа</h4>${pairHtml(a, b, pair)}</div>`
+      + `<p class="more"><a href="numbers.html#n=${x}">${x} · ${esc(TALENTS[x].name)}</a>${x === y ? '' : ` · <a href="numbers.html#n=${y}">${y} · ${esc(TALENTS[y].name)}</a>`}</p>`;
+    templates += `<template data-chapter="${id}" data-part="${part}">${body}</template>`;
+  }
+  if (!count) return null;
+  return { rows: `<div class="book-part"><header><span>${roman}</span><b>Гол цэгүүдийн хослол</b><small>${count} хослол</small></header>${rows}</div>`, templates, count };
+}
+const HAND_POINT = { left: 'А', top: 'Б', right: 'В', bottom: 'Г', centre: 'Д' };
 
 // The owner's six links as a tenth part of the contents. Each has a base
 // number (its two points added) and a detailed number (every number between
@@ -549,8 +595,10 @@ export function chaptersHtml(hand, texts, today = new Date(), gender = '') {
     }
     rows += '</div>';
   });
-  const extra = linkParts(hand, texts?.links);
-  if (extra) {
+  const links = linkParts(hand, texts?.links);
+  const combos = pointPairParts(hand, texts?.pairs, ROMAN[CHAPTERS.length + (links ? 1 : 0)]);
+  for (const extra of [links, combos]) {
+    if (!extra) continue;
     rows += extra.rows;
     templates += extra.templates;
     total += extra.count;
