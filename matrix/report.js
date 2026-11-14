@@ -175,7 +175,7 @@ function talentsHtml(hand, locate = false) {
     const items = [...new Set(values)].map((n) => {
       const first = !told.has(n);
       told.add(n);
-      return `<p class="place"><b>${esc(TALENTS[n].name)} (${n}).</b> ${first ? esc(TALENTS[n].text) : '<span class="soft">дээр тайлбарласан</span>'}</p>`;
+      return `<p class="place"><b>${esc(TALENTS[n].name)} (${n}).</b> ${first ? esc(TALENTS[n].text) : '<span class="soft">дээрх тайлбарыг үзнэ үү</span>'}</p>`;
     }).join('');
     if (locate) return `<h4>${title}</h4>${locatorHtml(hand, at, `<dt>Байрлал</dt><dd>${esc(words)}</dd><dt>Тоонууд</dt><dd>${values.join(' · ')}</dd>`)}${items}`;
     return `<h4>${title} <span class="soft">· ${where}: ${values.join(' · ')}</span></h4>${items}`;
@@ -198,7 +198,7 @@ export function coreNumbers(hand) {
   return [
     { key: 'Д-1', name: 'Амин тоо', value: d1, how: 'төвийн тоо', at: ['centre'], words: 'Матрицын төв' },
     { key: 'Д-2', name: 'Энэ насны эрчим', value: d2, how: `${L.bl} + ${L.tl} + ${L.tr} + ${L.br}: ${formula(p.bl, p.tl, p.tr, p.br)}`, at: ['tl', 'tr', 'br', 'bl'], words: 'Дөрвөн булангийн тоо нийлж үүсдэг' },
-    { key: 'Д-3', name: 'Нийлбэр тоо', value: hand.purposes.life, how: `Д-1 + Д-2: ${formula(d1, d2)}`, at: ['centre', 'tl', 'tr', 'br', 'bl'], words: 'Төв ба дөрвөн булан нийлж үүсдэг' },
+    { key: 'Д-3', name: 'Нийлбэр тоо', value: hand.purposes.life, how: `Д-1 + Д-2: ${formula(d1, d2)}`, at: ['centre', 'tl', 'tr', 'br', 'bl'], words: 'Төвийн болон дөрвөн булангийн тоог нийлүүлж гаргана' },
   ];
 }
 
@@ -401,14 +401,14 @@ function isWritten(chapter, values, texts) {
 
 // The long text under a card (matrix/texts/long/<id>.json): an opening
 // paragraph and three titled sections.
-const LONG_SECTIONS = [['gives', 'Энэ эрчим танд юу өгдөг'], ['costs', 'Энэ эрчмийн үнэ'], ['key', 'Өсөлтийн түлхүүр']];
+const LONG_SECTIONS = [['gives', 'Энэ эрчим танд юу өгдөг'], ['costs', 'Энэ эрчмийн сул тал'], ['key', 'Өсөлтийн түлхүүр']];
 
 export function longHtml(long) {
   if (!long) return '';
   return `<div class="dlg-long">${long.intro ? `<p class="lead">${esc(long.intro)}</p>` : ''}`
     + LONG_SECTIONS.filter(([key]) => long[key]?.length)
       .map(([key, title]) => `<h5>${title}</h5>${long[key].map((line) => `<p>${esc(line)}</p>`).join('')}`).join('')
-    + (long.questions?.length ? `<h5>Өөрөөсөө асуух асуулт</h5><ul>${long.questions.map((q) => `<li>${esc(q)}</li>`).join('')}</ul>` : '')
+    + (long.questions?.length ? `<h5>Өөрөөсөө асуух нь</h5><ul>${long.questions.map((q) => `<li>${esc(q)}</li>`).join('')}</ul>` : '')
     + '</div>';
 }
 
@@ -448,7 +448,7 @@ function chapterDialogBody(chapter, values, texts, note, gender = '', hand = nul
     const code = values.join('-');
     const entry = written?.tails?.[code];
     return `${out}<div class="dlg-card"><div class="tail">${[...values].reverse().map((n) => arcana(n)).join('')}<em>${[...values].reverse().join('-')}</em></div>`
-      + `<div><h4>${entry ? esc(entry.name) : 'Товчхондоо'}</h4>${entry ? shortTable(entry, TAIL_FIELDS) : '<p class="soft">Энэ сүүлний тайлбар бичигдэж байна.</p>'}</div></div>`
+      + `<div><h4>${entry ? esc(entry.name) : 'Товчхондоо'}</h4>${entry ? shortTable(entry, TAIL_FIELDS) : '<p class="soft">Энэ гурван тооны тайлбар бичигдэж байна.</p>'}</div></div>`
       + longHtml(written?.long?.[code]) + genderHtml(written?.gender?.[code], gender);
   }
   if (chapter.id === 'career') return out + careerHtml(values, written, hand, gender);
@@ -481,7 +481,7 @@ function chapterDialogBody(chapter, values, texts, note, gender = '', hand = nul
     // reading instead of printing it again
     if (seen.has(n)) {
       out += `${where ? label(where) : ''}<div class="dlg-card">${arcana(n)}<div><p>`
-        + `Энэ байрлалд ч мөн ${n} · ${esc(TALENTS[n].name)} эрчим ирсэн. Түүний тайлбарыг дээр${seen.get(n) ? `, «${esc(seen.get(n))}» хэсэгт` : ''} уншина уу. `
+        + `Энэ байрлалд мөн ${n} · ${esc(TALENTS[n].name)} эрчим ирсэн. Түүний тайлбарыг дээр${seen.get(n) ? `, «${esc(seen.get(n))}» хэсэгт` : ''} уншина уу. `
         + 'Нэг эрчим хоёр байрлалд давхар гарсан нь энэ сэдэвт түүний нөлөө онцгой хүчтэй гэсэн үг.</p></div></div>';
       return;
     }

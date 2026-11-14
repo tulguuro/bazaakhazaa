@@ -212,8 +212,8 @@ function portraitHtml(hand, gender, history) {
   return `<section class="part opening" id="portrait"><p class="kicker">Амин тоо ${n} · ${esc(TALENTS[n].name)}</p><h2>Таны хөрөг</h2>`
     + `<div class="portrait-head"><span class="side-loc">${renderLocator(hand, ['centre'])}</span>${arcana(n, true)}<p class="ptitle">${esc(t.title)}</p></div>`
     + paras(t.who.join('\n\n'))
-    + `<h3>Таны агуу хувилбар</h3>${paras(t.greatness.join('\n\n'))}`
-    + `<h3>Агуу хувилбартаа хүрэх зам</h3>${paras(t.path)}`
+    + `<h3>Таны хүрч болох дээд боломж</h3>${paras(t.greatness.join('\n\n'))}`
+    + `<h3>Тэр боломжоо хэрэгжүүлэх зам</h3>${paras(t.path)}`
     + (history ? history.portrait(n) : '')
     + `<p class="blessing">${esc(t.blessing)}</p></section>`;
 }
@@ -229,8 +229,8 @@ function togetherHtml(hand) {
     if (!pair) continue;
     out += `<div class="tg-row"><span class="strong-loc">${renderLocator(hand, ['centre', at])}</span>${arcana(y)}<div><h4>${esc(label)} · ${y} ${esc(TALENTS[y].name)}</h4><p>${esc(pair.together)}</p></div></div>`;
   }
-  return out ? `<section class="part opening" id="together"><h2>Таны тоонууд хамтдаа</h2>`
-    + `<p class="lead">Амин тоо ${c} · ${esc(TALENTS[c].name)} таны гол цэгүүдтэй ингэж нийлдэг.</p>${out}</section>` : '';
+  return out ? `<section class="part opening" id="together"><h2>Таны тоонуудын хослол</h2>`
+    + `<p class="lead">Таны амин тоо ${c} · ${esc(TALENTS[c].name)} матрицын гол цэгүүдтэй хэрхэн уялдахыг доор тайлбарлав.</p>${out}</section>` : '';
 }
 
 const FAMOUS_FIELDS = { mongolia: 'Монгол', world: 'Дэлхий' };
@@ -239,8 +239,8 @@ function famousHtml(hand) {
   const list = readText(matrixDir, 'famous-by-amin.json')?.texts?.[n];
   if (!list?.length) return '';
   const groups = Object.entries(FAMOUS_FIELDS).map(([region, title]) => [title, list.filter((p) => p.region === region)]).filter(([, l]) => l.length);
-  return `<section class="part opening" id="famous"><h2>Таны амин тоотой алдартнууд</h2>`
-    + `<p class="lead">Амин тоо ${n} · ${esc(TALENTS[n].name)} эрчимтэй төрсөн хүмүүс. Нэг эрчим хүн бүрт өөр замаар илэрдэг ч тэдний амьдралаас өөрийнхөө хүчийг таньж болно.</p>`
+  return `<section class="part opening" id="famous"><h2>Тантай ижил амин тоотой алдартнууд</h2>`
+    + `<p class="lead">Эдгээр алдартан тантай ижил ${n} · ${esc(TALENTS[n].name)} амин тоотой. Нэг эрчим хүн бүрт өөр замаар илэрдэг ч тэдний амьдралаас өөрийнхөө хүчийг таньж болно.</p>`
     + groups.map(([title, l]) => `<h3>${title}</h3><ul class="famous">${l.map((p) => `<li><b>${esc(p.name)}</b><span>${esc(p.born.split('-').reverse().join('.'))}</span><small>${esc(p.who)}</small></li>`).join('')}</ul>`).join('')
     + '</section>';
 }
@@ -277,7 +277,7 @@ function timelineHtml(hand, gender, nowHtml, today = new Date()) {
   let past = '';
   // a lived decade is told for its own age (childhood, youth …) when written
   const ageTexts = gendered('decades-age', gender);
-  // the lived decades are told in full in «Найман арван жил», so here each
+  // the lived decades are told in full in «Арван жилийн найман үе», so here each
   // one gets only its title
   let pastFull = false;
   for (const d of decades.filter((x) => x.end <= age)) {
@@ -288,7 +288,7 @@ function timelineHtml(hand, gender, nowHtml, today = new Date()) {
       ? `<p class="soft"><b>${esc(a.title)}</b></p>`
       : p ? once(d.from, `${d.age}-${d.end} нас`, paras(p.past)) : ''}</div>`;
   }
-  if (pastFull) past += '<p class="soft">Өнгөрсөн арван жил бүрийн дэлгэрэнгүйг «VIII · Амьдралын мөчлөг» хэсгийн «Найман арван жил» бүлгээс уншина уу.</p>';
+  if (pastFull) past += '<p class="soft">Өнгөрсөн арван жил бүрийн дэлгэрэнгүйг «VIII · Амьдралын мөчлөг» хэсгийн «Арван жилийн найман үе» бүлгээс уншина уу.</p>';
   let present = '';
   const cur = decades.find((d) => d.age <= age && age < d.end);
   if (cur) {
@@ -309,11 +309,11 @@ function timelineHtml(hand, gender, nowHtml, today = new Date()) {
   const P = hand.purposes;
   const stage = (from, to, n, label, text, at) => `<li class="${age >= from && (to === null || age < to) ? 'cur' : ''}"><span class="strong-loc">${renderLocator(hand, [at])}</span>${arcana(n)}<span><b>${from}${to ? `-${to}` : ''} нас · ${label} · ${n} ${esc(TALENTS[n].name)}</b><small>${text}</small></span></li>`;
   const purposes = `<h3>Насны зорилгууд</h3><ul class="stages">`
-    + stage(20, 40, P.personal, 'Хувийн зорилго', 'Өөрийгөө олж, хүч чадлаа бүрдүүлэх үе', 'purposes.personal')
+    + stage(20, 40, P.personal, 'Хувийн зорилго', 'Өөрийгөө олж, чадвараа хөгжүүлэх үе', 'purposes.personal')
     + stage(40, 60, P.social, 'Нийгмийн зорилго', 'Олж авснаа гэр бүл, хамт олондоо өгөх үе', 'purposes.social')
     + stage(60, null, P.spiritual, 'Сүнслэг зорилго', 'Мэргэн ухаанаа үлдээж, дараагийн үедээ өвлүүлэх үе', 'purposes.spiritual') + '</ul>';
   return `<section class="part opening" id="timeline"><h2>Өнгөрсөн · Одоо · Ирээдүй</h2>`
-    + `<p class="lead">Матрицын насны тойрог таны амьдралын арван жил бүрд нэг эрчим өгдөг. Өнгөрсөн жилүүд юу үлдээснийг, одоо юу болж байгааг, цаашид юу хүлээж байгааг эндээс уншина уу.</p>`
+    + `<p class="lead">Матрицын насны тойрог таны амьдралын арван жил бүрд нэг эрчим өгдөг. Өнгөрсөн жилүүд танд юу үлдээснийг, одоо юу болж байгааг, цаашид юу хүлээж байгааг эндээс уншина уу.</p>`
     + (past ? `<h3>Өнгөрсөн</h3>${past}` : '') + `<h3>Одоо · ${age} нас</h3>${present}` + (future ? `<h3>Ирээдүй</h3>${future}` : '')
     + purposes + '</section>';
 }
@@ -336,8 +336,8 @@ function tailDeepHtml(hand, gender) {
       + '<h4>Одоо, таны амьдралд</h4>'
       + [['love', 'Хайр, хань'], ['work_money', 'Ажил, мөнгө'], ['family', 'Гэр бүл, ураг төрөл'], ['body', 'Бие, эрч хүч']]
         .map(([k, label]) => `<p><b>${label}.</b> ${esc(t.present[k])}</p>`).join('')
-      + `<h4>Энэ сүүл таны амьдралд идэвхтэй байгаагийн шинж</h4>${list(t.signs)}`
-      + `<h4>Ирээдүй</h4><p><b>Сургамжаа давж гараагүй үед.</b> ${esc(t.future_unworked)}</p><p><b>Сургамжаа давж гарсан үед.</b> ${esc(t.future_worked)}</p>`
+      + `<h4>Энэ гурван тооны хослол таны амьдралд идэвхтэй байгаагийн шинж</h4>${list(t.signs)}`
+      + `<h4>Ирээдүй</h4><p><b>Сургамжаа ойлгоогүй үед.</b> ${esc(t.future_unworked)}</p><p><b>Сургамжаа давж гарсан үед.</b> ${esc(t.future_worked)}</p>`
       + `<h4>Чөлөөлөх алхмууд</h4>${list(t.steps)}</div>`;
   }
   const famous = readText(matrixDir, 'famous-by-tail.json')?.texts?.[key] ?? [];
@@ -395,7 +395,7 @@ const BOOK_FOLD = {
 const BOOK_RENAME = { 'father-karma': 'Эцгийн удам', 'mother-karma': 'Эхийн удам', money: 'Санхүүгийн суваг, ажил мэргэжил' };
 
 // the energy whose story opens each part of the book
-const PART_ENERGY = [['Хэн бэ', 1], ['Удмын үйлийн үр', 20], ['Амьдралын зорилго', 7], ['Мөнгө', 10], ['Харилцаа', 6], ['Авьяас', 17],
+const PART_ENERGY = [['хэн бэ', 1], ['Удмын үйлийн үр', 20], ['Амьдралын зорилго', 7], ['Мөнгө', 10], ['Харилцаа', 6], ['Авьяас', 17],
   ['Эцэг эх', 3], ['Амьдралын мөчлөг', 13], ['Хувь заяа', 21], ['Зургаан холбоос', 14], ['Гол цэгүүдийн хослол', 4]];
 
 function personBook({ date, name, gender, clan = '', father = '' }) {
@@ -440,31 +440,31 @@ function personBook({ date, name, gender, clan = '', father = '' }) {
 
   // the core chapter is folded into the portrait: only its price, the side
   // the portrait does not tell, is kept
-  const costs = bodyOf('core').match(/<h5>Энэ эрчмийн үнэ<\/h5>([\s\S]*?)(?=<h5>|<\/div>)/)?.[1] ?? '';
+  const costs = bodyOf('core').match(/<h5>Энэ эрчмийн сул тал<\/h5>([\s\S]*?)(?=<h5>|<\/div>)/)?.[1] ?? '';
   const at = portrait.includes('<div class="hist') ? '<div class="hist' : '<p class="blessing">';
   const portraitFull = costs ? portrait.replace(at, `<h3>Таны сүүдэр тал</h3>${costs}${at}`) : portrait;
-  const opening = [['portrait', 'Таны хөрөг', portraitFull], ['together', 'Таны тоонууд хамтдаа', togetherHtml(hand)],
-    ['famous', 'Таны амин тоотой алдартнууд', famousHtml(hand)], ['details', 'Танд тохирох нарийн зүйлс', detailsHtml(hand)],
+  const opening = [['portrait', 'Таны хөрөг', portraitFull], ['together', 'Таны тоонуудын хослол', togetherHtml(hand)],
+    ['famous', 'Тантай ижил амин тоотой алдартнууд', famousHtml(hand)], ['details', 'Танд тохирох өнгө, эд зүйл, орчин', detailsHtml(hand)],
     ['timeline', 'Өнгөрсөн · Одоо · Ирээдүй', timelineHtml(hand, gender, now)]].filter(([, , html]) => html);
   const toc = [['drawings', 'Матрицын зураг'], ...opening.map(([id, t]) => [id, t]), ...(readings ? [['energies', 'Таны гол эрчмүүд']] : []),
-    ...parts.map((p, i) => [`part-${i}`, p.title]), ['pythagoras', 'Нэмэлт бонус · Пифагорын квадрат']];
+    ...parts.map((p, i) => [`part-${i}`, p.title]), ['pythagoras', 'Нэмэлт · Пифагорын квадрат']];
   let body = `<section class="cover"><p class="kicker">Хувь тавилангийн матриц</p><h1>${esc(name)}</h1>`
     + (clan || father ? `<p class="who">${esc(personText({ clan, father, name }))}</p>` : '')
     + `<p class="who">${dateStamp(date)}${gender ? ` · ${GENDER_WORD[gender]}` : ''} · Амин тоо ${hand.points.centre} · ${esc(TALENTS[hand.points.centre].name)}</p>`
     + `<div class="centre">${arcana(hand.points.centre, true)}</div>`
     + `<nav><h3>Агуулга</h3><ol>${toc.map(([id, t]) => `<li><a href="#${id}">${esc(t)}</a></li>`).join('')}</ol></nav></section>`;
   body += `<section class="drawing" id="drawings"><h2>Матрицын гол цэгүүд</h2>${renderMap(hand)}</section>`
-    + `<section class="drawing"><h2>Гар зургийн матриц</h2>${renderHand(hand)}</section>`;
+    + `<section class="drawing"><h2>Гараар зурсан матриц</h2>${renderHand(hand)}</section>`;
   body += opening.map(([, , html]) => html).join('');
   if (readings) body += `<section class="part" id="energies"><h2>Таны гол эрчмүүд</h2>${readingHtml(hand, readings, new Date(), { places: false, locate: true })}</section>`;
   parts.forEach((part, i) => {
     const pe = PART_ENERGY.find(([t]) => part.title.includes(t));
-    const opener = pe && history ? history.chapter(pe[1], 'Хэсгийн эхний сургаал') : '';
+    const opener = pe && history ? history.chapter(pe[1], 'Хэсгийг нээх сургаал') : '';
     body += `<section class="part book" id="part-${i}"><h2>${esc(part.title)}</h2>${opener}${part.chapters.map((c) => `<article class="chap">${c}</article>`).join('')}</section>`;
   });
   // the Pythagoras square closes the book as an extra
   if (history) body += history.blessing(hand.points.centre);
-  body += `<section class="part" id="pythagoras"><p class="kicker">Нэмэлт бонус</p><h2>Пифагорын квадрат</h2>${pythagorasSection(date)}</section>`;
+  body += `<section class="part" id="pythagoras"><p class="kicker">Нэмэлт</p><h2>Пифагорын квадрат</h2>${pythagorasSection(date)}</section>`;
   print(`${name} ${dateStamp(date, '-')}`, bookHtml(`${name} · ${dateStamp(date)}`, `<main>${body}</main>`));
 }
 

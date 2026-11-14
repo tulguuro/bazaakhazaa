@@ -15,7 +15,7 @@ export const COUPLE_PARTS = [
   { title: 'Сургамж ба сорилт', zones: [
     { id: 'couple-lesson', name: 'Хосын гол сургамж', at: ['bottom'] },
     { id: 'couple-trouble', name: 'Бэрхшээл, сорилт', at: ['right', 'bottom'] },
-    { id: 'couple-tail', name: 'Хосын үйлийн үрийн сүүл', at: ['bottom', 'bottom.mid', 'bottom.inner'] },
+    { id: 'couple-tail', name: 'Хосын үйлийн үрийн гурван тоо', at: ['bottom', 'bottom.mid', 'bottom.inner'] },
     { id: 'couple-hold', name: 'Холбоог юу барьж байдаг вэ', at: ['tl'] },
     { id: 'couple-risk', name: 'Харилцааг юу эвдэж болох вэ', at: ['tr'] },
   ] },
