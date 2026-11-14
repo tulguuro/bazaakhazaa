@@ -293,6 +293,94 @@ function meaningLabels(chart, main, meanings) {
   return out;
 }
 
+// ---------- the map of the main points ----------
+
+// Each outer point named after the chapters of the reading that are read
+// from it (matrix/chapters.js): the main chapter, then the others.
+export const MAP_POINTS = {
+  left: ['Зан чанар', 'хувь хүний хөрөг'],
+  tl: ['Эцгийн удам', 'үйлийн үр, авьяас'],
+  top: ['Авьяас', 'дотоод ертөнц, итгэл'],
+  tr: ['Эхийн удам', 'үйлийн үр, авьяас'],
+  right: ['Сүнсний зорилго', 'санхүүгийн чулуу, бие'],
+  br: ['Эцгийн удмын шугам', 'удмын хөтөлбөр'],
+  bottom: ['Сүнсний сорилт', 'үйлийн үрийн түлхүүр'],
+  bl: ['Эхийн удмын шугам', 'удмын хөтөлбөр'],
+};
+
+// A short name beside a point, ringed with paper so it reads over lines.
+function tag([x, y], value, { anchor = 'start', size = 21, fill = PEN.navy, weight = 600 } = {}) {
+  return `<text x="${round(x)}" y="${round(y)}" dy="0.35em" text-anchor="${anchor}" font-size="${size}" font-weight="${weight}" fill="${fill}" stroke="${PEN.paper}" stroke-width="7" stroke-linejoin="round" paint-order="stroke">${value}</text>`;
+}
+
+const leader = (from, to) => segment(from, to, PEN.navy, 1.5, '3 4');
+
+// The hand chart reduced to its main points, each named by what it means.
+// `blank` draws the letters instead of one person's numbers.
+export function renderMap(m, { blank = false } = {}) {
+  const R = 400;
+  const main = Object.fromEntries(AROUND.map((key) => [key, polar(ANGLE[key], R)]));
+  const centre = [C, C];
+  const on = (key, fraction) => polar(ANGLE[key], R * fraction);
+  const show = (value) => (blank ? '' : value);
+  const loveFrom = on('bottom', Math.SQRT1_2);
+  const loveTo = on('right', Math.SQRT1_2);
+  let out = '';
+
+  out += outline(AXES.map((key) => main[key]), PEN.orange, 3.5);
+  out += outline(DIAGONALS.map((key) => main[key]), PEN.blue, 3.5);
+  out += segment(main.left, main.right, PEN.orange, 3) + segment(main.top, main.bottom, PEN.orange, 3);
+  out += segment(main.tl, main.br, PEN.blue, 3) + segment(main.tr, main.bl, PEN.blue, 3);
+  out += segment(loveFrom, loveTo, PEN.orange, 6);
+
+  // the inner and middle number on each of the four axes
+  const inner = (key) => on(key, Math.SQRT1_2);
+  const mid = (key) => on(key, 0.86);
+  for (const key of AXES) {
+    out += penCircle(inner(key), 21, show(m.lines[key].inner), PEN.navy);
+    out += penCircle(mid(key), 20, show(m.lines[key].mid), PEN.blue);
+  }
+
+  const loveAt = mix(loveFrom, loveTo, 0.25);
+  const crossAt = mix(loveFrom, loveTo, 0.5);
+  const moneyAt = mix(loveFrom, loveTo, 0.75);
+  out += penCircle(crossAt, 20, show(m.loveMoney.mid), PEN.violet);
+  out += heart(loveAt, 24, { fill: PEN.paper, stroke: PEN.orange, width: 3 }) + text(loveAt, show(m.loveMoney.love), { size: 20, fill: PEN.ink });
+  out += star(moneyAt, 30, 14, { fill: PEN.paper, stroke: PEN.money, width: 3 }) + text(moneyAt, show(m.loveMoney.money), { size: 19, fill: PEN.ink });
+
+  for (const key of AROUND) out += cog(main[key], blank ? HAND_LETTERS[key] : m.points[key], 33);
+  out += cog(centre, blank ? HAND_LETTERS.centre : m.points.centre, 42);
+
+  // names of the inner points, beside them or at the end of a dotted line
+  const [cx, cy] = centre;
+  out += tag(move(mid('top'), [1, 0], 30), 'Оюуны авьяас');
+  out += tag(move(inner('top'), [1, 0], 32), 'Нийгмийн авьяас');
+  out += tag(mix(mid('left'), inner('left'), 0.5).map((v, i) => (i ? v - 52 : v + 6)), 'Эцэг эх, хүүхэд', { anchor: 'middle' });
+  out += leader(move(mid('right'), [0, -1], 22), [mid('right')[0] + 14, cy - 66]) + tag([mid('right')[0] + 18, cy - 80], 'Санхүүгийн эрчим');
+  out += leader(move(inner('right'), [0, -1], 23), [mid('right')[0] + 8, cy - 112]) + tag([mid('right')[0] + 18, cy - 122], 'Мөнгөний эхлэл');
+  out += tag(move(inner('bottom'), [-1, 0], 32), 'Өнгөрсний шарх', { anchor: 'end' });
+  out += tag(move(mid('bottom'), [-1, 0], 30), 'Одоогийн цуурай', { anchor: 'end' });
+  out += tag(move(loveAt, [1, 1], 30), 'Тохирох хань', { fill: PEN.ink });
+  out += tag(move(crossAt, [1, 1], 26), 'Мөнгө ба хүмүүс', { fill: PEN.violet });
+  out += tag(move(moneyAt, [1, 1], 34), 'Санхүүгийн суваг', { fill: PEN.money });
+  out += tag([cx, cy + 74], 'Тав тухын бүс', { anchor: 'middle', size: 21, fill: PEN.ink, weight: 700 });
+  out += tag([cx, cy + 100], 'амин тоо, харилцаа', { anchor: 'middle', size: 18 });
+
+  const labels = Object.fromEntries(AROUND.map((key) => [key, [MAP_POINTS[key][0], `${POINT_AGES[key]} нас · ${MAP_POINTS[key][1]}`]]));
+  let page = meaningLabels(out, main, labels);
+
+  // the four purposes in one row under the chart
+  const { personal, social, spiritual, planetary } = m.purposes;
+  [['Хувийн зорилго', personal], ['Нийгмийн зорилго', social], ['Сүнслэг зорилго', spiritual], ['Гарагийн зорилго', planetary]]
+    .forEach(([name, value], i) => {
+      page += tag([C + (i - 1.5) * 370, SIZE + 85], blank ? name : `${name} · ${value}`, { anchor: 'middle', size: 21, fill: PEN.ink, weight: 700 });
+    });
+  if (!blank) page += tag([-MARGIN + 40, -MARGIN / 2 + 44], dateText(m.date), { size: 24, fill: PEN.ink, weight: 700 });
+
+  const title = blank ? 'Матрицын гол цэгүүд' : `${dateText(m.date)} — матрицын гол цэгүүд`;
+  return frame(title, page, MEANING_VIEW);
+}
+
 // ---------- the guide's calculator ----------
 
 const INK = {
