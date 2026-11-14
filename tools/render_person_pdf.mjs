@@ -70,6 +70,12 @@ details > summary { list-style: none; }
 .opening .kicker { margin: 0 0 2pt; font: 600 8pt var(--sans); letter-spacing: .16em; text-transform: uppercase; color: var(--gold); }
 .opening h3 { font: 600 14pt/1.3 var(--serif); color: var(--ink); margin: 7mm 0 2mm; break-after: avoid; }
 .opening .now-card, .opening .strong { box-shadow: none; }
+.hist { margin: 6mm 0; padding: 4mm 6mm; border: 1px solid #e6dcc3; border-radius: 3mm; background: #fbf8f0; break-inside: avoid; }
+.hist .hist-kicker { margin: 0 0 1mm; font: 600 7.5pt var(--sans); letter-spacing: .16em; text-transform: uppercase; color: var(--gold); }
+.hist h4 { margin: 0; font: 600 14pt/1.3 var(--serif); color: var(--ink); } .hist .hist-who { margin: 0 0 2mm; font: italic 10pt var(--serif); color: var(--muted); }
+.hist p { font: 11.5pt/1.55 var(--serif); margin: 0 0 2mm; } .hist .hist-lesson { font-style: italic; color: #6a4a2a; }
+.hist .hist-src { font: 8pt/1.4 var(--sans); color: var(--muted); margin: 2mm 0 0; } .hist.tengri { background: #f3f6fb; border-color: #d5dbe8; }
+.blessing.big { font-size: 16pt !important; line-height: 1.6 !important; text-align: center; margin-top: 30mm !important; }
 .tail-deep { margin-top: 6mm; } .tail-deep h4, .tail-famous h4 { font: 600 13pt/1.3 var(--serif); color: var(--ink); margin: 6mm 0 2mm; break-after: avoid; }
 .tail-deep p, .tail-famous p { font: 11.5pt/1.55 var(--serif); margin: 0 0 3mm; }
 .tail-headline { font: italic 600 14pt/1.4 var(--serif) !important; color: var(--gold); padding: 3mm 5mm; border-left: 3pt solid #b88a2e; background: #faf5e8; }
@@ -193,7 +199,7 @@ const yearsOld = (date, today = new Date()) => {
 // The opening of the book, after the drawings: the amin too portrait, how
 // the main numbers work with it, people with the same amin too and the
 // small details that suit this person.
-function portraitHtml(hand, gender) {
+function portraitHtml(hand, gender, history) {
   const n = hand.points.centre;
   const t = gendered('portrait', gender)[n];
   if (!t) return '';
@@ -202,6 +208,7 @@ function portraitHtml(hand, gender) {
     + paras(t.who.join('\n\n'))
     + `<h3>Таны агуу хувилбар</h3>${paras(t.greatness.join('\n\n'))}`
     + `<h3>Агуу хувилбартаа хүрэх зам</h3>${paras(t.path)}`
+    + (history ? history.portrait(n) : '')
     + `<p class="blessing">${esc(t.blessing)}</p></section>`;
 }
 
@@ -331,6 +338,43 @@ function tailDeepHtml(hand, gender) {
   return out;
 }
 
+// «Тэнгэрийн ухаан»: verified episodes from the steppe empires (Хүннү to Их
+// Монгол), one Tengri concept and one blessing per energy
+// (texts/history.json, texts/blessings.json). A book uses each episode once:
+// the portrait, the karmic tail, the ancestors' task, the part openings.
+function historyPicker(hand) {
+  const data = readText(matrixDir, 'history.json');
+  const blessings = readText(matrixDir, 'blessings.json')?.texts ?? {};
+  if (!data) return null;
+  const used = new Set();
+  const pick = (n) => {
+    const e = (data.episodes[n] ?? []).find((x) => !used.has(x.title));
+    if (e) used.add(e.title);
+    return e;
+  };
+  const card = (e, kicker) => `<div class="hist"><p class="hist-kicker">${esc(kicker)}</p><h4>${esc(e.title)}</h4>`
+    + `<p class="hist-who">${esc(e.figure)} · ${esc(e.era)}</p><p>${esc(e.episode)}</p><p class="hist-lesson">${esc(e.lesson)}</p>`
+    + `<p class="hist-src">Эх сурвалж: ${esc(e.source)}${e.scholar ? `. Судлаач: ${esc(String(e.scholar).split(';')[0])}` : ''}</p></div>`;
+  return {
+    portrait(n) {
+      const e = pick(n);
+      const t = data.tengri?.[n];
+      return (e ? card(e, 'Түүхийн толь') : '')
+        + (t ? `<div class="hist tengri"><p class="hist-kicker">Тэнгэрийн ухаан</p><h4>${esc(t.name)}</h4><p>${esc(t.text)}</p></div>` : '');
+    },
+    chapter(n, kicker) {
+      const e = pick(n);
+      return e ? card(e, kicker) : '';
+    },
+    blessing(n) {
+      return blessings[n] ? `<section class="part opening" id="blessing"><p class="kicker">Ерөөл</p><h2>Танд өргөх ерөөл</h2><p class="blessing big">${esc(blessings[n])}</p></section>` : '';
+    },
+  };
+}
+// the energy whose story opens each part of the book
+const PART_ENERGY = [['Хэн бэ', 1], ['Удмын үйлийн үр', 20], ['Амьдралын зорилго', 7], ['Мөнгө', 10], ['Харилцаа', 6], ['Авьяас', 17],
+  ['Эцэг эх', 3], ['Амьдралын мөчлөг', 13], ['Хувь заяа', 21], ['Зургаан холбоос', 14], ['Гол цэгүүдийн хослол', 4]];
+
 function personBook({ date, name, gender, clan = '', father = '' }) {
   const hand = computeMatrix(date, 'hand');
   const texts = loadTexts(matrixDir);
@@ -339,12 +383,25 @@ function personBook({ date, name, gender, clan = '', father = '' }) {
   const now = book.slice(book.indexOf('<section class="book">') + '<section class="book">'.length, book.indexOf('<h3>Агуулга</h3>'));
   // every chapter's dialog body, in the order of the contents, under its part
   const parts = [];
+  const history = historyPicker(hand);
+  // the portrait picks first, so it gets the best story for the amin too
+  const portrait = portraitHtml(hand, gender, history);
   for (const [, id, part, body] of book.matchAll(/<template data-chapter="([^"]+)" data-part="([^"]+)">([\s\S]*?)<\/template>/g)) {
     if (parts.at(-1)?.title !== part) parts.push({ title: part, chapters: [] });
-    parts.at(-1).chapters.push(id === 'karmic-tails' ? body + tailDeepHtml(hand, gender) : body);
+    let extra = '';
+    if (id === 'karmic-tails') extra = tailDeepHtml(hand, gender) + (history ? history.chapter(hand.points.bottom, 'Түүхийн толь · үйлийн үрийн даалгавар') : '');
+    if (id === 'age-next' && history) {
+      // the energy of the next period on the age ring
+      const years = yearsOld(date);
+      const cur = ringPointAt(hand, years);
+      let next = null;
+      for (let y = years + 1; y <= years + 3 && !next; y += 1) if (ringPointAt(hand, y).label !== cur.label) next = ringPointAt(hand, y);
+      if (next) extra = history.chapter(next.value, 'Түүхийн толь · өвөг дээдсийн даалгавар');
+    }
+    parts.at(-1).chapters.push(body + extra);
   }
 
-  const opening = [['portrait', 'Таны хөрөг', portraitHtml(hand, gender)], ['together', 'Таны тоонууд хамтдаа', togetherHtml(hand)],
+  const opening = [['portrait', 'Таны хөрөг', portrait], ['together', 'Таны тоонууд хамтдаа', togetherHtml(hand)],
     ['famous', 'Таны амин тоотой алдартнууд', famousHtml(hand)], ['details', 'Танд тохирох нарийн зүйлс', detailsHtml(hand)],
     ['timeline', 'Өнгөрсөн · Одоо · Ирээдүй', timelineHtml(hand, gender, now)]].filter(([, , html]) => html);
   const toc = [['drawings', 'Матрицын зураг'], ...opening.map(([id, t]) => [id, t]), ...(readings ? [['energies', 'Таны гол эрчмүүд']] : []),
@@ -359,9 +416,12 @@ function personBook({ date, name, gender, clan = '', father = '' }) {
   body += opening.map(([, , html]) => html).join('');
   if (readings) body += `<section class="part" id="energies"><h2>Таны гол эрчмүүд</h2>${readingHtml(hand, readings, new Date(), { places: false, locate: true })}</section>`;
   parts.forEach((part, i) => {
-    body += `<section class="part book" id="part-${i}"><h2>${esc(part.title)}</h2>${part.chapters.map((c) => `<article class="chap">${c}</article>`).join('')}</section>`;
+    const pe = PART_ENERGY.find(([t]) => part.title.includes(t));
+    const opener = pe && history ? history.chapter(pe[1], 'Хэсгийн эхний сургаал') : '';
+    body += `<section class="part book" id="part-${i}"><h2>${esc(part.title)}</h2>${opener}${part.chapters.map((c) => `<article class="chap">${c}</article>`).join('')}</section>`;
   });
   // the Pythagoras square closes the book as an extra
+  if (history) body += history.blessing(hand.points.centre);
   body += `<section class="part" id="pythagoras"><p class="kicker">Нэмэлт бонус</p><h2>Пифагорын квадрат</h2>${pythagorasSection(date)}</section>`;
   print(`${name} ${dateStamp(date, '-')}`, bookHtml(`${name} · ${dateStamp(date)}`, `<main>${body}</main>`));
 }
