@@ -23,6 +23,8 @@ const tailKey = (date, variant) => {
   return [m.lines.bottom.inner, m.lines.bottom.mid, m.points.bottom].join('-');
 };
 
+// stories written for people who have no card (texts/famous-tail-stories.json, keyed name|born)
+const extra = (() => { try { return JSON.parse(readFileSync(join(root, 'matrix', 'texts', 'famous-tail-stories.json'), 'utf8')).texts; } catch { return {}; } })();
 const byKey = {};
 const seen = new Set();
 const add = (key, person) => (byKey[key] ??= []).push(person);
@@ -42,7 +44,7 @@ for (const p of process.argv.slice(2).flatMap((f) => JSON.parse(readFileSync(f, 
   const date = parse(p.born);
   if (!date || seen.has(p.born) || EXCLUDE.some((r) => r.test(p.name)) || /[A-Za-z]/.test(`${p.name}${p.who}`)) continue;
   seen.add(p.born);
-  add(tailKey(date, 'hand'), { name: p.name, born: p.born, who: p.who, region: p.region, story: null });
+  add(tailKey(date, 'hand'), { name: p.name, born: p.born, who: p.who, region: p.region, story: extra[`${p.name}|${p.born}`] ?? null });
 }
 
 // people with a written story first, then Mongolians and others in turn

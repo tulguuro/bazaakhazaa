@@ -29,7 +29,7 @@ export const COUPLE_PARTS = [
     { id: 'couple-money', name: 'Хосын мөнгөний суваг', at: ['right.inner', 'loveMoney.money'] },
   ] },
   { title: 'Удам ба зорилго', zones: [
-    { id: 'couple-lines', name: 'Хоёр удмын хөтөлбөр', at: ['purposes.father', 'purposes.mother'] },
+    { id: 'couple-lines', name: 'Хоёр удмын уламжлал', at: ['purposes.father', 'purposes.mother'] },
     { id: 'couple-purpose-personal', name: 'Хосын хувийн зорилго', at: ['purposes.personal'] },
     { id: 'couple-purpose-social', name: 'Хосын нийгмийн зорилго', at: ['purposes.social'] },
     { id: 'couple-purpose-spiritual', name: 'Хосын сүнслэг зорилго', at: ['purposes.spiritual'] },

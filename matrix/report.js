@@ -546,10 +546,20 @@ function pairsHtml(values, pairs, own = null) {
   return out ? `<div class="dlg-pairs"><h4>Эрчмүүдийн хослол</h4>${out}</div>` : '';
 }
 
-const pairHtml = (a, b, pair) => (pair
-  ? `<div class="pair"><h5>${a} + ${b} · ${esc(TALENTS[a].name)} ба ${esc(TALENTS[b].name)}</h5><p>${esc(pair.together)}</p>`
-    + `<table class="short"><tr><th>Бэлэг</th><td>${esc(pair.gift)}</td></tr><tr><th>Зөрчил</th><td>${esc(pair.tension)}</td></tr>`
-    + `<tr><th>Тэнцвэр</th><td>${esc(pair.balance)}</td></tr></table></div>`
+// Two energy names side by side. Names such as «Хайр ба харилцаа» already
+// hold «ба», so joining with another «ба» reads wrong: «А, Б хоёр» then,
+// and «А давхар» when both points carry the same energy.
+export const pairName = (x, y) => (x === y ? `${x} давхар`
+  : / ба /.test(x + y) ? `${x}, ${y} хоёр` : `${x} ба ${y}`);
+const pairTitle = (a, b) => esc(pairName(TALENTS[a].name, TALENTS[b].name));
+
+const PAIR_ROWS = [['gift', 'Бэлэг'], ['tension', 'Зөрчил'], ['balance', 'Тэнцвэр']];
+// Pairs with the bottom point read as meeting the soul's test.
+const TEST_ROWS = [['tension', 'Сорилт хэрхэн илэрдэг'], ['gift', 'Давсан үед'], ['balance', 'Түлхүүр']];
+const PAIR_ROWS_BY_CONTEXT = { 'centre+bottom': TEST_ROWS, 'right+bottom': TEST_ROWS, 'left+bottom': TEST_ROWS };
+const pairHtml = (a, b, pair, rows = PAIR_ROWS) => (pair
+  ? `<div class="pair"><h5>${a} + ${b} · ${pairTitle(a, b)}</h5><p>${esc(pair.together)}</p>`
+    + `<table class="short">${rows.map(([key, label]) => `<tr><th>${label}</th><td>${esc(pair[key])}</td></tr>`).join('')}</table></div>`
   : '');
 
 // The main points of the chart read two at a time: how the numbers of, say,
@@ -590,7 +600,7 @@ function pointPairParts(hand, pairs, roman, own = {}) {
       + `<p class="pair-arcana">${arcana(x)}<span>+</span>${arcana(y)}</p>`
       + `<div class="dlg-pairs"><h4>Хамтдаа</h4>${before
         ? `<p class="soft">${x} ба ${y} тооны хослолын тайлбар «${esc(before)}» хэсэгт бий. Эдгээр хоёр цэгт зориулсан тусгай тайлбар бичигдэж байна.</p>`
-        : pairHtml(x, y, pair)}</div>`
+        : pairHtml(x, y, pair, (fitted && PAIR_ROWS_BY_CONTEXT[`${p}+${q}`]) || PAIR_ROWS)}</div>`
       + `<p class="more"><a href="numbers.html#n=${x}">${x} · ${esc(TALENTS[x].name)}</a>${x === y ? '' : ` · <a href="numbers.html#n=${y}">${y} · ${esc(TALENTS[y].name)}</a>`}</p>`;
     templates += `<template data-chapter="${id}" data-part="${part}">${body}</template>`;
   }
@@ -632,7 +642,7 @@ function linkParts(hand, links) {
     rows += `<button type="button" class="book-row ready" data-chapter="link-${id}">${arcana(base)}<span class="name">${esc(file.name)}</span>`
       + `<span class="nums">${detail ? `${base} · ${detail}` : base}</span><span class="badge">Унших</span></button>`;
     let body = `<h3 class="dlg-title">${esc(file.name)}</h3>`
-      + locatorHtml(hand, LINK_POINTS[id], `<dt>Тоо</dt><dd>Үндсэн тоо ${base} нь хоёр цэгийн нийлбэр${detail ? `, дэлгэрэнгүй тоо ${detail} нь хоёр цэгийн хоорондох бүх тооны нийлбэр` : ''}.</dd>`
+      + locatorHtml(hand, LINK_POINTS[id], `<dt>Тоо</dt><dd>Үндсэн ${base}${detail ? ` · дэлгэрэнгүй ${detail}` : ''}</dd>`
         + `<dd class="ask">${esc(file.about)}</dd>`)
       + `<p class="dlg-where">Үндсэн тоо</p><div class="dlg-card">${arcana(base, true)}<div><h4>Товчхондоо</h4>${entry ? shortTable(entry, LINK_FIELDS) : ''}</div></div>`;
     if (detail && file.texts[detail]) {

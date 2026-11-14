@@ -18,6 +18,7 @@ import { TALENTS } from '../matrix/talents.js';
 import { CHAPTERS } from '../matrix/chapters.js';
 import { arcana, chapterValues, chaptersHtml, dateStamp, esc, personText, readingHtml } from '../matrix/report.js';
 import { loadTexts, readText } from './load_texts.mjs';
+import { dedupeBook } from './dedupe_book.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const matrixDir = join(root, 'matrix');
@@ -86,6 +87,7 @@ details > summary { list-style: none; }
 .opening .lead { font-style: italic; color: var(--muted); }
 .portrait-head { display: flex; align-items: center; gap: 6mm; margin: 4mm 0 5mm; }
 .portrait-head .ptitle { font: 600 24pt/1.15 var(--serif); color: var(--gold); margin: 0; }
+.fold-title { font: 600 17pt/1.2 var(--serif); color: var(--ink); margin: 9mm 0 3mm; padding-top: 5mm; border-top: 1px solid #e6dcc3; break-after: avoid; }
 .blessing { margin-top: 7mm !important; padding: 4mm 6mm; border-left: 3pt solid #b88a2e; background: #faf5e8; font-style: italic; font-size: 13pt !important; }
 .tg-row, .tl-item { display: flex; gap: 4mm; align-items: flex-start; break-inside: avoid; padding: 2.5mm 0; border-bottom: 1px solid #eee5cf; }
 .tl-item { display: block; }
@@ -109,9 +111,13 @@ function bookHtml(title, body) {
 <style>${siteCss}${PRINT_CSS}</style></head><body>${body}</body></html>`;
 }
 
-function print(name, html) {
+function print(name, raw) {
+  const log = process.env.DEDUPE_LOG ? [] : null;
+  const { html, removed } = dedupeBook(raw, { log });
+  if (log) writeFileSync(join(out, 'html', `${name}.dedupe.json`), JSON.stringify(log, null, 1));
   const htmlFile = join(out, 'html', `${name}.html`);
   writeFileSync(htmlFile, html);
+  if (removed) console.log(`${name}: ${removed} repeated sentences left out`);
   const pdf = join(out, `${name}.pdf`);
   execFileSync(CHROME, ['--headless=new', '--disable-gpu', '--no-pdf-header-footer', '--virtual-time-budget=20000',
     `--print-to-pdf=${pdf}`, pathToFileURL(htmlFile).href], { stdio: 'ignore' });
@@ -271,13 +277,18 @@ function timelineHtml(hand, gender, nowHtml, today = new Date()) {
   let past = '';
   // a lived decade is told for its own age (childhood, youth …) when written
   const ageTexts = gendered('decades-age', gender);
+  // the lived decades are told in full in «Найман арван жил», so here each
+  // one gets only its title
+  let pastFull = false;
   for (const d of decades.filter((x) => x.end <= age)) {
     const p = periods[d.from];
     const a = ageTexts[d.age]?.[d.from];
+    if (a) pastFull = true;
     past += `<div class="tl-item">${head(d.age, d.end, d.from, '', [d.position])}${a
-      ? `<p><b>${esc(a.title)}.</b> ${esc(a.text)}</p><p class="advice">${esc(a.lesson)}</p>`
+      ? `<p class="soft"><b>${esc(a.title)}</b></p>`
       : p ? once(d.from, `${d.age}-${d.end} нас`, paras(p.past)) : ''}</div>`;
   }
+  if (pastFull) past += '<p class="soft">Өнгөрсөн арван жил бүрийн дэлгэрэнгүйг «VIII · Амьдралын мөчлөг» хэсгийн «Найман арван жил» бүлгээс уншина уу.</p>';
   let present = '';
   const cur = decades.find((d) => d.age <= age && age < d.end);
   if (cur) {
@@ -371,6 +382,18 @@ function historyPicker(hand) {
     },
   };
 }
+// Chapters that read the same point on the same topic are joined in the book
+// (the site keeps them apart). The karmic tail chapter already tells its three
+// numbers as past, present and key; the timeline already holds the current
+// age; the portrait is the centre's reading.
+const BOOK_SKIP = new Set(['wound', 'echo', 'key', 'age-now', 'core']);
+const BOOK_FOLD = {
+  'talents-father': ['father-karma', 'Эцгийн удмаас ирсэн авьяас'],
+  'talents-mother': ['mother-karma', 'Эхийн удмаас ирсэн авьяас'],
+  career: ['money', 'Ажил мэргэжил'],
+};
+const BOOK_RENAME = { 'father-karma': 'Эцгийн удам', 'mother-karma': 'Эхийн удам', money: 'Санхүүгийн суваг, ажил мэргэжил' };
+
 // the energy whose story opens each part of the book
 const PART_ENERGY = [['Хэн бэ', 1], ['Удмын үйлийн үр', 20], ['Амьдралын зорилго', 7], ['Мөнгө', 10], ['Харилцаа', 6], ['Авьяас', 17],
   ['Эцэг эх', 3], ['Амьдралын мөчлөг', 13], ['Хувь заяа', 21], ['Зургаан холбоос', 14], ['Гол цэгүүдийн хослол', 4]];
@@ -386,8 +409,22 @@ function personBook({ date, name, gender, clan = '', father = '' }) {
   const history = historyPicker(hand);
   // the portrait picks first, so it gets the best story for the amin too
   const portrait = portraitHtml(hand, gender, history);
-  for (const [, id, part, body] of book.matchAll(/<template data-chapter="([^"]+)" data-part="([^"]+)">([\s\S]*?)<\/template>/g)) {
+  const all = [...book.matchAll(/<template data-chapter="([^"]+)" data-part="([^"]+)">([\s\S]*?)<\/template>/g)];
+  const bodyOf = (want) => all.find(([, id]) => id === want)?.[3] ?? '';
+  // folded chapters lose their title and locator and become a subsection
+  const asSection = (html, title) => `<h3 class="fold-title">${esc(title)}</h3>`
+    + html.replace(/^<h3 class="dlg-title">[\s\S]*?<\/h3>(?:<div class="dlg-loc">[\s\S]*?<\/dl><\/div>)?/, '');
+  const folds = {};
+  for (const [src, [target, title]] of Object.entries(BOOK_FOLD)) {
+    const html = bodyOf(src);
+    if (html) (folds[target] ??= []).push(asSection(html, title));
+  }
+  for (const [, id, part, raw] of all) {
+    if (BOOK_SKIP.has(id) || BOOK_FOLD[id]) continue;
     if (parts.at(-1)?.title !== part) parts.push({ title: part, chapters: [] });
+    let body = raw;
+    if (BOOK_RENAME[id]) body = body.replace(/^<h3 class="dlg-title">[\s\S]*?<\/h3>/, `<h3 class="dlg-title">${esc(BOOK_RENAME[id])}</h3>`);
+    if (folds[id]) body += folds[id].join('');
     let extra = '';
     if (id === 'karmic-tails') extra = tailDeepHtml(hand, gender) + (history ? history.chapter(hand.points.bottom, 'Түүхийн толь · үйлийн үрийн даалгавар') : '');
     if (id === 'age-next' && history) {
@@ -401,7 +438,12 @@ function personBook({ date, name, gender, clan = '', father = '' }) {
     parts.at(-1).chapters.push(body + extra);
   }
 
-  const opening = [['portrait', 'Таны хөрөг', portrait], ['together', 'Таны тоонууд хамтдаа', togetherHtml(hand)],
+  // the core chapter is folded into the portrait: only its price, the side
+  // the portrait does not tell, is kept
+  const costs = bodyOf('core').match(/<h5>Энэ эрчмийн үнэ<\/h5>([\s\S]*?)(?=<h5>|<\/div>)/)?.[1] ?? '';
+  const at = portrait.includes('<div class="hist') ? '<div class="hist' : '<p class="blessing">';
+  const portraitFull = costs ? portrait.replace(at, `<h3>Таны сүүдэр тал</h3>${costs}${at}`) : portrait;
+  const opening = [['portrait', 'Таны хөрөг', portraitFull], ['together', 'Таны тоонууд хамтдаа', togetherHtml(hand)],
     ['famous', 'Таны амин тоотой алдартнууд', famousHtml(hand)], ['details', 'Танд тохирох нарийн зүйлс', detailsHtml(hand)],
     ['timeline', 'Өнгөрсөн · Одоо · Ирээдүй', timelineHtml(hand, gender, now)]].filter(([, , html]) => html);
   const toc = [['drawings', 'Матрицын зураг'], ...opening.map(([id, t]) => [id, t]), ...(readings ? [['energies', 'Таны гол эрчмүүд']] : []),
