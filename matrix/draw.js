@@ -424,38 +424,41 @@ const LOC = { line: '#d9cfb6', node: '#fbf6ea', edge: '#c7b998', ink: '#8b8775',
 // positions in `at` (chapter keys such as 'centre', 'bottom.mid',
 // 'loveMoney.love', 'purposes.social') are filled gold.
 export function renderLocator(m, at, { blank = false } = {}) {
+  // the main points sit a little further out than the line points are
+  // measured from, so a point and its two line numbers never overlap
   const R = 400;
-  const main = Object.fromEntries(AROUND.map((key) => [key, polar(ANGLE[key], R)]));
+  const OUT = 440;
+  const main = Object.fromEntries(AROUND.map((key) => [key, polar(ANGLE[key], OUT)]));
   const on = (key, fraction) => polar(ANGLE[key], R * fraction);
   const loveFrom = on('bottom', Math.SQRT1_2);
   const loveTo = on('right', Math.SQRT1_2);
   const nodes = [];
-  for (const key of AROUND) nodes.push([key, main[key], m.points[key], 54, 46]);
+  for (const key of AROUND) nodes.push([key, main[key], m.points[key], 46, 42]);
   nodes.push(['centre', [C, C], m.points.centre, 60, 50]);
   for (const key of AXES) {
-    nodes.push([`${key}.inner`, on(key, Math.SQRT1_2), m.lines[key].inner, 38, 36]);
-    nodes.push([`${key}.mid`, on(key, 0.86), m.lines[key].mid, 38, 36]);
+    nodes.push([`${key}.inner`, on(key, Math.SQRT1_2), m.lines[key].inner, 28, 28]);
+    nodes.push([`${key}.mid`, on(key, 0.9), m.lines[key].mid, 28, 28]);
   }
   // a corner's line towards the centre is drawn only when it is asked for
   for (const key of DIAGONALS) {
     if (!at.some((k) => k.startsWith(`${key}.`)) || !m.lines[key]) continue;
-    nodes.push([`${key}.inner`, on(key, Math.SQRT1_2), m.lines[key].inner, 38, 36]);
-    nodes.push([`${key}.mid`, on(key, 0.86), m.lines[key].mid, 38, 36]);
+    nodes.push([`${key}.inner`, on(key, Math.SQRT1_2), m.lines[key].inner, 28, 28]);
+    nodes.push([`${key}.mid`, on(key, 0.9), m.lines[key].mid, 28, 28]);
   }
-  nodes.push(['loveMoney.love', mix(loveFrom, loveTo, 0.25), m.loveMoney.love, 38, 36]);
-  nodes.push(['loveMoney.mid', mix(loveFrom, loveTo, 0.5), m.loveMoney.mid, 38, 36]);
-  nodes.push(['loveMoney.money', mix(loveFrom, loveTo, 0.75), m.loveMoney.money, 38, 36]);
+  nodes.push(['loveMoney.love', mix(loveFrom, loveTo, 0.25), m.loveMoney.love, 28, 28]);
+  nodes.push(['loveMoney.mid', mix(loveFrom, loveTo, 0.5), m.loveMoney.mid, 28, 28]);
+  nodes.push(['loveMoney.money', mix(loveFrom, loveTo, 0.75), m.loveMoney.money, 28, 28]);
   const hot = new Set(at.flatMap((key) => LOCATOR_SOURCES[key] ?? [key]));
   let out = outline(AXES.map((key) => main[key]), LOC.line, 5) + outline(DIAGONALS.map((key) => main[key]), LOC.line, 5);
   out += segment(main.left, main.right, LOC.line, 4) + segment(main.top, main.bottom, LOC.line, 4);
   out += segment(main.tl, main.br, LOC.line, 4) + segment(main.tr, main.bl, LOC.line, 4) + segment(loveFrom, loveTo, LOC.line, 8);
-  if (at.includes('ring')) out += outline(AROUND.map((key) => polar(ANGLE[key], R + 62)), LOC.hot, 8);
+  if (at.includes('ring')) out += outline(AROUND.map((key) => polar(ANGLE[key], OUT + 30)), LOC.hot, 8);
   for (const [key, xy, value, r, size] of nodes) {
     const lit = hot.has(key);
     // lit positions are drawn larger, with a soft halo
     // the small line points sit close together, so only the main points grow
-    const grow = lit && r > 40 ? 1.12 : 1;
-    out += (lit && r > 40 ? circle(xy, r * grow + 12, { fill: 'rgba(184,138,46,0.22)' }) : '')
+    const grow = lit && r > 40 ? 1.06 : 1;
+    out += (lit && r > 40 ? circle(xy, r * grow + 8, { fill: 'rgba(184,138,46,0.22)' }) : '')
       + circle(xy, r * grow, { fill: lit ? LOC.hot : LOC.node, stroke: lit ? LOC.hotEdge : LOC.edge, width: lit ? 5 : 3 })
       + text(xy, blank ? '' : value, { size: size * grow, fill: lit ? LOC.hotInk : LOC.ink, weight: lit ? 700 : 500 });
   }

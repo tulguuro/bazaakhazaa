@@ -13,7 +13,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { COUPLE_METHODS, PYTHAGORAS_LINES, computeCouple, computeMatrix, isValidDate, pythagoras, ringPointAt } from '../matrix/matrix.js';
 import { COUPLE_TAIL_FILES, PAIR_KINDS, coupleParts } from '../matrix/couple.js';
-import { renderHand, renderMap } from '../matrix/draw.js';
+import { renderHand, renderLocator, renderMap } from '../matrix/draw.js';
 import { TALENTS } from '../matrix/talents.js';
 import { CHAPTERS } from '../matrix/chapters.js';
 import { arcana, chapterValues, chaptersHtml, dateStamp, esc, personText, readingHtml } from '../matrix/report.js';
@@ -70,6 +70,12 @@ details > summary { list-style: none; }
 .opening .kicker { margin: 0 0 2pt; font: 600 8pt var(--sans); letter-spacing: .16em; text-transform: uppercase; color: var(--gold); }
 .opening h3 { font: 600 14pt/1.3 var(--serif); color: var(--ink); margin: 7mm 0 2mm; break-after: avoid; }
 .opening .now-card, .opening .strong { box-shadow: none; }
+.tail-deep { margin-top: 6mm; } .tail-deep h4, .tail-famous h4 { font: 600 13pt/1.3 var(--serif); color: var(--ink); margin: 6mm 0 2mm; break-after: avoid; }
+.tail-deep p, .tail-famous p { font: 11.5pt/1.55 var(--serif); margin: 0 0 3mm; }
+.tail-headline { font: italic 600 14pt/1.4 var(--serif) !important; color: var(--gold); padding: 3mm 5mm; border-left: 3pt solid #b88a2e; background: #faf5e8; }
+.tail-list { margin: 0 0 3mm; padding-left: 6mm; } .tail-list li { font: 11.5pt/1.5 var(--serif); margin: 0 0 1.5mm; }
+.tf-row { break-inside: avoid; padding: 2mm 0; border-bottom: 1px solid #eee5cf; } .tf-row b { font: 600 12pt var(--serif); color: var(--ink); }
+.tf-row span { margin-left: 2mm; font-size: 8.5pt; color: var(--gold); } .tf-row small { display: block; color: var(--muted); } .tf-row p { margin: 1mm 0 0 !important; }
 .opening p { font: 11.5pt/1.55 var(--serif); margin: 0 0 3mm; }
 .opening .lead { font-style: italic; color: var(--muted); }
 .portrait-head { display: flex; align-items: center; gap: 6mm; margin: 4mm 0 5mm; }
@@ -192,7 +198,7 @@ function portraitHtml(hand, gender) {
   const t = gendered('portrait', gender)[n];
   if (!t) return '';
   return `<section class="part opening" id="portrait"><p class="kicker">Амин тоо ${n} · ${esc(TALENTS[n].name)}</p><h2>Таны хөрөг</h2>`
-    + `<div class="portrait-head">${arcana(n, true)}<p class="ptitle">${esc(t.title)}</p></div>`
+    + `<div class="portrait-head"><span class="side-loc">${renderLocator(hand, ['centre'])}</span>${arcana(n, true)}<p class="ptitle">${esc(t.title)}</p></div>`
     + paras(t.who.join('\n\n'))
     + `<h3>Таны агуу хувилбар</h3>${paras(t.greatness.join('\n\n'))}`
     + `<h3>Агуу хувилбартаа хүрэх зам</h3>${paras(t.path)}`
@@ -208,7 +214,7 @@ function togetherHtml(hand) {
     const file = readText(matrixDir, 'pairs-ctx', `centre_${at.replace('.', '-')}.json`);
     const pair = file?.pairs?.[`${c}-${y}`];
     if (!pair) continue;
-    out += `<div class="tg-row">${arcana(y)}<div><h4>${esc(label)} · ${y} ${esc(TALENTS[y].name)}</h4><p>${esc(pair.together)}</p></div></div>`;
+    out += `<div class="tg-row"><span class="strong-loc">${renderLocator(hand, ['centre', at])}</span>${arcana(y)}<div><h4>${esc(label)} · ${y} ${esc(TALENTS[y].name)}</h4><p>${esc(pair.together)}</p></div></div>`;
   }
   return out ? `<section class="part opening" id="together"><h2>Таны тоонууд хамтдаа</h2>`
     + `<p class="lead">Амин тоо ${c} · ${esc(TALENTS[c].name)} таны гол цэгүүдтэй ингэж нийлдэг.</p>${out}</section>` : '';
@@ -244,7 +250,7 @@ function timelineHtml(hand, gender, nowHtml, today = new Date()) {
   const periods = gendered('periods', gender);
   const age = yearsOld(hand.date, today);
   const seen = new Map();
-  const head = (from, to, n, extra = '') => `<div class="tl-head">${arcana(n)}<div><small>${from}${to !== null ? `-${to}` : ''} нас${extra}</small>`
+  const head = (from, to, n, extra = '', at = ['ring']) => `<div class="tl-head"><span class="strong-loc">${renderLocator(hand, at)}</span>${arcana(n)}<div><small>${from}${to !== null ? `-${to}` : ''} нас${extra}</small>`
     + `<h4>${n} · ${esc(TALENTS[n].name)}${periods[n] ? ` · ${esc(periods[n].theme)}` : ''}</h4></div></div>`;
   // past, present and future each tell a period differently, so a number
   // is printed once per kind
@@ -256,15 +262,20 @@ function timelineHtml(hand, gender, nowHtml, today = new Date()) {
   };
   const decades = hand.ring.map((d) => ({ ...d, end: d.age + 10 }));
   let past = '';
+  // a lived decade is told for its own age (childhood, youth …) when written
+  const ageTexts = gendered('decades-age', gender);
   for (const d of decades.filter((x) => x.end <= age)) {
     const p = periods[d.from];
-    past += `<div class="tl-item">${head(d.age, d.end, d.from)}${p ? once(d.from, `${d.age}-${d.end} нас`, paras(p.past)) : ''}</div>`;
+    const a = ageTexts[d.age]?.[d.from];
+    past += `<div class="tl-item">${head(d.age, d.end, d.from, '', [d.position])}${a
+      ? `<p><b>${esc(a.title)}.</b> ${esc(a.text)}</p><p class="advice">${esc(a.lesson)}</p>`
+      : p ? once(d.from, `${d.age}-${d.end} нас`, paras(p.past)) : ''}</div>`;
   }
   let present = '';
   const cur = decades.find((d) => d.age <= age && age < d.end);
   if (cur) {
     const p = periods[cur.from];
-    present += `<div class="tl-item now">${head(cur.age, cur.end, cur.from, ' · таны одоогийн арван жил')}${p ? once(cur.from, `${cur.age}-${cur.end} нас`, paras(p.now), 'now') : ''}</div>`;
+    present += `<div class="tl-item now">${head(cur.age, cur.end, cur.from, ' · таны одоогийн арван жил', [cur.position])}${p ? once(cur.from, `${cur.age}-${cur.end} нас`, paras(p.now), 'now') : ''}</div>`;
   }
   const point = ringPointAt(hand, age);
   if (point && periods[point.value] && point.value !== cur?.from) {
@@ -274,19 +285,50 @@ function timelineHtml(hand, gender, nowHtml, today = new Date()) {
   let future = '';
   for (const d of decades.filter((x) => x.age > age)) {
     const p = periods[d.from];
-    future += `<div class="tl-item">${head(d.age, d.end, d.from)}${p ? once(d.from, `${d.age}-${d.end} нас`, paras(p.future.join('\n\n')) + `<p class="advice">${esc(p.advice)}</p>`, 'future') : ''}</div>`;
+    future += `<div class="tl-item">${head(d.age, d.end, d.from, '', [d.position])}${p ? once(d.from, `${d.age}-${d.end} нас`, paras(p.future.join('\n\n')) + `<p class="advice">${esc(p.advice)}</p>`, 'future') : ''}</div>`;
   }
   // the three purposes, each the task of its own stretch of life
   const P = hand.purposes;
-  const stage = (from, to, n, label, text) => `<li class="${age >= from && (to === null || age < to) ? 'cur' : ''}">${arcana(n)}<span><b>${from}${to ? `-${to}` : ''} нас · ${label} · ${n} ${esc(TALENTS[n].name)}</b><small>${text}</small></span></li>`;
+  const stage = (from, to, n, label, text, at) => `<li class="${age >= from && (to === null || age < to) ? 'cur' : ''}"><span class="strong-loc">${renderLocator(hand, [at])}</span>${arcana(n)}<span><b>${from}${to ? `-${to}` : ''} нас · ${label} · ${n} ${esc(TALENTS[n].name)}</b><small>${text}</small></span></li>`;
   const purposes = `<h3>Насны зорилгууд</h3><ul class="stages">`
-    + stage(20, 40, P.personal, 'Хувийн зорилго', 'Өөрийгөө олж, хүч чадлаа бүрдүүлэх үе')
-    + stage(40, 60, P.social, 'Нийгмийн зорилго', 'Олж авснаа гэр бүл, хамт олондоо өгөх үе')
-    + stage(60, null, P.spiritual, 'Сүнслэг зорилго', 'Мэргэн ухаанаа үлдээж, дараагийн үедээ өвлүүлэх үе') + '</ul>';
+    + stage(20, 40, P.personal, 'Хувийн зорилго', 'Өөрийгөө олж, хүч чадлаа бүрдүүлэх үе', 'purposes.personal')
+    + stage(40, 60, P.social, 'Нийгмийн зорилго', 'Олж авснаа гэр бүл, хамт олондоо өгөх үе', 'purposes.social')
+    + stage(60, null, P.spiritual, 'Сүнслэг зорилго', 'Мэргэн ухаанаа үлдээж, дараагийн үедээ өвлүүлэх үе', 'purposes.spiritual') + '</ul>';
   return `<section class="part opening" id="timeline"><h2>Өнгөрсөн · Одоо · Ирээдүй</h2>`
     + `<p class="lead">Матрицын насны тойрог таны амьдралын арван жил бүрд нэг эрчим өгдөг. Өнгөрсөн жилүүд юу үлдээснийг, одоо юу болж байгааг, цаашид юу хүлээж байгааг эндээс уншина уу.</p>`
     + (past ? `<h3>Өнгөрсөн</h3>${past}` : '') + `<h3>Одоо · ${age} нас</h3>${present}` + (future ? `<h3>Ирээдүй</h3>${future}` : '')
     + purposes + '</section>';
+}
+
+// The karmic tail told in full: how its three numbers read together, the
+// past life, childhood, the present in love, work, family and body, the
+// signs, the two futures and the steps, then famous people with the same
+// tail and how it showed in their lives.
+function tailDeepHtml(hand, gender) {
+  const key = [hand.lines.bottom.inner, hand.lines.bottom.mid, hand.points.bottom].join('-');
+  const all = readText(matrixDir, 'karmic-tails-deep.json')?.texts?.[key];
+  let out = '';
+  if (all) {
+    const t = { ...all.neutral, ...(gender ? all[gender] : {}) };
+    const list = (items) => `<ul class="tail-list">${items.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>`;
+    out += `<div class="tail-deep"><p class="tail-headline">${esc(t.headline)}</p>`
+      + `<h4>Гурван тоо хамтдаа</h4>${paras(t.numbers)}`
+      + `<h4>Өнгөрсөн төрөл</h4>${paras(t.past.join('\n\n'))}`
+      + `<h4>Бага нас, төрсөн гэр бүл</h4>${paras(t.childhood)}`
+      + '<h4>Одоо, таны амьдралд</h4>'
+      + [['love', 'Хайр, хань'], ['work_money', 'Ажил, мөнгө'], ['family', 'Гэр бүл, ураг төрөл'], ['body', 'Бие, эрч хүч']]
+        .map(([k, label]) => `<p><b>${label}.</b> ${esc(t.present[k])}</p>`).join('')
+      + `<h4>Энэ сүүл таны амьдралд идэвхтэй байгаагийн шинж</h4>${list(t.signs)}`
+      + `<h4>Ирээдүй</h4><p><b>Сургамжаа давж гараагүй үед.</b> ${esc(t.future_unworked)}</p><p><b>Сургамжаа давж гарсан үед.</b> ${esc(t.future_worked)}</p>`
+      + `<h4>Чөлөөлөх алхмууд</h4>${list(t.steps)}</div>`;
+  }
+  const famous = readText(matrixDir, 'famous-by-tail.json')?.texts?.[key] ?? [];
+  if (famous.length) {
+    out += `<div class="tail-famous"><h4>Ижил үйлийн үртэй алдартнууд</h4>`
+      + famous.map((p) => `<div class="tf-row"><b>${esc(p.name)}</b> <span>${esc(p.born.split('-').reverse().join('.'))}</span><small>${esc(p.who)}</small>`
+        + `${p.story ? `<p>${esc(p.story)}</p>` : ''}</div>`).join('') + '</div>';
+  }
+  return out;
 }
 
 function personBook({ date, name, gender, clan = '', father = '' }) {
@@ -297,9 +339,9 @@ function personBook({ date, name, gender, clan = '', father = '' }) {
   const now = book.slice(book.indexOf('<section class="book">') + '<section class="book">'.length, book.indexOf('<h3>Агуулга</h3>'));
   // every chapter's dialog body, in the order of the contents, under its part
   const parts = [];
-  for (const [, part, body] of book.matchAll(/<template data-chapter="[^"]+" data-part="([^"]+)">([\s\S]*?)<\/template>/g)) {
+  for (const [, id, part, body] of book.matchAll(/<template data-chapter="([^"]+)" data-part="([^"]+)">([\s\S]*?)<\/template>/g)) {
     if (parts.at(-1)?.title !== part) parts.push({ title: part, chapters: [] });
-    parts.at(-1).chapters.push(body);
+    parts.at(-1).chapters.push(id === 'karmic-tails' ? body + tailDeepHtml(hand, gender) : body);
   }
 
   const opening = [['portrait', 'Таны хөрөг', portraitHtml(hand, gender)], ['together', 'Таны тоонууд хамтдаа', togetherHtml(hand)],

@@ -35,6 +35,11 @@ export function loadTexts(matrixDir) {
       long: json(join(dir, 'by-gender', g, 'long', `${id}.json`))?.texts ?? {},
     }]));
   }
+  // the decades read for their own age (texts/decades-age.json, by age then number)
+  const decadesAge = json(join(dir, 'decades-age.json'));
+  if (decadesAge) {
+    texts.decadesAge = { texts: decadesAge.texts, byGender: Object.fromEntries(['male', 'female'].map((g) => [g, json(join(dir, 'by-gender', g, 'decades-age.json'))?.texts ?? {}])) };
+  }
   texts.links = Object.fromEntries(['sky-earth', 'fate-struggle', 'father-line', 'mother-line', 'family-men', 'family-women']
     .map((id) => json(join(dir, 'links', `${id}.json`)))
     .filter(Boolean)

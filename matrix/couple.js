@@ -3,7 +3,7 @@
 // chart. Texts: matrix/texts/couple/<id>.json, one entry per energy with
 // essence, gift, trap, step and a longer paragraph (more).
 import { TALENTS } from './talents.js';
-import { arcana, chapterValues, esc, locatorHtml } from './report.js';
+import { arcana, chapterValues, esc, locatorHtml, whereHtml } from './report.js';
 
 export const COUPLE_PARTS = [
   { title: 'Хосын мөн чанар', zones: [
@@ -103,7 +103,7 @@ export function coupleZoneHtml(couple, zone, file, tails = null) {
     if (!n || seen.has(n)) return;
     seen.add(n);
     const entry = file?.texts?.[n];
-    out += `${many ? `<p class="dlg-where">${esc(WHERE[zone.at[k]] ?? '')}</p>` : ''}<div class="dlg-card">${arcana(n, true)}<div><h4>${n} · ${esc(TALENTS[n].name)}</h4>`
+    out += `${many ? whereHtml(couple, [zone.at[k]], WHERE[zone.at[k]] ?? '') : ''}<div class="dlg-card">${arcana(n, true)}<div><h4>${n} · ${esc(TALENTS[n].name)}</h4>`
       + (entry ? `<table class="short">${FIELDS.map(([key, label]) => (entry[key] ? `<tr><th>${label}</th><td>${esc(entry[key])}</td></tr>` : '')).join('')}</table>` : `<p>${esc(TALENTS[n].text)}</p>`)
       + `</div></div>${entry?.more ? `<div class="dlg-long"><p class="lead">${esc(entry.more)}</p></div>` : ''}`;
   });

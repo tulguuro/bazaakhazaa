@@ -1510,6 +1510,16 @@ h3 {
   .dlg-loc figure { width: 200px; }
 }
 .pair-arcana { display: flex; align-items: center; gap: 10px; }
+.pa-card { display: inline-flex; flex-direction: column; align-items: center; gap: 4px; text-align: center; }
+.pa-card small { font-size: 0.78em; line-height: 1.3; color: var(--muted); }
 
 /* a chapter's question, shown on its own without a label */
 .dlg-meta dd.ask { margin: 0 0 2mm; font-style: italic; font-size: 1.05em; }
+
+.dlg-where-loc { margin: 18px 0 8px; break-inside: avoid; page-break-inside: avoid; break-after: avoid; page-break-after: avoid; }
+.dlg-where-loc figure { display: inline-block; vertical-align: middle; width: 110px; margin: 0 14px 0 0; }
+.dlg-where-loc figure svg { width: 100%; height: auto; display: block; }
+.dlg-where-loc .dlg-where { display: inline-block; vertical-align: middle; margin: 0; }
+.strong-loc { display: inline-block; width: 64px; flex: none; vertical-align: middle; }
+.strong-loc svg { width: 100%; height: auto; display: block; }
+.side-loc { width: 120px; flex: none; } .side-loc svg { width: 100%; height: auto; display: block; }

@@ -422,6 +422,19 @@ export function genderHtml(entry, gender) {
 }
 
 // The chart with the chapter's positions lit, beside what the chapter asks.
+// A small matrix with the given positions lit, beside a short label: shown
+// with every number card so the reader sees where on the matrix it sits.
+export const whereHtml = (m, at, text) => (m
+  ? `<div class="dlg-where-loc"><figure>${renderLocator(m, at)}</figure><p class="dlg-where">${esc(text)}</p></div>`
+  : `<p class="dlg-where">${esc(text)}</p>`);
+// Every drawn position that holds the value n (for the strongest numbers).
+export function positionsOf(m, n) {
+  const keys = [];
+  for (const [k, v] of Object.entries(m.points)) if (v === n) keys.push(k);
+  for (const axis of ['left', 'top', 'right', 'bottom']) for (const part of ['inner', 'mid']) if (m.lines[axis][part] === n) keys.push(`${axis}.${part}`);
+  for (const part of ['love', 'mid', 'money']) if (m.loveMoney[part] === n) keys.push(`loveMoney.${part}`);
+  return keys;
+}
 export const locatorHtml = (m, at, rows) => `<div class="dlg-loc"><figure>${renderLocator(m, at)}</figure><dl class="dlg-meta">${rows}</dl></div>`;
 
 function chapterDialogBody(chapter, values, texts, note, gender = '', hand = null) {
@@ -439,17 +452,35 @@ function chapterDialogBody(chapter, values, texts, note, gender = '', hand = nul
       + longHtml(written?.long?.[code]) + genderHtml(written?.gender?.[code], gender);
   }
   if (chapter.id === 'career') return out + careerHtml(values, written, hand, gender);
+  // the eight decades, each read for its own age when those texts exist
+  const ages = texts?.decadesAge;
+  if (chapter.id === 'decades' && ages) {
+    const own = gender ? ages.byGender?.[gender] : null;
+    chapter.at.forEach((key, k) => {
+      const n = values[k];
+      const age = POINT_AGES[key];
+      const t = own?.[age]?.[n] ?? ages.texts?.[age]?.[n];
+      if (!n || !t) return;
+      const where = `${age}-${age + 10} нас`;
+      out += whereHtml(hand, [key], where)
+        + `<div class="dlg-card">${arcana(n, true)}<div><h4>${esc(t.title)}</h4><p>${esc(t.text)}</p>`
+        + `<p class="lesson"><b>Энэ арван жилийн сургамж.</b> ${esc(t.lesson)}</p></div></div>`;
+    });
+    return out;
+  }
   // chapters that read several positions show each position with its own card
   const many = chapter.at.length > 1 && chapter.id !== 'sexuality';
   const seen = new Map();
   values.forEach((n, k) => {
     const key = chapter.at[k];
     if (!n || (seen.has(n) && !many)) return;
-    const where = key in POINT_AGES ? `${POINT_AGES[key]} нас · ${POINT_MEANINGS[key].word}` : SOURCES[key]?.[0] ?? '';
+    const where = key in POINT_AGES ? `${POINT_AGES[key]} нас · ${POINT_MEANINGS[key].word}` : SOURCES[key]?.[0] ?? (key === 'centre' ? 'Төв · амин тоо' : '');
+    // with several positions, each number shows where it sits on the matrix
+    const label = (text) => whereHtml(hand, [key], text);
     // the same number in a second position of this chapter: point back to its
     // reading instead of printing it again
     if (seen.has(n)) {
-      out += `${where ? `<p class="dlg-where">${esc(where)}</p>` : ''}<div class="dlg-card">${arcana(n)}<div><p>`
+      out += `${where ? label(where) : ''}<div class="dlg-card">${arcana(n)}<div><p>`
         + `Энэ байрлалд ч мөн ${n} · ${esc(TALENTS[n].name)} эрчим ирсэн. Түүний тайлбарыг дээр${seen.get(n) ? `, «${esc(seen.get(n))}» хэсэгт` : ''} уншина уу. `
         + 'Нэг эрчим хоёр байрлалд давхар гарсан нь энэ сэдэвт түүний нөлөө онцгой хүчтэй гэсэн үг.</p></div></div>';
       return;
@@ -460,7 +491,7 @@ function chapterDialogBody(chapter, values, texts, note, gender = '', hand = nul
     const own = gender ? written?.byGender?.[gender] : null;
     const entry = own?.texts?.[n] ?? written?.texts?.[n];
     const long = own?.long?.[n] ?? written?.long?.[n];
-    out += `${many && where ? `<p class="dlg-where">${esc(where)}</p>` : ''}<div class="dlg-card">${arcana(n, true)}<div><h4>Товчхондоо</h4>`
+    out += `${chapter.at.length > 1 && where ? label(where) : ''}<div class="dlg-card">${arcana(n, true)}<div><h4>Товчхондоо</h4>`
       + (entry ? shortTable(entry, FIELDS) : `<p>${esc(TALENTS[n].text)}</p><p class="soft">Энэ бүлгийн дэлгэрэнгүй тайлбар бичигдэж байна.</p>`)
       + `</div></div>${longHtml(long)}${own?.long?.[n] ? '' : genderHtml(written?.gender?.[n], gender)}<p class="more"><a href="numbers.html#n=${n}">${n} · ${esc(TALENTS[n].name)} эрчмийн тухай бүгдийг унших</a></p>`;
   });
@@ -478,7 +509,10 @@ function careerHtml([talent, money], written, hand, gender) {
   const strong = hand?.dominant?.values?.[0];
   const accent = strong ? (own?.accents?.[strong] ?? written?.accents?.[strong]) : null;
   const list = (title, items) => (items?.length ? `<h5>${title}</h5><ul>${items.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>` : '');
-  return `<p class="pair-arcana">${arcana(talent)}<span>+</span>${arcana(money)}</p>`
+  const card = (n, label) => `<span class="pa-card">${arcana(n)}<small>${label}<br>${n} · ${esc(TALENTS[n].name)}</small></span>`;
+  return `<p class="pair-arcana">${card(talent, 'Авьяас')}<span>+</span>${card(money, 'Мөнгөний цэг')}</p>`
+    + `<p class="soft">Танд тохирох ажил хоёр цэгийн нийлбэрээс тодорхойлогддог. Матрицын дээд цэг (${talent}) таны юу хийж чаддагийг, `
+    + `хайр ба мөнгөний шугам дээрх мөнгөний цэг (${money}) мөнгө танд ямар замаар ирдгийг хэлдэг.</p>`
     + `<div class="dlg-long"><p class="lead">${esc(pair.summary)}</p>`
     + list('Тохирох ажил мэргэжил', pair.professions) + list('Таны ажлын чадварууд', pair.skills)
     + (pair.environment ? `<h5>Танд тохирох ажлын орчин</h5><p>${esc(pair.environment)}</p>` : '')
@@ -616,7 +650,7 @@ function nowCardHtml(hand, texts, now, next) {
   let out = '';
   if (now) {
     const entry = texts?.['age-now']?.texts?.[now.value];
-    out += `<div class="now-card">${arcana(now.value, true)}<div>`
+    out += `<div class="now-card"><span class="strong-loc">${renderLocator(hand, ['ring'])}</span>${arcana(now.value, true)}<div>`
       + `<small>Таны одоогийн эрчим · ${now.years} нас</small><h4>${now.value} · ${esc(TALENTS[now.value].name)}</h4>`
       + (entry ? shortTable(entry, FIELDS) : `<p>${esc(TALENTS[now.value].text)}</p>`)
       + '<footer><button type="button" class="now-read" data-chapter="age-now">Дэлгэрэнгүй унших</button>'
@@ -625,7 +659,7 @@ function nowCardHtml(hand, texts, now, next) {
   }
   const strong = (hand.dominant?.ranked ?? []).slice(0, 6);
   if (strong.length) {
-    out += `<div class="strong"><h4>Хүчтэй эрчмүүд</h4><ul>${strong.map((r) => `<li>${arcana(r.value)}<span><b>${r.value} · ${esc(TALENTS[r.value].name)}</b><small>матрицад ${r.count} удаа</small></span></li>`).join('')}</ul></div>`;
+    out += `<div class="strong"><h4>Хүчтэй эрчмүүд</h4><ul>${strong.map((r) => `<li><span class="strong-loc">${renderLocator(hand, positionsOf(hand, r.value))}</span>${arcana(r.value)}<span><b>${r.value} · ${esc(TALENTS[r.value].name)}</b><small>матрицад ${r.count} удаа</small></span></li>`).join('')}</ul></div>`;
   }
   return out;
 }
