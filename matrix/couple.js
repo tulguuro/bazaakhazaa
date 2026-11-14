@@ -88,7 +88,7 @@ export const COUPLE_TAIL_FILES = ['part1', 'part2'];
 export function coupleZoneHtml(couple, zone, file, tails = null) {
   const values = chapterValues(couple, zone.at);
   const many = zone.at.length > 1;
-  let out = `<h3 class="dlg-title">${esc(file?.name ?? zone.name)}</h3>${locatorHtml(couple, zone.at, `<dt>Асуудаг</dt><dd>${esc(file?.asks ?? '')}</dd>`)}`;
+  let out = `<h3 class="dlg-title">${esc(file?.name ?? zone.name)}</h3>${locatorHtml(couple, zone.at, `<dd class="ask">${esc(file?.asks ?? '')}</dd>`)}`;
   // the couple's karmic tail is also read as one three-number scenario
   if (zone.id === 'couple-tail' || zone.id === 'biz-tail') {
     const key = [...values].reverse().join('-');

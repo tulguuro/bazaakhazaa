@@ -221,7 +221,7 @@ const AROUND_ORDER = ['left', 'tl', 'top', 'tr', 'right', 'br', 'bottom', 'bl'];
 // First the life purpose text for Д-3, then the 22 readings of Д-1, Д-2 and
 // Д-3 (a number shared by two of them is written once), then what the other
 // points mean.
-export function readingHtml(hand, data, today = new Date()) {
+export function readingHtml(hand, data, today = new Date(), { places = true } = {}) {
   if (!data) return NO_DATA;
   const core = coreNumbers(hand);
   const life = hand.purposes.life;
@@ -238,7 +238,8 @@ export function readingHtml(hand, data, today = new Date()) {
   }
 
   out += talentsHtml(hand);
-  out += `<h3>Цэгүүдийн утга</h3>${placesHtml(hand)}`;
+  // the printed reading leaves this out: the site shows it on the animated matrix
+  if (places) out += `<h3>Цэгүүдийн утга</h3>${placesHtml(hand)}`;
   const { values: strongest, count, total } = hand.dominant;
   const now = currentAge(hand, today);
   out += `<p class="soft">Хамгийн их нөлөөтэй тоо: ${strongest.join(', ')} (матрицын ${total} тооноос ${count} удаа).`
@@ -283,7 +284,7 @@ export function pythagorasHtml(date, data) {
   const meanings = data?.pythagoras;
   const p = pythagoras(date);
   const cell = (d) => {
-    const marks = p.counts[d] ? String(d).repeat(p.counts[d]) : '—';
+    const marks = p.counts[d] ? String(d).repeat(p.counts[d]) : '0';
     const label = meanings ? `<small>${esc(meanings.cells[d].short)}</small>` : '';
     return `<td><b>${marks}</b>${label}</td>`;
   };
@@ -295,7 +296,7 @@ export function pythagorasHtml(date, data) {
   )).join('');
   const work = `Огнооны цифрүүд ${[...p.date].join(' ')} · ажлын тоонууд ${p.working.join(', ')}`;
   const cellMeanings = meanings
-    ? [1, 2, 3, 4, 5, 6, 7, 8, 9].map((d) => row(`${d} · ${meanings.cells[d].short}`, p.counts[d] ? String(d).repeat(p.counts[d]) : '—', meanings.cells[d].long)).join('')
+    ? [1, 2, 3, 4, 5, 6, 7, 8, 9].map((d) => row(`${d} · ${meanings.cells[d].short}`, p.counts[d] ? String(d).repeat(p.counts[d]) : '0', meanings.cells[d].long)).join('')
     : '';
   return `<p class="soft">${esc(work)}</p><div class="table-wrap"><table class="pyth">${rows}</table></div>`
     + `<div class="columns"><div><h3>Нүд бүр</h3><dl class="calc">${cellMeanings}</dl></div>`
@@ -416,14 +417,14 @@ export function genderHtml(entry, gender) {
 }
 
 // The chart with the chapter's positions lit, beside what the chapter asks.
-export const locatorHtml = (m, at, rows) => `<div class="dlg-loc"><figure>${renderLocator(m, at)}<figcaption>Матриц дээрх байрлал</figcaption></figure><dl class="dlg-meta">${rows}</dl></div>`;
+export const locatorHtml = (m, at, rows) => `<div class="dlg-loc"><figure>${renderLocator(m, at)}</figure><dl class="dlg-meta">${rows}</dl></div>`;
 
 function chapterDialogBody(chapter, values, texts, note, gender = '', hand = null) {
   const written = texts?.[chapter.id];
   // the tail is keyed from the centre outwards but read from the outside in
   const tail = chapter.id === 'karmic-tails' ? written?.tails?.[values.join('-')] : null;
   const rows = (tail ? `<dt>Таны үйлийн үр</dt><dd><b>${[...values].reverse().join(' · ')} · ${esc(tail.name)}</b></dd>` : '')
-    + `<dt>Энэ бүлэг хариулдаг асуулт</dt><dd>${esc(chapter.asks)}</dd>${note ? `<dt>Одоо</dt><dd>${esc(note)}</dd>` : ''}`;
+    + `<dd class="ask">${esc(chapter.asks)}</dd>${note ? `<dt>Одоо</dt><dd>${esc(note)}</dd>` : ''}`;
   let out = `<h3 class="dlg-title">${esc(chapter.name)}</h3>${hand ? locatorHtml(hand, chapter.at, rows) : `<dl class="dlg-meta"><dt>Энэ тоо хаанаас гардаг</dt><dd>${esc(sourceText(chapter))}</dd>${rows}</dl>`}`;
   if (chapter.id === 'karmic-tails') {
     const code = values.join('-');
@@ -593,7 +594,7 @@ function linkParts(hand, links) {
       + `<span class="nums">${detail ? `${base} · ${detail}` : base}</span><span class="badge">Унших</span></button>`;
     let body = `<h3 class="dlg-title">${esc(file.name)}</h3>`
       + locatorHtml(hand, LINK_POINTS[id], `<dt>Тоо</dt><dd>Үндсэн тоо ${base} нь хоёр цэгийн нийлбэр${detail ? `, дэлгэрэнгүй тоо ${detail} нь хоёр цэгийн хоорондох бүх тооны нийлбэр` : ''}.</dd>`
-        + `<dt>Энэ холбоос юуг уншдаг</dt><dd>${esc(file.about)}</dd>`)
+        + `<dd class="ask">${esc(file.about)}</dd>`)
       + `<p class="dlg-where">Үндсэн тоо</p><div class="dlg-card">${arcana(base, true)}<div><h4>Товчхондоо</h4>${entry ? shortTable(entry, LINK_FIELDS) : ''}</div></div>`;
     if (detail && file.texts[detail]) {
       body += `<p class="dlg-where">Дэлгэрэнгүй тоо</p><div class="dlg-card">${arcana(detail, true)}<div><h4>Далд давхарга</h4><p>${esc(file.texts[detail].deeper)}</p></div></div>`;

@@ -190,7 +190,7 @@ export function renderHand(m, { meanings = null } = {}) {
   out += star(moneyAt, 30, 14, { fill: PEN.paper, stroke: PEN.money, width: 3 }) + text(moneyAt, m.loveMoney.money, { size: 19, fill: PEN.ink });
   out += text(move(moneyAt, [1, 1], 29), '$', { size: 20, fill: PEN.money, weight: 700 });
 
-  const title = `${dateText(m.date)} — гар зургийн аргаар бодсон матриц`;
+  const title = `${dateText(m.date)} · гар зургийн аргаар бодсон матриц`;
   if (meanings) {
     // the user's version: no letters; a point is named by what it means
     for (const key of AROUND) out += cog(main[key], m.points[key], 33);
@@ -404,7 +404,7 @@ export function renderMap(m, { blank = false, couple = Boolean(m.dates) } = {}) 
   const when = couple ? m.dates.map(dateText).join(' + ') : blank ? '' : dateText(m.date);
   if (when) page += tag([-MARGIN + 40, -MARGIN / 2 + 44], when, { size: 24, fill: PEN.ink, weight: 700 });
 
-  const title = couple ? `${when} — хосын матриц` : blank ? 'Матрицын гол цэгүүд' : `${when} — матрицын гол цэгүүд`;
+  const title = couple ? `${when} · хосын матриц` : blank ? 'Матрицын гол цэгүүд' : `${when} · матрицын гол цэгүүд`;
   return frame(title, page, MEANING_VIEW);
 }
 
@@ -559,5 +559,5 @@ export function renderGuide(m) {
   out += heart(move(loveAt, [-1, -0.55], 44), 12, { fill: INK.red });
   out += text(move(moneyAt, [-1, -0.6], 42), '$', { size: 30, fill: INK.dollar, weight: 700 });
 
-  return frame(`${dateText(m.date)} — зааврын аргаар бодсон матриц`, out);
+  return frame(`${dateText(m.date)} · зааврын аргаар бодсон матриц`, out);
 }

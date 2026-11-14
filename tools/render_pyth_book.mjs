@@ -36,7 +36,7 @@ let body = `<h1>Пифагорын квадратын бүх тайлбар</h1>
 body += '<h2>Нүд бүр</h2>';
 for (let d = 1; d <= 9; d += 1) {
   body += `<section class="cell"><div class="head"><div class="b">${board([d])}</div><h3>${d} · ${esc(NAMES[d])}</h3></div>`
-    + COUNTS.map(([k, label]) => `<div class="row"><b>${k === '0' ? '—' : String(d).repeat(Number(k))}${k === '6' ? '…' : ''}</b><span>${label}</span><p>${esc(t.cells[d][k])}</p></div>`).join('')
+    + COUNTS.map(([k, label]) => `<div class="row"><b>${k === '0' ? '0' : String(d).repeat(Number(k))}${k === '6' ? '…' : ''}</b><span>${label}</span><p>${esc(t.cells[d][k])}</p></div>`).join('')
     + '</section>';
 }
 body += '<h2 class="new">Мөр, багана, диагональ</h2>';

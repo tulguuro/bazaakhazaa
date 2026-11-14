@@ -1510,3 +1510,6 @@ h3 {
   .dlg-loc figure { width: 200px; }
 }
 .pair-arcana { display: flex; align-items: center; gap: 10px; }
+
+/* a chapter's question, shown on its own without a label */
+.dlg-meta dd.ask { margin: 0 0 2mm; font-style: italic; font-size: 1.05em; }

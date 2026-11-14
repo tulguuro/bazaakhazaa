@@ -11,7 +11,7 @@ import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { COUPLE_METHODS, PYTHAGORAS_LINES, computeCouple, computeMatrix, isValidDate, pythagoras } from '../matrix/matrix.js';
+import { COUPLE_METHODS, PYTHAGORAS_LINES, computeCouple, computeMatrix, isValidDate, pythagoras, ringPointAt } from '../matrix/matrix.js';
 import { COUPLE_TAIL_FILES, PAIR_KINDS, coupleParts } from '../matrix/couple.js';
 import { renderHand, renderMap } from '../matrix/draw.js';
 import { TALENTS } from '../matrix/talents.js';
@@ -65,7 +65,30 @@ details > summary { list-style: none; }
 .pyth-art svg { width: 150mm; display: block; margin: 4mm auto; }
 .pyth-intro { font-size: 11pt; }
 .pyth-row { break-inside: avoid; padding: 2mm 0; border-bottom: 1px solid #eee5cf; } .pyth-row b span { margin-left: 2mm; color: #8a6420; } .pyth-row p { margin: 1mm 0 0; }
+.pyth-row.lined { display: flex; gap: 5mm; align-items: center; } .pyth-row .mini svg { width: 22mm; height: 22mm; display: block; }
 .now-card, .strong { break-inside: avoid; color: var(--paper-ink); }
+.opening .kicker { margin: 0 0 2pt; font: 600 8pt var(--sans); letter-spacing: .16em; text-transform: uppercase; color: var(--gold); }
+.opening h3 { font: 600 14pt/1.3 var(--serif); color: var(--ink); margin: 7mm 0 2mm; break-after: avoid; }
+.opening .now-card, .opening .strong { box-shadow: none; }
+.opening p { font: 11.5pt/1.55 var(--serif); margin: 0 0 3mm; }
+.opening .lead { font-style: italic; color: var(--muted); }
+.portrait-head { display: flex; align-items: center; gap: 6mm; margin: 4mm 0 5mm; }
+.portrait-head .ptitle { font: 600 24pt/1.15 var(--serif); color: var(--gold); margin: 0; }
+.blessing { margin-top: 7mm !important; padding: 4mm 6mm; border-left: 3pt solid #b88a2e; background: #faf5e8; font-style: italic; font-size: 13pt !important; }
+.tg-row, .tl-item { display: flex; gap: 4mm; align-items: flex-start; break-inside: avoid; padding: 2.5mm 0; border-bottom: 1px solid #eee5cf; }
+.tl-item { display: block; }
+.tg-row h4, .tl-head h4 { margin: 0 0 1mm; font: 600 12pt/1.3 var(--serif); color: var(--ink); }
+.tl-head { display: flex; gap: 4mm; align-items: center; margin-bottom: 2mm; }
+.tl-head small { font: 600 8pt var(--sans); letter-spacing: .08em; text-transform: uppercase; color: var(--gold); }
+.tl-item.now { background: #fbf6ea; padding: 3mm 4mm; border-radius: 2.5mm; border: 1px solid #e6dcc3; margin: 2mm 0; }
+.tl-item .advice { font-style: italic; color: #6a4a2a; }
+.stages { list-style: none; padding: 0; } .stages li { display: flex; gap: 4mm; align-items: center; padding: 2mm 0; }
+.stages li b { display: block; font: 600 11pt var(--serif); } .stages li small { color: var(--muted); }
+.stages li.cur b { color: var(--gold); }
+.famous { list-style: none; padding: 0; columns: 2; column-gap: 8mm; } .famous li { break-inside: avoid; margin: 0 0 2.5mm; }
+.famous b { font: 600 11.5pt var(--serif); color: var(--ink); } .famous span { margin-left: 2mm; font-size: 8.5pt; color: var(--gold); } .famous small { display: block; color: var(--muted); }
+.details { display: grid; grid-template-columns: 32mm 1fr; gap: 2.5mm 5mm; } .details dt { font: 600 8pt var(--sans); letter-spacing: .1em; text-transform: uppercase; color: var(--gold); padding-top: 1mm; }
+.details dd { margin: 0; font: 11.5pt/1.45 var(--serif); }
 `;
 
 function bookHtml(title, body) {
@@ -88,6 +111,23 @@ function print(name, html) {
 // bars around it; then the reading of this person's count in every cell.
 const PYTH_NAMES = ['', 'Зан чанар', 'Эрч хүч', 'Сонирхол', 'Эрүүл мэнд', 'Логик, зөн', 'Хөдөлмөр', 'Аз', 'Хариуцлага', 'Ой санамж'];
 const PYTH_LINE_NAMES = { 123: 'Өөрийн үнэлэмж', 456: 'Санхүү, мөнгө', 789: 'Авьяас чадвар', 147: 'Зорилго', 258: 'Гэр бүл', 369: 'Тогтвор', 159: 'Сүнслэг тэмүүлэл', 357: 'Хүсэл тачаал' };
+// A small copy of the square with the cells of one line lit and joined by a
+// gold line, so the reader sees which three cells the line reads.
+function miniBoard(p, lit) {
+  const c = 40;
+  const centre = (d) => [6 + Math.floor((d - 1) / 3) * c + 18, 6 + ((d - 1) % 3) * c + 18];
+  let s = '';
+  for (let d = 1; d <= 9; d += 1) {
+    const [cx, cy] = centre(d);
+    const on = lit.includes(d);
+    const n = p.counts[d];
+    s += `<rect x="${cx - 18}" y="${cy - 18}" width="36" height="36" rx="6" fill="${on ? '#b88a2e' : '#f4efe3'}" stroke="#d9cfb6"/>`
+      + `<text x="${cx}" y="${cy + (n > 3 ? 4 : 5)}" text-anchor="middle" font-size="${n > 3 ? 9 : n > 2 ? 11 : 14}" font-weight="700" fill="${on ? '#fff' : '#b5ab92'}">${n ? String(d).repeat(n) : '0'}</text>`;
+  }
+  const [a, b] = [centre(lit[0]), centre(lit[2])];
+  s += `<line x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}" stroke="#8a6420" stroke-width="2.5" stroke-linecap="round" opacity="0.55"/>`;
+  return `<svg viewBox="0 0 130 130" xmlns="http://www.w3.org/2000/svg" font-family="Inter, sans-serif">${s}</svg>`;
+}
 const lineBand = (v) => (v === 0 ? '0' : v <= 2 ? '1-2' : v <= 4 ? '3-4' : v <= 6 ? '5-6' : '7+');
 function pythagorasSection(date) {
   const p = pythagoras(date);
@@ -103,7 +143,7 @@ function pythagorasSection(date) {
     const fill = n === 0 ? '#f4efe3' : `rgba(184,138,46,${Math.min(0.15 + n * 0.17, 0.95)})`;
     svg += `<rect x="${x}" y="${y}" width="${cell - 8}" height="${cell - 8}" rx="14" fill="${fill}" stroke="#d9cfb6" stroke-width="2"/>`
       + `<text x="${x + 14}" y="${y + 26}" font-size="16" fill="#8a6420" font-weight="700">${d}</text>`
-      + `<text x="${x + (cell - 8) / 2}" y="${y + 70}" text-anchor="middle" font-size="${n > 4 ? 26 : 34}" font-weight="700" fill="${n >= 3 ? '#fff' : '#232a48'}">${n ? String(d).repeat(n) : '—'}</text>`
+      + `<text x="${x + (cell - 8) / 2}" y="${y + 70}" text-anchor="middle" font-size="${n > 4 ? 26 : 34}" font-weight="700" fill="${n >= 3 ? '#fff' : '#232a48'}">${n ? String(d).repeat(n) : '0'}</text>`
       + `<text x="${x + (cell - 8) / 2}" y="${y + 104}" text-anchor="middle" font-size="14" fill="${n >= 3 ? '#fff' : '#555a70'}">${PYTH_NAMES[d]}</text>`;
   }
   // row sums on the right, column sums below, diagonals in the corners
@@ -123,16 +163,130 @@ function pythagorasSection(date) {
     html += '<h3>Нүд бүр</h3>' + [1, 2, 3, 4, 5, 6, 7, 8, 9].map((d) => {
       const n = p.counts[d];
       const t = texts.cells[d]?.[String(Math.min(n, 6))];
-      return `<div class="pyth-row"><b>${d} · ${esc(PYTH_NAMES[d])} <span>${n ? String(d).repeat(n) : '—'}</span></b><p>${esc(t ?? '')}</p></div>`;
+      return `<div class="pyth-row"><b>${d} · ${esc(PYTH_NAMES[d])} <span>${n ? String(d).repeat(n) : '0'}</span></b><p>${esc(t ?? '')}</p></div>`;
     }).join('');
   }
   if (texts?.lines) {
     html += '<h3>Мөр, багана, диагональ</h3>' + PYTHAGORAS_LINES.map((code) => {
       const v = p.lines[code];
-      return `<div class="pyth-row"><b>${[...code].join('-')} · ${esc(PYTH_LINE_NAMES[code])} <span>${v}</span></b><p>${esc(texts.lines[code]?.[lineBand(v)] ?? '')}</p></div>`;
+      return `<div class="pyth-row lined"><div class="mini">${miniBoard(p, [...code].map(Number))}</div><div><b>${[...code].join('-')} · ${esc(PYTH_LINE_NAMES[code])} <span>${v}</span></b><p>${esc(texts.lines[code]?.[lineBand(v)] ?? '')}</p></div></div>`;
     }).join('');
   }
   return html;
+}
+
+// A text that exists in a neutral and a male / female version
+// (texts/<id>.json and texts/by-gender/<g>/<id>.json).
+const gendered = (id, gender) => (gender && readText(matrixDir, 'by-gender', gender, `${id}.json`)?.texts) || readText(matrixDir, `${id}.json`)?.texts || {};
+const yearsOld = (date, today = new Date()) => {
+  const born = new Date(Date.UTC(2000, date.month - 1, date.day));
+  born.setUTCFullYear(date.year);
+  return Math.floor((today - born) / (365.2425 * 24 * 3600 * 1000));
+};
+
+// The opening of the book, after the drawings: the amin too portrait, how
+// the main numbers work with it, people with the same amin too and the
+// small details that suit this person.
+function portraitHtml(hand, gender) {
+  const n = hand.points.centre;
+  const t = gendered('portrait', gender)[n];
+  if (!t) return '';
+  return `<section class="part opening" id="portrait"><p class="kicker">Амин тоо ${n} · ${esc(TALENTS[n].name)}</p><h2>Таны хөрөг</h2>`
+    + `<div class="portrait-head">${arcana(n, true)}<p class="ptitle">${esc(t.title)}</p></div>`
+    + paras(t.who.join('\n\n'))
+    + `<h3>Таны агуу хувилбар</h3>${paras(t.greatness.join('\n\n'))}`
+    + `<h3>Тийш хүрэх зам</h3>${paras(t.path)}`
+    + `<p class="blessing">${esc(t.blessing)}</p></section>`;
+}
+
+const TOGETHER = [['left', 'Зан чанар'], ['top', 'Авьяас'], ['right', 'Сүнсний зорилго'], ['bottom', 'Сүнсний сорилт'], ['loveMoney.love', 'Хайр, хань']];
+function togetherHtml(hand) {
+  const c = hand.points.centre;
+  let out = '';
+  for (const [at, label] of TOGETHER) {
+    const [, y] = chapterValues(hand, ['centre', at]);
+    const file = readText(matrixDir, 'pairs-ctx', `centre_${at.replace('.', '-')}.json`);
+    const pair = file?.pairs?.[`${c}-${y}`];
+    if (!pair) continue;
+    out += `<div class="tg-row">${arcana(y)}<div><h4>${esc(label)} · ${y} ${esc(TALENTS[y].name)}</h4><p>${esc(pair.together)}</p></div></div>`;
+  }
+  return out ? `<section class="part opening" id="together"><h2>Таны тоонууд хамтдаа</h2>`
+    + `<p class="lead">Амин тоо ${c} · ${esc(TALENTS[c].name)} таны гол цэгүүдтэй ингэж нийлдэг.</p>${out}</section>` : '';
+}
+
+const FAMOUS_FIELDS = { mongolia: 'Монгол', world: 'Дэлхий' };
+function famousHtml(hand) {
+  const n = hand.points.centre;
+  const list = readText(matrixDir, 'famous-by-amin.json')?.texts?.[n];
+  if (!list?.length) return '';
+  const groups = Object.entries(FAMOUS_FIELDS).map(([region, title]) => [title, list.filter((p) => p.region === region)]).filter(([, l]) => l.length);
+  return `<section class="part opening" id="famous"><h2>Таны амин тоотой алдартнууд</h2>`
+    + `<p class="lead">Амин тоо ${n} · ${esc(TALENTS[n].name)} эрчимтэй төрсөн хүмүүс. Нэг эрчим хүн бүрт өөр замаар илэрдэг ч тэдний амьдралаас өөрийнхөө хүчийг таньж болно.</p>`
+    + groups.map(([title, l]) => `<h3>${title}</h3><ul class="famous">${l.map((p) => `<li><b>${esc(p.name)}</b><span>${esc(p.born.split('-').reverse().join('.'))}</span><small>${esc(p.who)}</small></li>`).join('')}</ul>`).join('')
+    + '</section>';
+}
+
+const DETAIL_FIELDS = [['colors', 'Өнгө'], ['clothes', 'Хувцас'], ['car', 'Машин'], ['home', 'Гэр'], ['stone', 'Эрдэнийн чулуу'], ['metal', 'Металл'],
+  ['day', 'Гараг'], ['season', 'Улирал'], ['direction', 'Зүг'], ['number', 'Азын тоо'], ['place', 'Газар орон'], ['hobby', 'Хобби'], ['animal', 'Амьтан'], ['plant', 'Ургамал']];
+function detailsHtml(hand) {
+  const n = hand.points.centre;
+  const file = readText(matrixDir, 'details.json');
+  const t = file?.texts?.[n];
+  if (!t) return '';
+  return `<section class="part opening" id="details"><h2>${esc(file.title)}</h2><dl class="details">`
+    + DETAIL_FIELDS.filter(([k]) => t[k]).map(([k, label]) => `<dt>${label}</dt><dd>${esc(t[k])}</dd>`).join('') + '</dl></section>';
+}
+
+// «Өнгөрсөн · Одоо · Ирээдүй»: the decades lived, the period the person is
+// in now and the ones ahead, each read by the energy the age ring gives it.
+// A period whose energy came earlier points back instead of repeating.
+function timelineHtml(hand, gender, nowHtml, today = new Date()) {
+  const periods = gendered('periods', gender);
+  const age = yearsOld(hand.date, today);
+  const seen = new Map();
+  const head = (from, to, n, extra = '') => `<div class="tl-head">${arcana(n)}<div><small>${from}${to !== null ? `-${to}` : ''} нас${extra}</small>`
+    + `<h4>${n} · ${esc(TALENTS[n].name)}${periods[n] ? ` · ${esc(periods[n].theme)}` : ''}</h4></div></div>`;
+  // past, present and future each tell a period differently, so a number
+  // is printed once per kind
+  const once = (n, where, html, kind = 'past') => {
+    const key = `${kind}:${n}`;
+    if (seen.has(key)) return `<p class="soft">Энэ үе ч мөн ${n} · ${esc(TALENTS[n].name)} эрчимтэй. Түүний утгыг «${esc(seen.get(key))}» хэсгээс уншина уу. Нэг эрчим дахин ирэхэд өмнө нь сурсан зүйлээ илүү гүн түвшинд давтдаг.</p>`;
+    seen.set(key, where);
+    return html;
+  };
+  const decades = hand.ring.map((d) => ({ ...d, end: d.age + 10 }));
+  let past = '';
+  for (const d of decades.filter((x) => x.end <= age)) {
+    const p = periods[d.from];
+    past += `<div class="tl-item">${head(d.age, d.end, d.from)}${p ? once(d.from, `${d.age}-${d.end} нас`, paras(p.past)) : ''}</div>`;
+  }
+  let present = '';
+  const cur = decades.find((d) => d.age <= age && age < d.end);
+  if (cur) {
+    const p = periods[cur.from];
+    present += `<div class="tl-item now">${head(cur.age, cur.end, cur.from, ' · таны одоогийн арван жил')}${p ? once(cur.from, `${cur.age}-${cur.end} нас`, paras(p.now), 'now') : ''}</div>`;
+  }
+  const point = ringPointAt(hand, age);
+  if (point && periods[point.value] && point.value !== cur?.from) {
+    present += `<div class="tl-item now">${head(point.label, null, point.value, ' · энэ жилийн эрчим')}${once(point.value, `${point.label} нас`, paras(periods[point.value].now), 'now')}</div>`;
+  }
+  present += nowHtml;
+  let future = '';
+  for (const d of decades.filter((x) => x.age > age)) {
+    const p = periods[d.from];
+    future += `<div class="tl-item">${head(d.age, d.end, d.from)}${p ? once(d.from, `${d.age}-${d.end} нас`, paras(p.future.join('\n\n')) + `<p class="advice">${esc(p.advice)}</p>`, 'future') : ''}</div>`;
+  }
+  // the three purposes, each the task of its own stretch of life
+  const P = hand.purposes;
+  const stage = (from, to, n, label, text) => `<li class="${age >= from && (to === null || age < to) ? 'cur' : ''}">${arcana(n)}<span><b>${from}${to ? `-${to}` : ''} нас · ${label} · ${n} ${esc(TALENTS[n].name)}</b><small>${text}</small></span></li>`;
+  const purposes = `<h3>Насны зорилгууд</h3><ul class="stages">`
+    + stage(20, 40, P.personal, 'Хувийн зорилго', 'Өөрийгөө олж, хүч чадлаа бүрдүүлэх үе')
+    + stage(40, 60, P.social, 'Нийгмийн зорилго', 'Олж авснаа гэр бүл, хамт олондоо өгөх үе')
+    + stage(60, null, P.spiritual, 'Сүнслэг зорилго', 'Мэргэн ухаанаа үлдээж, дараагийн үедээ өвлүүлэх үе') + '</ul>';
+  return `<section class="part opening" id="timeline"><h2>Өнгөрсөн · Одоо · Ирээдүй</h2>`
+    + `<p class="lead">Матрицын насны тойрог таны амьдралын арван жил бүрд нэг эрчим өгдөг. Өнгөрсөн жилүүд юу үлдээснийг, одоо юу болж байгааг, цаашид юу хүлээж байгааг эндээс уншина уу.</p>`
+    + (past ? `<h3>Өнгөрсөн</h3>${past}` : '') + `<h3>Одоо · ${age} нас</h3>${present}` + (future ? `<h3>Ирээдүй</h3>${future}` : '')
+    + purposes + '</section>';
 }
 
 function personBook({ date, name, gender, clan = '', father = '' }) {
@@ -148,8 +302,11 @@ function personBook({ date, name, gender, clan = '', father = '' }) {
     parts.at(-1).chapters.push(body);
   }
 
-  const toc = [['drawings', 'Матрицын зураг'], ['now', 'Одоогийн эрчим'], ...(readings ? [['manuscript', 'Гар бичмэлийн тайлбар']] : []), ['pythagoras', 'Пифагорын квадрат'],
-    ...parts.map((p, i) => [`part-${i}`, p.title])];
+  const opening = [['portrait', 'Таны хөрөг', portraitHtml(hand, gender)], ['together', 'Таны тоонууд хамтдаа', togetherHtml(hand)],
+    ['famous', 'Таны амин тоотой алдартнууд', famousHtml(hand)], ['details', 'Танд тохирох нарийн зүйлс', detailsHtml(hand)],
+    ['timeline', 'Өнгөрсөн · Одоо · Ирээдүй', timelineHtml(hand, gender, now)]].filter(([, , html]) => html);
+  const toc = [['drawings', 'Матрицын зураг'], ...opening.map(([id, t]) => [id, t]), ...(readings ? [['manuscript', 'Гар бичмэлийн тайлбар']] : []),
+    ...parts.map((p, i) => [`part-${i}`, p.title]), ['pythagoras', 'Нэмэлт бонус · Пифагорын квадрат']];
   let body = `<section class="cover"><p class="kicker">Хувь тавилангийн матриц</p><h1>${esc(name)}</h1>`
     + (clan || father ? `<p class="who">${esc(personText({ clan, father, name }))}</p>` : '')
     + `<p class="who">${dateStamp(date)}${gender ? ` · ${GENDER_WORD[gender]}` : ''} · Амин тоо ${hand.points.centre} · ${esc(TALENTS[hand.points.centre].name)}</p>`
@@ -157,12 +314,13 @@ function personBook({ date, name, gender, clan = '', father = '' }) {
     + `<nav><h3>Агуулга</h3><ol>${toc.map(([id, t]) => `<li><a href="#${id}">${esc(t)}</a></li>`).join('')}</ol></nav></section>`;
   body += `<section class="drawing" id="drawings"><h2>Матрицын гол цэгүүд</h2>${renderMap(hand)}</section>`
     + `<section class="drawing"><h2>Гар зургийн матриц</h2>${renderHand(hand)}</section>`;
-  body += `<section class="part book" id="now"><h2>Одоогийн эрчим</h2>${now}</section>`;
-  if (readings) body += `<section class="part" id="manuscript"><h2>Гар бичмэлийн тайлбар</h2>${readingHtml(hand, readings)}</section>`;
-  body += `<section class="part" id="pythagoras"><h2>Пифагорын квадрат</h2>${pythagorasSection(date)}</section>`;
+  body += opening.map(([, , html]) => html).join('');
+  if (readings) body += `<section class="part" id="manuscript"><h2>Гар бичмэлийн тайлбар</h2>${readingHtml(hand, readings, new Date(), { places: false })}</section>`;
   parts.forEach((part, i) => {
     body += `<section class="part book" id="part-${i}"><h2>${esc(part.title)}</h2>${part.chapters.map((c) => `<article class="chap">${c}</article>`).join('')}</section>`;
   });
+  // the Pythagoras square closes the book as an extra
+  body += `<section class="part" id="pythagoras"><p class="kicker">Нэмэлт бонус</p><h2>Пифагорын квадрат</h2>${pythagorasSection(date)}</section>`;
   print(`${name} ${dateStamp(date, '-')}`, bookHtml(`${name} · ${dateStamp(date)}`, `<main>${body}</main>`));
 }
 
@@ -177,7 +335,7 @@ const SHORT = [['essence', 'Мөн чанар'], ['strength', 'Хүч'], ['trap'
 function loveSide(person, index) {
   const hand = computeMatrix(person.date, 'hand');
   const texts = loadTexts(matrixDir);
-  let html = `<section class="couple side" id="side-${index}"><h2>${esc(person.name)} — хайр, харилцаанд</h2>`;
+  let html = `<section class="couple side" id="side-${index}"><h2>Хайр, харилцаанд · ${esc(person.name)}</h2>`;
   for (const [id, key] of LOVE_CHAPTERS) {
     const chapter = CHAPTERS.flatMap((part) => part.chapters).find((c) => c.id === id);
     const n = chapterValues(hand, [key])[0];
@@ -215,7 +373,7 @@ function coupleBook(people, method = 'all', kind = 'couple') {
     outer: 'Хоёр хүний үндсэн есөн цэгийг нэмээд, бусад тоог түүнээс бодсон.',
   };
   const toc = [['amin', 'Амин тоогоор тохирол'], ['couple-map', 'Хосын матриц'], ...parts.map((part, i) => [`cp-${i}`, part.title]),
-    ...(business ? [] : people.map((p, i) => [`side-${i}`, `${p.name} — хайр, харилцаанд`]))];
+    ...(business ? [] : people.map((p, i) => [`side-${i}`, `Хайр, харилцаанд · ${p.name}`]))];
   const body = `<section class="couple cover-c"><p class="kicker">Хувь тавилангийн матриц · ${business ? 'Бизнесийн түншлэл' : 'Хоёр хүний тохирол'}</p>`
     + `<h1>${people.map((p) => esc(p.name)).join(' + ')}</h1><div class="pair-head">${who}</div>`
     + `<nav><h3>Агуулга</h3><ol>${toc.map(([id, title]) => `<li><a href="#${id}">${esc(title)}</a></li>`).join('')}</ol></nav></section>`

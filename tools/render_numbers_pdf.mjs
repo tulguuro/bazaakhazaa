@@ -40,6 +40,16 @@ function longHtml(long) {
 
 function book(n) {
   const page = read('by-number', `${n}.json`);
+  if (GENDER) {
+    // swap in the man's or woman's version of each chapter; its note is then woven in
+    for (const part of page.parts) for (const c of part.chapters) {
+      const card = own([], c.id)[n];
+      const long = own(['long'], c.id)[n];
+      if (card) c.short = card;
+      if (long) c.long = long;
+      if (card || long) c.gender = null;
+    }
+  }
   const p = page.profile;
   let toc = [];
   let body = '';
@@ -151,11 +161,19 @@ ul.q li { font-style: italic; }
 </style></head><body>${cover}${body}</body></html>`;
 }
 
-const which = process.argv.slice(2).map(Number).filter((n) => n >= 1 && n <= 22);
+// --gender=male|female prints that version of every chapter (by-gender texts)
+// into a separate book: <n> - <name> (эрэгтэй|эмэгтэй).pdf
+const GENDER = (process.argv.find((a) => a.startsWith('--gender=')) ?? '').slice(9);
+const GWORD = { male: 'эрэгтэй', female: 'эмэгтэй' };
+const own = (sub, id) => {
+  const f = join(texts, 'by-gender', GENDER, ...sub, `${id}.json`);
+  return existsSync(f) ? JSON.parse(readFileSync(f, 'utf8')).texts ?? {} : {};
+};
+const which = process.argv.slice(2).filter((a) => !a.startsWith('--')).map(Number).filter((n) => n >= 1 && n <= 22);
 for (const n of which.length ? which : Array.from({ length: 22 }, (_, k) => k + 1)) {
-  const html = join(out, 'html', `${n}.html`);
+  const html = join(out, 'html', `${n}${GENDER ? `-${GENDER}` : ''}.html`);
   writeFileSync(html, book(n));
-  const pdf = join(out, `${String(n).padStart(2, '0')} - ${TALENTS[n].name}.pdf`);
+  const pdf = join(out, `${String(n).padStart(2, '0')} - ${TALENTS[n].name}${GENDER ? ` (${GWORD[GENDER]})` : ''}.pdf`);
   execFileSync(CHROME, ['--headless=new', '--disable-gpu', '--no-pdf-header-footer', '--virtual-time-budget=15000',
     `--print-to-pdf=${pdf}`, pathToFileURL(html).href], { stdio: 'ignore' });
   console.log(`${pdf}  ${(statSync(pdf).size / 1048576).toFixed(1)} MB`);

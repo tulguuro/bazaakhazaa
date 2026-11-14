@@ -44,7 +44,7 @@ function chaptersHtml(page) {
     out += `<h4 class="part">${ROMAN[part.index]} · ${esc(part.title)}</h4>`;
     for (const c of part.chapters) {
       out += `<details class="energy chapter-read"><summary><span>${esc(c.name)}</span></summary>`
-        + `<dl class="dlg-meta"><dt>Энэ тоо хаанаас гардаг</dt><dd>${esc(c.source)}</dd><dt>Энэ бүлэг хариулдаг асуулт</dt><dd>${esc(c.asks)}</dd></dl>`
+        + `<dl class="dlg-meta"><dt>Энэ тоо хаанаас гардаг</dt><dd>${esc(c.source)}</dd><dd class="ask">${esc(c.asks)}</dd></dl>`
         + `${c.short ? shortTable(c.short, FIELDS) : ''}${longHtml(c.long)}${bothGenders(c.gender)}</details>`;
     }
   }
