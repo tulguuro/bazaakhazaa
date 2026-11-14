@@ -1,0 +1,464 @@
+[
+  {
+    "id": "jobs",
+    "name": "Стив Жобс",
+    "name_orig": "Steven Paul Jobs",
+    "category": "Орчин үеийн бизнес, спорт, урлагийн од",
+    "role": "Apple компанийг үүсгэн байгуулагч",
+    "born": "1955-02-24",
+    "died": "2011-10-05",
+    "date_note": "",
+    "bio": "1955 онд АНУ-ын Сан-Франциско хотод төрж, өргөж авсан гэр бүлд өссөн. 1976 онд Стив Возняктай хамт гаражид «Эппл» компанийг үүсгэн байгуулжээ. 1985 онд компаниасаа гарсны дараа «НеКст» компанийг байгуулж, «Пиксар» хүүхэлдэйн киноны студийг хөгжүүлсэн бөгөөд 1997 онд «Эппл»-д эргэн ирж, «Айпод», «Айфон», «Айпад» зэрэг бүтээгдэхүүнээрээ компанийг дэлхийд тэргүүлэгч болгосон. 2011 онд 56 настайдаа насан өөд болсон.",
+    "matrix_note": "Авьяасын цэгт нь 2 буюу Зөн билэг байгаа нь хэрэглэгч юу хүсэхийг тэд өөрсдөө мэдэхээс өмнө мэдэрдэг байсантай нь дүйцдэг. Зан чанарын цэг дэх 6 буюу Хайр ба харилцаа гоо сайхан, энгийн загварыг эрхэмлэдэг байсныг нь илтгэнэ. Нийгмийн зорилгын 22 буюу Эрх чөлөө «Өөрөөр сэтгэ» гэсэн уриандаа шингэжээ.",
+    "sources": [
+      "https://www.britannica.com/money/Steve-Jobs",
+      "https://en.wikipedia.org/wiki/Steve_Jobs"
+    ],
+    "image": {
+      "page": "https://commons.wikimedia.org/wiki/File:Steve_Jobs_Headshot_2010_(cropped_6).jpg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ae/Steve_Jobs_Headshot_2010_%28cropped_6%29.jpg/960px-Steve_Jobs_Headshot_2010_%28cropped_6%29.jpg",
+      "license": "CC BY-SA 3.0",
+      "author": "Matthew Yohe"
+    }
+  },
+  {
+    "id": "gates",
+    "name": "Билл Гейтс",
+    "name_orig": "William Henry Gates III",
+    "category": "Орчин үеийн бизнес, спорт, урлагийн од",
+    "role": "Microsoft компанийг үүсгэн байгуулагч",
+    "born": "1955-10-28",
+    "died": null,
+    "date_note": "",
+    "bio": "1955 онд АНУ-ын Сиэтл хотод төрсөн. Харвардын их сургуульд суралцаж байгаад сургуулиа орхиж, 1975 онд бага насны найз Пол Аллентай хамт «Майкрософт» компанийг үүсгэн байгуулжээ. Тэдний «Виндоус» үйлдлийн систем дэлхийн ихэнх хувийн компьютерт суугдаж, Гейтс олон жил дэлхийн хамгийн баян хүн байв. 2000 оноос хойш буяны сангаараа дамжуулан эрүүл мэнд, ядуурлыг бууруулах ажилд хөрөнгөө зориулж байна.",
+    "matrix_note": "Авьяас болон зан чанарын цэгт нь 10 буюу Аз хийморь давхардсан нь хувийн компьютерийн эрин эхлэх яг тэр мөчид боломжийг цагт нь барьсантай нь дүйцдэг. Тав тухын бүсэд 8 буюу Шударга ёс байгаа нь олсон баялгаа дэлхийн тэгш бус байдлыг багасгах буяны ажилд чиглүүлсэнд илэрнэ.",
+    "sources": [
+      "https://www.britannica.com/facts/Bill-Gates",
+      "https://en.wikipedia.org/wiki/Bill_Gates"
+    ],
+    "image": {
+      "page": "https://commons.wikimedia.org/wiki/File:Bill_Gates_at_the_European_Commission_-_P067383-987995_(cropped)_5.jpg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d9/Bill_Gates_at_the_European_Commission_-_P067383-987995_%28cropped%29_5.jpg/960px-Bill_Gates_at_the_European_Commission_-_P067383-987995_%28cropped%29_5.jpg",
+      "license": "CC BY 4.0",
+      "author": "Bogdan Hoyaux / European Union"
+    }
+  },
+  {
+    "id": "musk",
+    "name": "Илон Маск",
+    "name_orig": "Elon Reeve Musk",
+    "category": "Орчин үеийн бизнес, спорт, урлагийн од",
+    "role": "Tesla, SpaceX компанийн тэргүүн",
+    "born": "1971-06-28",
+    "died": null,
+    "date_note": "",
+    "bio": "1971 онд Өмнөд Африкийн Претория хотод төрж, залуудаа Канад, дараа нь АНУ-д шилжин суурьшсан. Интернэтийн «Зип2» компани болон хожим «ПэйПал» болсон төлбөрийн компанийг үүсгэн байгуулж, олсон хөрөнгөө 2002 онд байгуулсан «Спэйс Икс» сансрын компани болон цахилгаан машин үйлдвэрлэгч «Тесла»-д оруулжээ. 2022 онд «Твиттер» сүлжээг худалдан авч, «Икс» гэж нэрлэсэн. Дэлхийн хамгийн баян хүмүүсийн нэг юм.",
+    "matrix_note": "Сүнсний зорилгын цэгт нь 18 буюу Ид шид байгаа нь Ангараг гаригт хүн суурьшуулах гэх мэт уран сэтгэмжээр дүүрэн зорилготой нь дүйцдэг. Мөнгөний цэг дэх 22 буюу Эрх чөлөө хил хязгааргүй сэтгэж, эрсдэлтэй шинэ салбарт хөрөнгөө зориглон оруулдгийг нь илтгэнэ.",
+    "sources": [
+      "https://www.britannica.com/money/Elon-Musk",
+      "https://en.wikipedia.org/wiki/Elon_Musk"
+    ],
+    "image": {
+      "page": "https://commons.wikimedia.org/wiki/File:Elon_Musk_-_54820081119_(3x4_cropped,_Rule_of_thirds).jpg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/69/Elon_Musk_-_54820081119_%283x4_cropped%2C_Rule_of_thirds%29.jpg/960px-Elon_Musk_-_54820081119_%283x4_cropped%2C_Rule_of_thirds%29.jpg",
+      "license": "CC BY-SA 4.0",
+      "author": "Gage Skidmore"
+    }
+  },
+  {
+    "id": "bezos",
+    "name": "Жефф Безос",
+    "name_orig": "Jeffrey Preston Bezos",
+    "category": "Орчин үеийн бизнес, спорт, урлагийн од",
+    "role": "Amazon компанийг үүсгэн байгуулагч",
+    "born": "1964-01-12",
+    "died": null,
+    "date_note": "",
+    "bio": "1964 онд АНУ-ын Альбукерке хотод төрсөн. Принстоны их сургуулийг төгсөж, Нью-Йоркийн санхүүгийн компанид ажиллаж байгаад 1994 онд гаражаасаа онлайн номын дэлгүүр болох «Амазон»-ыг эхлүүлжээ. Улмаар «Амазон» дэлхийн хамгийн том онлайн худалдааны болон үүлэн тооцооллын компаниудын нэг болсон. 2000 онд «Блю Ориджин» сансрын компанийг байгуулж, 2021 онд өөрөө сансарт ниссэн.",
+    "matrix_note": "Тав тухын бүс болон зан чанарын цэгт нь 12 буюу Энэрэл давхардсан нь үйлчлүүлэгчээ юуны түрүүнд тавьдгаараа алдартай компани байгуулсантай нь дүйцдэг. Авьяасын цэг дэх 1 буюу Илбэчин гаражид эхлүүлсэн жижиг санаагаа дэлхийн хэмжээний бизнес болгосон эхлүүлэгчийн чадварыг илтгэнэ.",
+    "sources": [
+      "https://www.britannica.com/facts/Jeff-Bezos",
+      "https://en.wikipedia.org/wiki/Jeff_Bezos"
+    ],
+    "image": {
+      "page": "https://commons.wikimedia.org/wiki/File:260202-D-PM193-2205_SECWAR_Arsenal_of_Freedom_Tour_-_Florida_(3x4_cropped_on_Bezos_and_rotated).jpg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fc/260202-D-PM193-2205_SECWAR_Arsenal_of_Freedom_Tour_-_Florida_%283x4_cropped_on_Bezos_and_rotated%29.jpg/960px-260202-D-PM193-2205_SECWAR_Arsenal_of_Freedom_Tour_-_Florida_%283x4_cropped_on_Bezos_and_rotated%29.jpg",
+      "license": "Public domain",
+      "author": "SECWAR"
+    }
+  },
+  {
+    "id": "zuckerberg",
+    "name": "Марк Цукерберг",
+    "name_orig": "Mark Elliot Zuckerberg",
+    "category": "Орчин үеийн бизнес, спорт, урлагийн од",
+    "role": "Facebook, Meta компанийг үүсгэн байгуулагч",
+    "born": "1984-05-14",
+    "died": null,
+    "date_note": "",
+    "bio": "1984 онд АНУ-ын Нью-Йорк мужид төрсөн. 2004 онд Харвардын их сургуулийн оюутан байхдаа өрөөний найзуудтайгаа хамт «Фэйсбүүк» нийгмийн сүлжээг эхлүүлж, удалгүй сургуулиа орхин түүндээ бүрэн зориулжээ. «Фэйсбүүк», «Инстаграм», «Ватсап» зэрэг үйлчилгээг нэгтгэсэн компани нь 2021 онд «Мета» гэж нэрээ өөрчилсөн. Эхнэр Присцилла Чантай хамт буяны сан байгуулсан.",
+    "matrix_note": "Тав тухын бүсэд нь 10 буюу Аз хийморь байгаа нь интернэтийн шинэ эрин эхлэх мөчид боломжийг барьж, оюутны төслөө дэлхийн сүлжээ болгосонтой нь дүйцдэг. Сүнсний зорилгын цэг дэх 22 буюу Эрх чөлөө хил хязгааргүй харилцааны орон зай бүтээсэн замналд нь илэрнэ.",
+    "sources": [
+      "https://www.britannica.com/money/Mark-Zuckerberg",
+      "https://en.wikipedia.org/wiki/Mark_Zuckerberg"
+    ],
+    "image": {
+      "page": "https://commons.wikimedia.org/wiki/File:Mark_Zuckerberg_2019_(cropped).jpg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/71/Mark_Zuckerberg_2019_%28cropped%29.jpg/960px-Mark_Zuckerberg_2019_%28cropped%29.jpg",
+      "license": "CC BY 2.0",
+      "author": "Anthony Quintano from Westminster, United States"
+    }
+  },
+  {
+    "id": "buffett",
+    "name": "Уоррен Баффет",
+    "name_orig": "Warren Edward Buffett",
+    "category": "Орчин үеийн бизнес, спорт, урлагийн од",
+    "role": "Хөрөнгө оруулагч, Berkshire Hathaway компанийн тэргүүн",
+    "born": "1930-08-30",
+    "died": null,
+    "date_note": "",
+    "bio": "1930 онд АНУ-ын Омаха хотод төрсөн. Арван нэгэн настайдаа анхны хувьцаагаа худалдан авч, Колумбын их сургуульд үнэ цэнийн хөрөнгө оруулалтын үндэслэгч Бенжамин Грэхэмээр хичээл заалгажээ. 1960-аад оноос «Беркшир Хатавэй» компанийг удирдан, түүнийг дэлхийн хамгийн том хөрөнгө оруулалтын компаниудын нэг болгосон. «Омахагийн зөнч» хэмээн алдаршсан бөгөөд хөрөнгийнхөө ихэнхийг буяны ажилд зориулахаа амласан.",
+    "matrix_note": "Тав тухын бүс болон зан чанарын цэгт нь 3 буюу Үржил шим давхардсан нь хөрөнгийг тэвчээртэй өсгөж, олон арван жил тасралтгүй үржүүлсэн арга барилтай нь дүйцдэг. Мөнгөний цэг дэх 5 буюу Багш жил бүр хувьцаа эзэмшигчдэдээ бичдэг захидлаараа олон үеийн хөрөнгө оруулагчдыг сургаж ирснийг санагдуулна.",
+    "sources": [
+      "https://kids.britannica.com/kids/article/Warren-Buffett/384178",
+      "https://en.wikipedia.org/wiki/Warren_Buffett"
+    ],
+    "image": {
+      "page": "https://commons.wikimedia.org/wiki/File:Warren_Buffett_at_the_2015_SelectUSA_Investment_Summit_(cropped).jpg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/d/d4/Warren_Buffett_at_the_2015_SelectUSA_Investment_Summit_%28cropped%29.jpg",
+      "license": "Public domain",
+      "author": "USA International Trade Administration"
+    }
+  },
+  {
+    "id": "jack-ma",
+    "name": "Жак Ма",
+    "name_orig": "马云 (Ma Yun)",
+    "category": "Орчин үеийн бизнес, спорт, урлагийн од",
+    "role": "Alibaba компанийг үүсгэн байгуулагч",
+    "born": "1964-09-10",
+    "died": null,
+    "date_note": "Цөөн эх сурвалжид 1964 оны 10 дугаар сарын 15 гэж бичсэн боловч найдвартай эх сурвалжууд 9 дүгээр сарын 10 гэж заадаг.",
+    "bio": "1964 онд Хятадын Ханжоу хотод төрсөн. Их сургуулийн элсэлтийн шалгалтад хоёр удаа тэнцээгүй ч эцэст нь багшийн сургууль төгсөж, англи хэлний багшаар ажилласан. 1999 онд орон сууцандаа арав гаруй хамтрагчтайгаа «Алибаба» компанийг үүсгэн байгуулж, түүнийг Хятадын хамгийн том цахим худалдааны компани болгожээ. 2019 онд компанийн удирдлагаас гарсан.",
+    "matrix_note": "Мөнгөний цэгт нь 16 буюу Бүтээн байгуулалт байгаа нь гэртээ эхлүүлсэн компанийг эхнээс нь босгож, асар том цахим худалдааны систем болгосонтой нь дүйцдэг. Тав тухын бүс дэх 6 буюу Хайр ба харилцаа хүмүүсийг өөртөө татаж, илтгэлээрээ урам зориг өгдөг зантай нь нийцнэ.",
+    "sources": [
+      "https://abc17news.com/news/national-world/cnn-world/2023/08/23/jack-ma-fast-facts-3/",
+      "https://en.wikipedia.org/wiki/Jack_Ma"
+    ],
+    "image": {
+      "page": "https://commons.wikimedia.org/wiki/File:20th_Anniversary_Schwab_Foundation_Gala_Dinner_(44887783681)_(cropped).jpg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/20th_Anniversary_Schwab_Foundation_Gala_Dinner_%2844887783681%29_%28cropped%29.jpg/960px-20th_Anniversary_Schwab_Foundation_Gala_Dinner_%2844887783681%29_%28cropped%29.jpg",
+      "license": "CC BY 2.0",
+      "author": "Foundations World Economic Forum"
+    }
+  },
+  {
+    "id": "jensen-huang",
+    "name": "Женсен Хуан",
+    "name_orig": "黃仁勳 (Jensen Huang)",
+    "category": "Орчин үеийн бизнес, спорт, урлагийн од",
+    "role": "NVIDIA компанийг үүсгэн байгуулагч, тэргүүн",
+    "born": "1963-02-17",
+    "died": null,
+    "date_note": "",
+    "bio": "1963 онд Тайванийн Тайнань хотод төрж, бага насандаа АНУ-д очсон. Орегон мужийн их сургууль, Стэнфордын их сургуульд цахилгааны инженерээр суралцжээ. 1993 онд хоёр хамтрагчтайгаа «Энвидиа» компанийг байгуулж, түүнийг компьютерийн график процессорын салбарт тэргүүлэгч болгосон. Тэдний чип хиймэл оюуны хөгжлийн суурь болж, компани нь дэлхийн хамгийн өндөр үнэлгээтэй компаниудын нэгд тооцогддог.",
+    "matrix_note": "Тав тухын бүсэд нь 13 буюу Өөрчлөлт байгаа нь хиймэл оюуны эрин үеийг эхлүүлсэн технологийн том эргэлттэй нь дүйцдэг. Мөнгөний цэг дэх 16 буюу Бүтээн байгуулалт жижиг компанийг эхнээс нь босгож, дэлхийн аварга болгосон замналд нь илэрнэ. Сонирхолтой нь, тэрээр Майкл Жордантай нэг өдөр төрсөн тул хоёулаа яг ижил матрицтай.",
+    "sources": [
+      "https://www.britannica.com/biography/Jensen-Huang",
+      "https://en.wikipedia.org/wiki/Jensen_Huang"
+    ],
+    "image": {
+      "page": "https://commons.wikimedia.org/wiki/File:Jensen_Huang_Stanford_2026-04-30_010_(cropped).jpg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c8/Jensen_Huang_Stanford_2026-04-30_010_%28cropped%29.jpg/960px-Jensen_Huang_Stanford_2026-04-30_010_%28cropped%29.jpg",
+      "license": "CC BY-SA 4.0",
+      "author": "Anderseidesvik"
+    }
+  },
+  {
+    "id": "messi",
+    "name": "Лионель Месси",
+    "name_orig": "Lionel Andrés Messi",
+    "category": "Орчин үеийн бизнес, спорт, урлагийн од",
+    "role": "Хөлбөмбөгчин, Аргентин",
+    "born": "1987-06-24",
+    "died": null,
+    "date_note": "",
+    "bio": "1987 онд Аргентины Росарио хотод төрсөн. Арван гурван настайдаа Испани руу нүүж, «Барселона» клубт хорь гаруй жил тоглон клубынхээ түүхэнд хамгийн олон гоол оруулсан тоглогч болжээ. «Алтан бөмбөг» шагналыг найман удаа хүртсэн нь дээд амжилт юм. 2022 онд Аргентины шигшээ багийг ахлагчаар удирдан дэлхийн аварга болсон.",
+    "matrix_note": "Сүнсний зорилгын цэгт нь 7 буюу Ялалт байгаа нь тасралтгүй цом, шагнал хүртсэн замнал, 2022 оны дэлхийн аваргын ялалттай нь дүйцдэг. Нийгмийн зорилгын 4 буюу Удирдагч шигшээ багаа ахлан удирдсанд нь илэрнэ.",
+    "sources": [
+      "https://www.britannica.com/biography/Lionel-Messi",
+      "https://en.wikipedia.org/wiki/Lionel_Messi"
+    ],
+    "image": {
+      "page": "https://commons.wikimedia.org/wiki/File:Leo_Messi_Argentina_v_Egypt_7_July_2026-1.jpg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c8/Leo_Messi_Argentina_v_Egypt_7_July_2026-1.jpg/960px-Leo_Messi_Argentina_v_Egypt_7_July_2026-1.jpg",
+      "license": "CC BY-SA 4.0",
+      "author": "Bryan Berlin"
+    }
+  },
+  {
+    "id": "ronaldo",
+    "name": "Кристиано Роналдо",
+    "name_orig": "Cristiano Ronaldo dos Santos Aveiro",
+    "category": "Орчин үеийн бизнес, спорт, урлагийн од",
+    "role": "Хөлбөмбөгчин, Португал",
+    "born": "1985-02-05",
+    "died": null,
+    "date_note": "",
+    "bio": "1985 онд Португалийн Мадейра арлын Фуншал хотод төрсөн. «Спортинг», «Манчестер Юнайтед», «Реал Мадрид», «Ювентус» клубуудад тоглож, Европын аваргуудын лигт таван удаа түрүүлжээ. «Алтан бөмбөг» шагналыг таван удаа хүртсэн бөгөөд 2016 онд Португалийн шигшээ багийг Европын аварга болгосон. Эрэгтэй шигшээ багуудын түүхэнд хамгийн олон гоол оруулсан тоглогч юм.",
+    "matrix_note": "Зан чанар болон сүнсний зорилгын цэгт нь 5 буюу Багш давхардсан нь хатуу сахилга бат, өдөр тутмын дэглэмээрээ залуу тамирчдад үлгэр жишээ болдогтой нь дүйцдэг. Хайрын цэг дэх 11 буюу Хүч бие бялдраа байнга хөгжүүлж, хүч тэсвэрээ хадгалдгийг нь санагдуулна.",
+    "sources": [
+      "https://www.britannica.com/facts/Cristiano-Ronaldo",
+      "https://en.wikipedia.org/wiki/Cristiano_Ronaldo"
+    ],
+    "image": {
+      "page": "https://commons.wikimedia.org/wiki/File:Cristiano_Ronaldo_Croatia_v_Portugal_2_July_2026-075_(cropped).jpg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/26/Cristiano_Ronaldo_Croatia_v_Portugal_2_July_2026-075_%28cropped%29.jpg/960px-Cristiano_Ronaldo_Croatia_v_Portugal_2_July_2026-075_%28cropped%29.jpg",
+      "license": "CC BY-SA 4.0",
+      "author": "Bryan Berlin"
+    }
+  },
+  {
+    "id": "michael-jordan",
+    "name": "Майкл Жордан",
+    "name_orig": "Michael Jeffrey Jordan",
+    "category": "Орчин үеийн бизнес, спорт, урлагийн од",
+    "role": "Сагсан бөмбөгчин, АНУ",
+    "born": "1963-02-17",
+    "died": null,
+    "date_note": "",
+    "bio": "1963 онд АНУ-ын Нью-Йорк хотын Бруклинд төрж, Хойд Каролина мужид өссөн. 1984 оноос «Чикаго Буллз» багт тоглож, НБА лигийн аваргын цомыг зургаан удаа хүртжээ. Олимпоос хоёр алтан медаль авсан бөгөөд «Найк» компанитай хамтарсан «Эйр Жордан» пүүз нь спортын брэндийн түүхэнд онцгой амжилт болсон. Түүнийг түүхэн дэх хамгийн шилдэг сагсан бөмбөгчин хэмээн олон хүн үздэг.",
+    "matrix_note": "Зан чанарын цэгт нь 17 буюу Од байгаа нь сагсан бөмбөгийг дэлхий дахинд таниулсан од болсонтой нь дүйцдэг. Сүнсний зорилгын цэг дэх 19 буюу Нар тэргүүлж, ялалтыг өөртөө татдаг чадварыг нь илтгэнэ. Сонирхолтой нь, тэрээр Женсен Хуантай нэг өдөр төрсөн тул хоёулаа яг ижил матрицтай.",
+    "sources": [
+      "https://www.britannica.com/biography/Michael-Jordan",
+      "https://en.wikipedia.org/wiki/Michael_Jordan"
+    ],
+    "image": {
+      "page": "https://commons.wikimedia.org/wiki/File:Steve_Lipfosky_--_Michael_Jordan_(1997)_(cropped)_3x4.jpg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Steve_Lipfosky_--_Michael_Jordan_%281997%29_%28cropped%29_3x4.jpg/960px-Steve_Lipfosky_--_Michael_Jordan_%281997%29_%28cropped%29_3x4.jpg",
+      "license": "CC BY-SA 3.0",
+      "author": "Steve Lipofsky Basketballphoto.com"
+    }
+  },
+  {
+    "id": "muhammad-ali",
+    "name": "Мухаммед Али",
+    "name_orig": "Muhammad Ali (Cassius Marcellus Clay Jr.)",
+    "category": "Орчин үеийн бизнес, спорт, урлагийн од",
+    "role": "Боксчин, АНУ",
+    "born": "1942-01-17",
+    "died": "2016-06-03",
+    "date_note": "",
+    "bio": "1942 онд АНУ-ын Луисвилл хотод Кассиус Клэй нэрээр төрсөн. 1960 онд Ромын олимпоос алтан медаль хүртэж, 1964 онд хүнд жингийн дэлхийн аварга болсныхоо дараа Исламын шашинд орж, нэрээ сольжээ. 1967 онд цэрэгт татагдахаас татгалзсаны улмаас аваргын цолоо хасуулсан ч хожим шүүхээр цагаатгагдаж, нийтдээ гурван удаа хүнд жингийн дэлхийн аварга болсон. 2016 онд 74 настайдаа насан өөд болсон.",
+    "matrix_note": "Авьяасын цэгт нь 1 буюу Илбэчин байгаа нь үгээрээ өрсөлдөгчөө дарж, шүлэглэсэн яриагаараа олныг дагуулдаг байсантай нь дүйцдэг. Зан чанарын цэг дэх 17 буюу Од түүнийг рингээс гадна ч олны хайртай од болгосон. Тав тухын бүс дэх 5 буюу Багш итгэл үнэмшлээ хамгаалж, зарчмаасаа буцаагүй замналд нь илэрнэ.",
+    "sources": [
+      "https://www.britannica.com/biography/Muhammad-Ali-boxer",
+      "https://en.wikipedia.org/wiki/Muhammad_Ali"
+    ],
+    "image": {
+      "page": "https://commons.wikimedia.org/wiki/File:Muhammad_Ali_NYWTS.jpg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/89/Muhammad_Ali_NYWTS.jpg/960px-Muhammad_Ali_NYWTS.jpg",
+      "license": "Public domain",
+      "author": "Ira Rosenberg"
+    }
+  },
+  {
+    "id": "bolt",
+    "name": "Усэйн Болт",
+    "name_orig": "Usain St. Leo Bolt",
+    "category": "Орчин үеийн бизнес, спорт, урлагийн од",
+    "role": "Хөнгөн атлетын тамирчин, Ямайка",
+    "born": "1986-08-21",
+    "died": null,
+    "date_note": "",
+    "bio": "1986 онд Ямайкийн Трелони мужид төрсөн. 2009 онд 100 метрийн гүйлтэд 9,58, 200 метрийн гүйлтэд 19,19 секундын дэлхийн дээд амжилт тогтоосон бөгөөд эдгээр амжилт олон жилийн турш эвдэгдээгүй. Олимпийн гурван наадамд дараалан 100, 200 метрийн гүйлтэд түрүүлж, нийт найман алтан медаль хүртжээ. 2017 онд спортоос зодог тайлсан.",
+    "matrix_note": "Тав тухын бүс болон хувийн зорилгод нь 7 буюу Ялалт давхардсан нь хурд, өрсөлдөөн, ялалтаар дүүрэн замналтай нь шууд дүйцдэг. Зан чанарын цэг болон сүнслэг зорилгын 21 буюу Ертөнц түүнийг дэлхий даяар танигдсан, хөгжилтэй зантай тамирчин болгосон.",
+    "sources": [
+      "https://www.britannica.com/biography/Usain-Bolt",
+      "https://en.wikipedia.org/wiki/Usain_Bolt"
+    ],
+    "image": {
+      "page": "https://commons.wikimedia.org/wiki/File:Usain_Bolt_(2013_World_Athletics_Championships)_Moscow,_Russia_01.jpg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/44/Usain_Bolt_%282013_World_Athletics_Championships%29_Moscow%2C_Russia_01.jpg/960px-Usain_Bolt_%282013_World_Athletics_Championships%29_Moscow%2C_Russia_01.jpg",
+      "license": "CC BY 4.0",
+      "author": "Владимир Яроцкий"
+    }
+  },
+  {
+    "id": "serena-williams",
+    "name": "Серена Уильямс",
+    "name_orig": "Serena Jameka Williams",
+    "category": "Орчин үеийн бизнес, спорт, урлагийн од",
+    "role": "Теннисчин, АНУ",
+    "born": "1981-09-26",
+    "died": null,
+    "date_note": "",
+    "bio": "1981 онд АНУ-ын Мичиган мужид төрж, Калифорнид өссөн. Эцэг нь түүнийг бага наснаас нь дасгалжуулж, тэрээр эгч Винустайгаа хамт теннисний ертөнцөд гарч иржээ. Ганцаарчилсан төрөлд «Их дуулга» тэмцээнүүдэд 23 удаа түрүүлсэн нь нээлттэй эриний дээд амжилт бөгөөд олимпоос дөрвөн алтан медаль хүртсэн. 2022 онд спортоос зодог тайлсан.",
+    "matrix_note": "Түүний матрицад 9 буюу Мэргэн ухаан тав удаа давтагдсан нь онцгой бөгөөд тоглолтын үеэр дотроо төвлөрч, өөрийгөө хянадаг тууштай зантай нь дүйцдэг. Мөнгөний цэг дэх 20 буюу Удмын хүч эцгийнхээ сургалт, эгчтэйгээ хамт гэр бүлээрээ замналаа бүтээснийг санагдуулна.",
+    "sources": [
+      "https://www.britannica.com/biography/Serena-Williams",
+      "https://en.wikipedia.org/wiki/Serena_Williams"
+    ],
+    "image": {
+      "page": "https://commons.wikimedia.org/wiki/File:Serena-Smiling-2020.png",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/98/Serena-Smiling-2020.png/960px-Serena-Smiling-2020.png",
+      "license": "CC BY-SA 4.0",
+      "author": "AndrewHenkelman"
+    }
+  },
+  {
+    "id": "kobe-bryant",
+    "name": "Коби Брайант",
+    "name_orig": "Kobe Bean Bryant",
+    "category": "Орчин үеийн бизнес, спорт, урлагийн од",
+    "role": "Сагсан бөмбөгчин, АНУ",
+    "born": "1978-08-23",
+    "died": "2020-01-26",
+    "date_note": "",
+    "bio": "1978 онд АНУ-ын Филадельфи хотод сагсан бөмбөгчин Жо Брайантын гэр бүлд төрж, бага насаа Италид өнгөрөөсөн. 1996 онд ахлах сургуулиа төгсөөд шууд НБА лигт орж, хорин жилийн турш зөвхөн «Лос-Анжелес Лейкерс» багт тоглон аваргын цомыг таван удаа хүртжээ. Олимпоос хоёр алтан медаль авсан бөгөөд зодог тайлсныхаа дараа бүтээсэн богино хүүхэлдэйн кино нь «Оскар» шагнал хүртсэн. 2020 онд охин Жианнатайгаа хамт нисдэг тэрэгний осолд өртөж, 41 настайдаа амь насаа алдсан.",
+    "matrix_note": "Тав тухын бүсэд нь 4 буюу Удирдагч байгаа нь хорин жилийн турш нэг багтаа үнэнч тоглож, түүнийгээ ахлан удирдсантай нь дүйцдэг. Сүнсний сорилтын цэгт 20 буюу Удмын хүч байгаа нь сагсан бөмбөгчин эцгийнхээ мөрөөр орж, спортоо охиддоо өвлүүлэхийг эрмэлзсэнтэй холбогдоно.",
+    "sources": [
+      "https://www.britannica.com/biography/Kobe-Bryant",
+      "https://en.wikipedia.org/wiki/Kobe_Bryant"
+    ],
+    "image": {
+      "page": "https://commons.wikimedia.org/wiki/File:Kobe_Bryant_Dec_2014.jpg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/Kobe_Bryant_Dec_2014.jpg/960px-Kobe_Bryant_Dec_2014.jpg",
+      "license": "CC BY-SA 2.0",
+      "author": "Keith Allison"
+    }
+  },
+  {
+    "id": "michael-jackson",
+    "name": "Майкл Жексон",
+    "name_orig": "Michael Joseph Jackson",
+    "category": "Орчин үеийн бизнес, спорт, урлагийн од",
+    "role": "Дуучин, бүжигчин, АНУ",
+    "born": "1958-08-29",
+    "died": "2009-06-25",
+    "date_note": "",
+    "bio": "1958 онд АНУ-ын Индиана мужийн Гэри хотод төрсөн. Бага наснаасаа ах нартайгаа «Жексон 5» хамтлагт дуулж, дараа нь бие даасан уран бүтээлээ эхлүүлжээ. 1982 онд гаргасан «Триллер» цомог нь дэлхийн түүхэнд хамгийн их борлогдсон цомог болж, тэрээр «Поп хөгжмийн хаан» хэмээн алдаршсан. 2009 онд 50 настайдаа насан өөд болсон.",
+    "matrix_note": "Тав тухын бүсэд нь 3 буюу Үржил шим байгаа нь гар хүрсэн бүтээлээ цэцэглүүлж, дэлхийн хамгийн их борлогдсон цомгийг бүтээсэнтэй нь дүйцдэг. Зан чанарын цэг дэх 11 буюу Хүч бага наснаасаа тайзнаа гарсан асар их хөдөлмөрч, тэсвэр хатуужилтай зантай нь нийцнэ.",
+    "sources": [
+      "https://www.britannica.com/summary/Michael-Jackson",
+      "https://en.wikipedia.org/wiki/Michael_Jackson"
+    ],
+    "image": {
+      "page": "https://commons.wikimedia.org/wiki/File:Michael_Jackson_1983_(3x4_cropped)_(contrast).jpg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b9/Michael_Jackson_1983_%283x4_cropped%29_%28contrast%29.jpg/960px-Michael_Jackson_1983_%283x4_cropped%29_%28contrast%29.jpg",
+      "license": "Public domain",
+      "author": "Matthew Rolston; Distributed by Epic Records"
+    }
+  },
+  {
+    "id": "elvis-presley",
+    "name": "Элвис Пресли",
+    "name_orig": "Elvis Aaron Presley",
+    "category": "Орчин үеийн бизнес, спорт, урлагийн од",
+    "role": "Дуучин, жүжигчин, АНУ",
+    "born": "1935-01-08",
+    "died": "1977-08-16",
+    "date_note": "",
+    "bio": "1935 онд АНУ-ын Миссисипи мужийн Тупело хотод төрж, Мемфис хотод өссөн. 1950-иад оны дундуур рок-н-ролл дуугаараа олны танил болж, «Рок-н-роллын хаан» хэмээн алдаршжээ. Хоёр жил цэргийн алба хааж, гуч гаруй уран сайхны кинонд тоглосон. 1977 онд 42 настайдаа Мемфис дэх гэртээ насан өөд болсон.",
+    "matrix_note": "Авьяасын цэгт нь 1 буюу Илбэчин байгаа нь рок-н-роллыг олон түмэнд хүргэж, шинэ урсгал эхлүүлсэнтэй нь дүйцдэг. Сүнсний зорилгын цэг болон мөнгөний цэгт 18 буюу Ид шид байгаа нь тайзан дээрх ид шидтэй мэт сэтгэл татам дүр төрхөөрөө олныг байлдан дагуулсныг илтгэнэ.",
+    "sources": [
+      "https://www.britannica.com/biography/Elvis-Presley",
+      "https://en.wikipedia.org/wiki/Elvis_Presley"
+    ],
+    "image": {
+      "page": "https://commons.wikimedia.org/wiki/File:Elvis_Presley_promoting_Jailhouse_Rock.jpg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/99/Elvis_Presley_promoting_Jailhouse_Rock.jpg/960px-Elvis_Presley_promoting_Jailhouse_Rock.jpg",
+      "license": "Public domain",
+      "author": "Metro-Goldwyn-Mayer, Inc. Reproduction Number: LC-USZ6-2067 Location: NYWTS -- BIOG"
+    }
+  },
+  {
+    "id": "freddie-mercury",
+    "name": "Фредди Меркюри",
+    "name_orig": "Freddie Mercury (Farrokh Bulsara)",
+    "category": "Орчин үеийн бизнес, спорт, урлагийн од",
+    "role": "Queen хамтлагийн дуучин, Их Британи",
+    "born": "1946-09-05",
+    "died": "1991-11-24",
+    "date_note": "",
+    "bio": "1946 онд Занзибарын Стоун Таун хотод Фаррох Булсара нэрээр төрж, бага насандаа Энэтхэгт сургуульд суралцсан. 1964 онд гэр бүлийнхээ хамт Англид нүүж, 1970 онд «Куин» хамтлагийг байгуулахад оролцжээ. «Бохемийн рапсоди», «Бид аваргууд» зэрэг дууг бичсэн бөгөөд 1985 оны «Лайв Эйд» тоглолтоор нь түүнийг рок хөгжмийн түүхэн дэх шилдэг тайзны дуучдын нэгд тооцдог. 1991 онд 45 настайдаа насан өөд болсон.",
+    "matrix_note": "Авьяасын цэгт нь 9 буюу Мэргэн ухаан байгаа нь олон хэв маягийг хослуулсан «Бохемийн рапсоди» шиг гүн, нарийн бүтэцтэй дуу бичсэнтэй нь дүйцдэг. Тав тухын бүс болон зан чанарт нь 5 буюу Багш давхардсан нь сонгодог хөгжим, дуурийн уламжлалыг рок хөгжимд шингээсэнд илэрнэ. Сүнсний сорилтын 7 буюу Ялалт «Бид аваргууд» дуугаар нь бэлгэдэгдэнэ.",
+    "sources": [
+      "https://www.britannica.com/biography/Freddie-Mercury",
+      "https://en.wikipedia.org/wiki/Freddie_Mercury"
+    ],
+    "image": {
+      "page": "https://commons.wikimedia.org/wiki/File:Freddie_Mercury_performing_in_New_Haven,_CT,_November_1977.jpg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ef/Freddie_Mercury_performing_in_New_Haven%2C_CT%2C_November_1977.jpg/960px-Freddie_Mercury_performing_in_New_Haven%2C_CT%2C_November_1977.jpg",
+      "license": "CC BY-SA 3.0",
+      "author": "Carl Lender"
+    }
+  },
+  {
+    "id": "john-lennon",
+    "name": "Жон Леннон",
+    "name_orig": "John Winston Ono Lennon",
+    "category": "Орчин үеийн бизнес, спорт, урлагийн од",
+    "role": "The Beatles хамтлагийн дуучин, Их Британи",
+    "born": "1940-10-09",
+    "died": "1980-12-08",
+    "date_note": "",
+    "bio": "1940 онд Английн Ливерпүүл хотод төрсөн. 1957 онд байгуулсан хамтлаг нь хожим «Битлз» болж, Пол Маккартнитай хамтран бичсэн дуунууд нь хөгжмийн түүхийг өөрчилсөн. 1970 онд хамтлаг тарсны дараа бие даан уран бүтээл хийж, эхнэр Йоко Онотойгоо хамт энх тайвны төлөө идэвхтэй тэмцсэн. 1980 онд Нью-Йорк хотод буудуулж, 40 настайдаа амь насаа алдсан.",
+    "matrix_note": "Тав тухын бүсэд нь 12 буюу Энэрэл байгаа нь энх тайван, хүмүүнлэгийн төлөө дуу хоолойгоо өргөж явсантай нь дүйцдэг. Хувийн зорилгын 21 буюу Ертөнц хил хязгааргүй, нэгдмэл дэлхийг мөрөөдсөн «Төсөөл» дуунд нь тод илэрнэ. Сүнсний зорилгын цэг дэх 14 буюу Тэнцвэр ба урлаг түүний амьдралыг уран бүтээлтэй салшгүй холбосон.",
+    "sources": [
+      "https://www.britannica.com/biography/John-Lennon",
+      "https://en.wikipedia.org/wiki/John_Lennon"
+    ],
+    "image": {
+      "page": "https://commons.wikimedia.org/wiki/File:John_Lennon_%22Walls_and_Bridges%22_1974_press_photo_2_(color)_(cropped).jpg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/85/John_Lennon_%22Walls_and_Bridges%22_1974_press_photo_2_%28color%29_%28cropped%29.jpg/960px-John_Lennon_%22Walls_and_Bridges%22_1974_press_photo_2_%28color%29_%28cropped%29.jpg",
+      "license": "Public domain",
+      "author": "Bob Gruen; Distributed by Capitol Records"
+    }
+  },
+  {
+    "id": "taylor-swift",
+    "name": "Тейлор Свифт",
+    "name_orig": "Taylor Alison Swift",
+    "category": "Орчин үеийн бизнес, спорт, урлагийн од",
+    "role": "Дуучин, ая зохиогч, АНУ",
+    "born": "1989-12-13",
+    "died": null,
+    "date_note": "",
+    "bio": "1989 онд АНУ-ын Пенсильвани мужид төрсөн. Арван дөрвөн настайдаа кантри хөгжим хийхээр гэр бүлээрээ Нэшвилл хотын ойролцоо нүүж, 2006 онд анхны цомгоо гаргажээ. Дараа нь поп хөгжимд шилжиж, «Оны шилдэг цомог» төрөлд «Грэмми» шагналыг дөрвөн удаа хүртсэн анхны уран бүтээлч болсон. 2023–2024 оны дэлхийн аялан тоглолт нь түүхэн дэх хамгийн их орлого олсон аялан тоглолт болсон.",
+    "matrix_note": "Зан чанарын цэгт нь 13 буюу Өөрчлөлт байгаа нь кантри хөгжмөөс поп руу шилжиж, цомог бүрээрээ шинэ дүр төрхтэй гарч ирдэгтэй нь дүйцдэг. Мөнгөний цэг дэх 22 буюу Эрх чөлөө хуучин цомгуудаа шинээр бичиж, бүтээлийнхээ эрхийг өөртөө буцаан авсан алхамд нь илэрнэ.",
+    "sources": [
+      "https://www.britannica.com/biography/Taylor-Swift",
+      "https://en.wikipedia.org/wiki/Taylor_Swift"
+    ],
+    "image": {
+      "page": "https://commons.wikimedia.org/wiki/File:Taylor_Swift_at_the_2023_MTV_Video_Music_Awards_(3).png",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b1/Taylor_Swift_at_the_2023_MTV_Video_Music_Awards_%283%29.png/960px-Taylor_Swift_at_the_2023_MTV_Video_Music_Awards_%283%29.png",
+      "license": "CC BY 3.0",
+      "author": "iHeartRadioCA"
+    }
+  },
+  {
+    "id": "beyonce",
+    "name": "Бейонсе",
+    "name_orig": "Beyoncé Giselle Knowles-Carter",
+    "category": "Орчин үеийн бизнес, спорт, урлагийн од",
+    "role": "Дуучин, АНУ",
+    "born": "1981-09-04",
+    "died": null,
+    "date_note": "",
+    "bio": "1981 онд АНУ-ын Хьюстон хотод төрсөн. 1990-ээд оны сүүлээр «Дестинис Чайлд» охидын хамтлагийн гоцлол дуучнаар олны танил болж, 2003 онд бие даасан анхны цомгоо гаргажээ. Түүхэнд хамгийн олон «Грэмми» шагнал хүртсэн уран бүтээлч бөгөөд дуу, клип, тайзны шоугаа өөрөө удирдан бүтээдгээрээ алдартай. 2025 онд «Ковбой Картер» цомгоороо «Оны шилдэг цомог» шагнал хүртсэн.",
+    "matrix_note": "Сүнсний зорилгын цэг, хувийн зорилго, мөнгөний цэгт нь 19 буюу Нар гурван удаа давтагдсан нь тайзан дээр гэрэлтэж, хамгийн олон «Грэмми» хүртсэн уран бүтээлч болсонтой нь дүйцдэг. Зан чанарын цэг дэх 4 буюу Удирдагч бүтээлээ бүхэлд нь өөрөө зохион байгуулж удирддагийг нь санагдуулна.",
+    "sources": [
+      "https://www.britannica.com/facts/Beyonce",
+      "https://en.wikipedia.org/wiki/Beyonc%C3%A9"
+    ],
+    "image": {
+      "page": "https://commons.wikimedia.org/wiki/File:Beyonc%C3%A9_-_Tottenham_Hotspur_Stadium_-_1st_June_2023_(10_of_118)_(52946364598)_(best_crop).jpg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/b/b7/Beyonc%C3%A9_-_Tottenham_Hotspur_Stadium_-_1st_June_2023_%2810_of_118%29_%2852946364598%29_%28best_crop%29.jpg",
+      "license": "CC BY 2.0",
+      "author": "Raph_PH"
+    }
+  }
+]

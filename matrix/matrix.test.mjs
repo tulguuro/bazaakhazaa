@@ -175,3 +175,21 @@ test('talents come from the top line, the mother\'s line and the father\'s line 
     assert.deepEqual(talents, { god: [3, 15, 12], mother: [12, 6, 21], father: [18, 9, 9] });
   }
 });
+
+test('couple matrix matches the online calculators for 15.04.1977 + 16.05.1981', async () => {
+  const { computeCouple } = await import('./matrix.js');
+  const A = { year: 1977, month: 4, day: 15 };
+  const B = { year: 1981, month: 5, day: 16 };
+  for (const method of ['all', 'outer']) {
+    const m = computeCouple(A, B, method);
+    assert.deepEqual(Object.values(m.points), [4, 9, 7, 11, 13, 4, 16, 18, 6]);
+    assert.deepEqual([m.lines.top.inner, m.lines.top.mid, m.lines.right.inner, m.lines.right.mid, m.lines.bottom.inner, m.loveMoney.mid], [22, 4, 20, 9, 6, 8]);
+    assert.deepEqual([m.purposes.sky, m.purposes.earth, m.purposes.personal, m.purposes.social, m.purposes.spiritual], [20, 11, 4, 8, 12]);
+  }
+  // matrica-sudby.ru and numefy.ru sum every position
+  const all = computeCouple(A, B, 'all');
+  assert.deepEqual([all.lines.left.inner, all.lines.left.mid, all.lines.bottom.mid, all.loveMoney.love, all.loveMoney.money, all.purposes.father, all.purposes.mother], [8, 3, 8, 5, 19, 13, 13]);
+  // matrix-destiny.com sums the main points and rebuilds the rest
+  const outer = computeCouple(A, B, 'outer');
+  assert.deepEqual([outer.lines.left.inner, outer.lines.left.mid, outer.lines.bottom.mid, outer.loveMoney.love, outer.loveMoney.money, outer.purposes.father, outer.purposes.mother], [17, 21, 17, 14, 10, 22, 22]);
+});

@@ -4,7 +4,7 @@
 import { VARIANTS, computeMatrix, isValidDate } from './matrix.js';
 import { renderGuide, renderHand } from './draw.js';
 import { CHAPTERS } from './chapters.js';
-import { chakraOrgansHtml, chaptersHtml, pythagorasHtml, dateStamp, differenceHtml, healthHtml, libraryHtml, personText, pointsHtml, readingHtml, tasksHtml, wireBook } from './report.js';
+import { PAIR_CONTEXTS, chakraOrgansHtml, chaptersHtml, pairContextFile, pythagorasHtml, dateStamp, differenceHtml, healthHtml, libraryHtml, personText, pointsHtml, readingHtml, tasksHtml, wireBook } from './report.js';
 
 const DEFAULT_DATE = { year: 1989, month: 3, day: 15 };
 // Both types are valid readings of the same birth date; each is drawn like its source chart.
@@ -40,10 +40,24 @@ const chapterTexts = Promise.all(CHAPTER_FILES.map((id) =>
     const pairs = await Promise.all(Array.from({ length: 22 }, (_, k) => fetch(`texts/pairs/${k + 1}.json`)
       .then((r) => (r.ok ? r.json() : null)).catch(() => null)));
     texts.pairs = Object.fromEntries(pairs.filter(Boolean).map((p) => [p.a, p.pairs]));
+    // the combination texts written for each context
+    // texts/pairs-ctx/index.json lists the contexts already written
+    const written = await fetch('texts/pairs-ctx/index.json').then((r) => (r.ok ? r.json() : [])).catch(() => []);
+    const own = await Promise.all(PAIR_CONTEXTS.filter((c) => written.includes(c)).map((c) => fetch(`texts/pairs-ctx/${pairContextFile(c)}.json`)
+      .then((r) => (r.ok ? r.json() : null)).catch(() => null)));
+    texts.pairsCtx = Object.fromEntries(own.filter(Boolean).map((f) => [f.context, f.pairs]));
     // the male / female notes: texts/gender/index.json lists the chapters that have them
     const genderIds = await fetch('texts/gender/index.json').then((r) => (r.ok ? r.json() : [])).catch(() => []);
     await Promise.all(genderIds.filter((id) => texts[id]).map((id) => fetch(`texts/gender/${id}.json`).then((r) => (r.ok ? r.json() : null)).catch(() => null)
       .then((g) => { if (g && texts[id]) texts[id].gender = g.texts; })));
+    // the male and female versions: texts/by-gender/index.json lists the chapters written in both
+    const genderedIds = await fetch('texts/by-gender/index.json').then((r) => (r.ok ? r.json() : [])).catch(() => []);
+    const load = (path) => fetch(`texts/by-gender/${path}.json`).then((r) => (r.ok ? r.json() : null)).catch(() => null);
+    await Promise.all(genderedIds.filter((id) => texts[id]).flatMap((id) => ['male', 'female'].map(async (g) => {
+      const [short, long] = await Promise.all([load(`${g}/${id}`), load(`${g}/long/${id}`)]);
+      texts[id].byGender ??= {};
+      texts[id].byGender[g] = { texts: short?.texts ?? {}, long: long?.texts ?? {} };
+    })));
     return texts;
   });
 
@@ -57,7 +71,7 @@ function stateFromUrl() {
   const params = new URLSearchParams(location.hash.slice(1));
   const match = /^(\d{1,4})-(\d{1,2})-(\d{1,2})$/.exec(params.get('d') ?? '');
   const [year, month, day] = match ? match.slice(1).map(Number) : [];
-  const type = VARIANTS.includes(params.get('t')) ? params.get('t') : 'hand';
+  const type = 'hand'; // the guide type is no longer offered
   const gender = { m: 'male', f: 'female' }[params.get('g')] ?? '';
   return { date: match && isValidDate(year, month, day) ? { year, month, day } : DEFAULT_DATE, type, gender, person: {} };
 }
@@ -79,7 +93,7 @@ async function show() {
   $('calc-tasks').innerHTML = tasksHtml(hand, guide, type);
   $('health-block').hidden = type !== 'guide';
   $('health').innerHTML = healthHtml(guide);
-  $('difference').innerHTML = differenceHtml(hand, guide);
+  // only the hand-drawn type is shown; the guide type is still computed for the calculations
   const data = await readings;
   $('reading').innerHTML = readingHtml(hand, data) + chaptersHtml(hand, await chapterTexts, new Date(), state.gender);
   $('library').innerHTML = libraryHtml(hand, data);

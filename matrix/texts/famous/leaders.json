@@ -1,0 +1,347 @@
+[
+  {
+    "id": "stalin",
+    "name": "Иосиф Сталин",
+    "name_orig": "Иосиф Виссарионович Сталин (Джугашвили)",
+    "category": "Дэлхийн түүхэн удирдагчид",
+    "role": "ЗХУ-ын удирдагч",
+    "born": "1878-12-18",
+    "died": "1953-03-05",
+    "date_note": "Хуучин тооллоор 1878.12.06. Зөвлөлтийн албан ёсны намтарт 1879.12.21 гэж бичдэг байсан ч сүмийн бүртгэлээр 1878.12.18 нь батлагддаг.",
+    "bio": "Гүржийн Гори хотод гуталчны гэр бүлд төрсөн. Тифлисийн шашны сургуульд суралцаж байгаад хувьсгалт хөдөлгөөнд нэгдэж, хэд хэдэн удаа баривчлагдан цөлөгдсөн. 1920-иод оны сүүлээс нас барах хүртлээ ЗХУ-ыг удирдаж, үйлдвэржилт, хамтралжуулалтыг хүчээр явуулсан бөгөөд түүний үед олон сая хүн хэлмэгдэлд өртсөн. Дэлхийн хоёрдугаар дайнд ЗХУ-ыг удирдаж, ялалтад хүрсэн.",
+    "matrix_note": "Тав тухын бүсэд нь 9 буюу Мэргэн ухаан байгаа нь ганцаараа бодож шийддэг, хаалттай зан төлөвтэй нь дүйцдэг. 9 түүний матрицад олон удаа давтагддаг бөгөөд үйлийн үрийн сүүл 9-9-18 нь ганцаардал, нууцлаг байдлын сэдвийг улам тодотгодог. Зан чанарын цэг дэх 18 буюу Ид шид нь нууцаа чанд хадгалдаг, хүнд амархан итгэдэггүй зантай нь холбогддог.",
+    "sources": [
+      "https://www.britannica.com/biography/Joseph-Stalin",
+      "https://en.wikipedia.org/wiki/Joseph_Stalin",
+      "https://www.wikidata.org/wiki/Q855"
+    ],
+    "image": {
+      "page": "https://commons.wikimedia.org/wiki/File:StalinCropped1943.jpg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/StalinCropped1943.jpg/960px-StalinCropped1943.jpg",
+      "license": "Public domain",
+      "author": "Franklin D. Roosevelt Library Public Domain Photographs"
+    }
+  },
+  {
+    "id": "napoleon",
+    "name": "Наполеон Бонапарт",
+    "name_orig": "Napoléon Bonaparte",
+    "category": "Дэлхийн түүхэн удирдагчид",
+    "role": "Францын эзэн хаан",
+    "born": "1769-08-15",
+    "died": "1821-05-05",
+    "date_note": "",
+    "bio": "Корсик арлын Аяччо хотод төрсөн. Францын хувьсгалын жилүүдэд жанжнаар нэрд гарч, 1799 онд засгийн эрхийг гартаа авч, 1804 онд эзэн хаан болсон. Европын ихэнх нутгийг дайнаар эзэлсэн ч 1815 онд Ватерлоогийн тулалдаанд ялагдаж, Гэгээн Елена арал руу цөлөгдөн тэндээ нас барсан. Түүний нэрээр алдаршсан Иргэний хууль олон орны хууль тогтоомжид нөлөөлсөн.",
+    "matrix_note": "Тав тухын бүсэд нь 11 буюу Хүч байгаа нь тасралтгүй аян дайн, ядаргаа мэдэхгүй ажилсаг зантай нь нийцдэг. Авьяасын цэг дэх 8 буюу Шударга ёс нь түүний хамгийн удаан амьд үлдсэн бүтээл болох Иргэний хуультай, Нийгмийн зорилго дахь 4 буюу Удирдагч нь төрийг шинээр зохион байгуулсан эзэн хааны дүртэй нь дүйцдэг. Үйлийн үрийн сүүл 10-4-21 нь хувь заяаны огцом эргэлт, эрх мэдэл, ертөнцийг эзлэх хүслийн сэдвийг хөнддөг.",
+    "sources": [
+      "https://www.britannica.com/biography/Napoleon-I",
+      "https://www.napoleon.org/en/history-of-the-two-empires/close-up/a-close-up-on-napoleons-death/",
+      "https://en.wikipedia.org/wiki/Napoleon"
+    ],
+    "image": {
+      "page": "https://commons.wikimedia.org/wiki/File:Jacques-Louis_David_-_The_Emperor_Napoleon_in_His_Study_at_the_Tuileries_-_Google_Art_Project.jpg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/50/Jacques-Louis_David_-_The_Emperor_Napoleon_in_His_Study_at_the_Tuileries_-_Google_Art_Project.jpg/960px-Jacques-Louis_David_-_The_Emperor_Napoleon_in_His_Study_at_the_Tuileries_-_Google_Art_Project.jpg",
+      "license": "Public domain",
+      "author": "Jacques-Louis David"
+    }
+  },
+  {
+    "id": "lincoln",
+    "name": "Абрахам Линкольн",
+    "name_orig": "Abraham Lincoln",
+    "category": "Дэлхийн түүхэн удирдагчид",
+    "role": "АНУ-ын 16 дахь Ерөнхийлөгч",
+    "born": "1809-02-12",
+    "died": "1865-04-15",
+    "date_note": "",
+    "bio": "Кентакки мужид, модон овоохойд ядуу тариачны гэр бүлд төрсөн. Ихэнхдээ бие даан суралцаж хуульч болж, 1860 онд АНУ-ын Ерөнхийлөгчөөр сонгогдсон. Иргэний дайны үед холбооны улсыг нэгдмэл байлгаж, боолчлолыг халах үйл явцыг удирдсан. 1865 онд Вашингтоны театрт буудуулж нас барсан.",
+    "matrix_note": "Зан чанарын цэг дэх 12 буюу Энэрэл нь боолчлолыг халахын төлөө зогсож, бусдын шаналлыг өөрийнх шигээ мэдэрдэг зантай нь дүйцдэг. Нийгмийн зорилго дахь 11 буюу Хүч нь Иргэний дайны хүнд жилүүдэд улсаа задрахаас хамгаалсан тэсвэр хатуужлыг санагдуулна. Үйлийн үрийн сүүл 5 буюу Багшаар эхэлдэг нь бие даан суралцаж, үгээрээ олныг сургасан замнал, тэр дундаа Геттисбергийн алдарт илтгэлтэй нь холбогддог.",
+    "sources": [
+      "https://www.britannica.com/biography/Abraham-Lincoln",
+      "https://www.nps.gov/people/abraham-lincoln.htm",
+      "https://lccn.loc.gov/n79006779"
+    ],
+    "image": {
+      "page": "https://commons.wikimedia.org/wiki/File:Abraham_Lincoln_O-77_matte_collodion_print.jpg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ab/Abraham_Lincoln_O-77_matte_collodion_print.jpg/960px-Abraham_Lincoln_O-77_matte_collodion_print.jpg",
+      "license": "Public domain",
+      "author": "Alexander Gardner"
+    }
+  },
+  {
+    "id": "churchill",
+    "name": "Уинстон Черчилль",
+    "name_orig": "Winston Leonard Spencer Churchill",
+    "category": "Дэлхийн түүхэн удирдагчид",
+    "role": "Их Британийн Ерөнхий сайд",
+    "born": "1874-11-30",
+    "died": "1965-01-24",
+    "date_note": "",
+    "bio": "Мальборогийн гүнгийн удамд, Бленхеймийн ордонд төрсөн. Цэргийн алба хааж, сурвалжлагчаар ажилласны дараа улс төрд орж, олон сайдын албыг хашсан. Дэлхийн хоёрдугаар дайны үед буюу 1940–1945 онд, мөн 1951–1955 онд Их Британийн Ерөнхий сайд байв. 1953 онд түүхэн бүтээл, илтгэлүүдээрээ Утга зохиолын Нобелийн шагнал хүртсэн.",
+    "matrix_note": "Авьяасын цэг дэх 11 буюу Хүч, Сүнсний сорилт дахь 7 буюу Ялалт нь дайны хамгийн хүнд үед ард түмнээ бууж өгөхгүй байхыг уриалж, хоёр хуруугаараа ялалтын тэмдэг гаргадаг байсантай нь дүйцдэг. Тав тухын бүсэд нь 5 буюу Багш байгаа нь олон боть түүх бичиж, Нобелийн шагнал хүртсэнтэй нь холбогддог. Баруун орой дахь 20 буюу Удмын хүч нь өвөг дээдэс Мальборогийн гүнгийнхээ намтрыг бичсэн удамч зантай нь нийцнэ.",
+    "sources": [
+      "https://www.nobelprize.org/prizes/literature/1953/churchill/facts/",
+      "https://www.britannica.com/biography/Winston-Churchill",
+      "https://en.wikipedia.org/wiki/Winston_Churchill"
+    ],
+    "image": {
+      "page": "https://commons.wikimedia.org/wiki/File:Sir_Winston_Churchill_-_19086236948_(restored).jpg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/02/Sir_Winston_Churchill_-_19086236948_%28restored%29.jpg/960px-Sir_Winston_Churchill_-_19086236948_%28restored%29.jpg",
+      "license": "Public domain",
+      "author": "Yousuf Karsh"
+    }
+  },
+  {
+    "id": "gandhi",
+    "name": "Махатма Ганди",
+    "name_orig": "Mohandas Karamchand Gandhi",
+    "category": "Дэлхийн түүхэн удирдагчид",
+    "role": "Энэтхэгийн тусгаар тогтнолын хөдөлгөөний удирдагч",
+    "born": "1869-10-02",
+    "died": "1948-01-30",
+    "date_note": "",
+    "bio": "Энэтхэгийн Порбандар хотод төрж, Лондонд хуульчаар суралцсан. Өмнөд Африкт хорь орчим жил амьдрахдаа энэтхэгчүүдийн эрхийн төлөө хүчирхийллийн бус эсэргүүцлийн аргаа боловсруулсан. Эх орондоо буцаж ирээд Британийн ноёрхлоос ангижрах үндэсний хөдөлгөөнийг удирдаж, 1930 онд Давсны жагсаалыг зохион байгуулсан. Энэтхэг тусгаар тогтносноос хойш хагас жилийн дараа буудуулж нас барсан.",
+    "matrix_note": "Тав тухын бүсэд нь 9 буюу Мэргэн ухаан байгаа нь даруу, энгийн амьдрал, мацаг барилт, гүн эргэцүүлэлд тулгуурласан замналтай нь дүйцдэг. Зан чанарын цэг дэх 2 буюу Зөн билэг нь чимээгүй тэвчээртэй, дотоод дуу хоолойгоо дагадаг гэж өөрөө ярьдаг байсантай нь нийцнэ. Сонирхолтой нь түүний үйлийн үрийн сүүл 18-9-9 нь Сталины 9-9-18-тай ижил тоонуудаас бүрдсэн ч эсрэг дараалалтай.",
+    "sources": [
+      "https://www.britannica.com/facts/Mahatma-Gandhi",
+      "https://www.mkgandhi.org/bio5000/birth.php",
+      "https://en.wikipedia.org/wiki/Mahatma_Gandhi"
+    ],
+    "image": {
+      "page": "https://commons.wikimedia.org/wiki/File:Mahatma-Gandhi,_studio,_1931.jpg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Mahatma-Gandhi%2C_studio%2C_1931.jpg/960px-Mahatma-Gandhi%2C_studio%2C_1931.jpg",
+      "license": "Public domain",
+      "author": "Elliott & Fry"
+    }
+  },
+  {
+    "id": "mandela",
+    "name": "Нельсон Мандела",
+    "name_orig": "Nelson Rolihlahla Mandela",
+    "category": "Дэлхийн түүхэн удирдагчид",
+    "role": "Өмнөд Африкийн Ерөнхийлөгч",
+    "born": "1918-07-18",
+    "died": "2013-12-05",
+    "date_note": "",
+    "bio": "Өмнөд Африкийн Мвезо тосгонд Тембу овгийн удирдагчдын гэр бүлд төрсөн. Хуульч мэргэжилтэй тэрээр арьс өнгөөр ялгаварлан гадуурхах апартейдын бодлогын эсрэг тэмцэж, 27 жил хоригдсон. 1990 онд суллагдаж, 1993 онд Энхтайвны Нобелийн шагнал хүртсэн. 1994 онд улсынхаа анхны ардчилсан сонгуулиар Ерөнхийлөгчөөр сонгогдсон.",
+    "matrix_note": "Тав тухын бүс, Авьяасын цэг хоёуланд нь 7 буюу Ялалт байгаа нь 27 жилийн хорионы дараа ч зорилгоосоо буцалгүй, эцэст нь ялалтад хүрсэн замналтай нь дүйцдэг. Сүнсний сорилт дахь 8 буюу Шударга ёс нь хуульч мэргэжил, тэгш эрхийн төлөөх тэмцэлтэй нь холбогддог. Сүнслэг зорилго дахь 12 буюу Энэрэл нь хорьсон хүмүүсээ уучилж, үндэстнээ эвлэрүүлэхийг эрхэмлэсэн сэтгэлийг санагдуулна.",
+    "sources": [
+      "https://www.nobelprize.org/prizes/peace/1993/mandela/facts/",
+      "https://www.britannica.com/biography/Nelson-Mandela",
+      "https://en.wikipedia.org/wiki/Nelson_Mandela"
+    ],
+    "image": {
+      "page": "https://commons.wikimedia.org/wiki/File:Nelson_Mandela_1994.jpg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/02/Nelson_Mandela_1994.jpg/960px-Nelson_Mandela_1994.jpg",
+      "license": "CC BY-SA 2.0",
+      "author": "Kingkongphoto & www.celebrity-photos.com (Flickr)"
+    }
+  },
+  {
+    "id": "kennedy",
+    "name": "Жон Кеннеди",
+    "name_orig": "John Fitzgerald Kennedy",
+    "category": "Дэлхийн түүхэн удирдагчид",
+    "role": "АНУ-ын 35 дахь Ерөнхийлөгч",
+    "born": "1917-05-29",
+    "died": "1963-11-22",
+    "date_note": "",
+    "bio": "Массачусетс мужийн Бруклайн хотод нөлөө бүхий гэр бүлд төрсөн. Харвардыг төгсөж, Дэлхийн хоёрдугаар дайнд тэнгисийн цэргийн офицероор алба хаасан. 1961 онд 43 настайдаа АНУ-ын Ерөнхийлөгч болж, Карибын хямралын үеэр цөмийн дайнаас сэргийлсэн хэлэлцээр хийсэн. 1963 онд Даллас хотод буудуулж нас барсан.",
+    "matrix_note": "Тав тухын бүс, Авьяасын цэг хоёуланд нь 5 буюу Багш байгаа нь уран илтгэл, Пулитцерийн шагнал хүртсэн ном, сайн дурынхныг гадаадад багшлуулахаар илгээсэн Энхтайвны корпусыг үүсгэсэнтэй нь дүйцдэг. Зан чанарын цэг дэх 11 буюу Хүч нь дайнд эр зориг гаргаж, багийнхаа гишүүдийг аварсантай нь холбогддог. Түүний үйлийн үрийн сүүл Уинстон Черчилль, Хатан хаан Элизабетынхтай адил 7-19-12.",
+    "sources": [
+      "https://www.jfklibrary.org/learn/about-jfk/life-of-john-f-kennedy/fast-facts-john-f-kennedy",
+      "https://www.britannica.com/biography/John-F-Kennedy",
+      "https://en.wikipedia.org/wiki/John_F._Kennedy"
+    ],
+    "image": {
+      "page": "https://commons.wikimedia.org/wiki/File:John_F._Kennedy,_White_House_color_photo_portrait.jpg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c3/John_F._Kennedy%2C_White_House_color_photo_portrait.jpg/960px-John_F._Kennedy%2C_White_House_color_photo_portrait.jpg",
+      "license": "Public domain",
+      "author": "Cecil W. Stoughton"
+    }
+  },
+  {
+    "id": "peter-the-great",
+    "name": "Их Петр",
+    "name_orig": "Пётр I Алексеевич",
+    "category": "Дэлхийн түүхэн удирдагчид",
+    "role": "Оросын хаан, анхны эзэн хаан",
+    "born": "1672-06-09",
+    "died": "1725-02-08",
+    "date_note": "Хуучин тооллоор төрсөн өдөр нь 1672.05.30, нас барсан өдөр нь 1725.01.28.",
+    "bio": "Москвад Романовын хааны гэр бүлд төрж, 1682 онд хаан ширээнд суусан. Европоор нэрээ нууж аялан хөлөг онгоц бүтээх ур чадвар сурч, буцаж ирээд төрийн засаг захиргаа, арми, ёс заншилд өргөн шинэчлэл хийсэн. 1703 онд Санкт-Петербург хотыг байгуулж, хожим нийслэлээ тийш шилжүүлсэн. Хойд дайнд Шведийг ялж, 1721 онд Оросын анхны эзэн хаан цолыг авсан.",
+    "matrix_note": "Баруун орой, Нийгмийн зорилго хоёуланд нь 16 буюу Бүтээн байгуулалт байгаа нь хуучин дэг журмыг эвдэж, намагт шинэ нийслэл барьсан ажилтай нь шууд дүйцдэг. Сүнсний сорилт дахь 4 буюу Удирдагч нь улсаа шинээр зохион байгуулж, тэнгисийн флот байгуулсан хариуцлагатай нь холбогддог. Зан чанарын цэг дэх 9 буюу Мэргэн ухаан нь энгийн ажилчны дүрд хувиран гадаадад гар урлал сурсан шинжээч зантай нь нийцнэ.",
+    "sources": [
+      "https://www.britannica.com/biography/Peter-the-Great",
+      "https://en.wikipedia.org/wiki/Peter_the_Great",
+      "https://www.wikidata.org/wiki/Q8479"
+    ],
+    "image": {
+      "page": "https://commons.wikimedia.org/wiki/File:Inconnu_d%27apr%C3%A8s_J.-M._Nattier,_Portrait_de_Pierre_Ier_(mus%C3%A9e_de_l%E2%80%99Ermitage).jpg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d6/Inconnu_d%27apr%C3%A8s_J.-M._Nattier%2C_Portrait_de_Pierre_Ier_%28mus%C3%A9e_de_l%E2%80%99Ermitage%29.jpg/960px-Inconnu_d%27apr%C3%A8s_J.-M._Nattier%2C_Portrait_de_Pierre_Ier_%28mus%C3%A9e_de_l%E2%80%99Ermitage%29.jpg",
+      "license": "Public domain",
+      "author": "Attributed to Jean-Marc Nattier"
+    }
+  },
+  {
+    "id": "catherine-the-great",
+    "name": "Их Екатерина",
+    "name_orig": "Екатерина II Алексеевна (Sophie Auguste Friederike von Anhalt-Zerbst)",
+    "category": "Дэлхийн түүхэн удирдагчид",
+    "role": "Оросын эзэн хатан",
+    "born": "1729-05-02",
+    "died": "1796-11-17",
+    "date_note": "Хуучин тооллоор төрсөн өдөр нь 1729.04.21, нас барсан өдөр нь 1796.11.06.",
+    "bio": "Пруссын Штеттин хотод герман ноёны гэр бүлд төрсөн. Оросын хаан ширээг залгамжлагч Петр Федоровичтэй гэрлэж, 1762 онд ордны эргэлтээр засгийн эрхийг авсан. Гучин дөрвөн жил захирах хугацаандаа Оросын нутгийг тэлж, Крымыг нэгтгэн, Хар тэнгист гарцтай болгосон. Гэгээрлийн үеийн сэтгэгчидтэй захидал бичилцэж, урлаг, боловсролыг ивээн тэтгэсэн.",
+    "matrix_note": "Авьяасын цэг, Нийгмийн зорилго хоёуланд нь 5 буюу Багш байгаа нь Вольтер, Дидротой захидал бичилцэж, Оросын анхны охидын сургууль болох Смольныйн дээд сургуулийг байгуулсантай нь дүйцдэг. Тав тухын бүсэд нь 7 буюу Ялалт байгаа нь Османы эзэнт гүрнийг ялж, нутгаа тэлсэн дайн тулаантай нь холбогддог. Сонирхолтой нь түүний гол тоонуудын ихэнх нь Нельсон Манделагийнхтай давхцдаг.",
+    "sources": [
+      "https://www.britannica.com/biography/Catherine-the-Great",
+      "https://en.wikipedia.org/wiki/Catherine_the_Great",
+      "https://www.wikidata.org/wiki/Q36450"
+    ],
+    "image": {
+      "page": "https://commons.wikimedia.org/wiki/File:Catherine_II_after_Roslin,_Rokotov_(1780s,_Kunsthistorisches_Museum).jpg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/72/Catherine_II_after_Roslin%2C_Rokotov_%281780s%2C_Kunsthistorisches_Museum%29.jpg/960px-Catherine_II_after_Roslin%2C_Rokotov_%281780s%2C_Kunsthistorisches_Museum%29.jpg",
+      "license": "Public domain",
+      "author": "After Alexander Roslin"
+    }
+  },
+  {
+    "id": "lenin",
+    "name": "Владимир Ленин",
+    "name_orig": "Владимир Ильич Ульянов (Ленин)",
+    "category": "Дэлхийн түүхэн удирдагчид",
+    "role": "Зөвлөлт Оросын үндэслэгч",
+    "born": "1870-04-22",
+    "died": "1924-01-21",
+    "date_note": "Хуучин тооллоор 1870.04.10.",
+    "bio": "Ижил мөрний эрэг дэх Симбирск хотод сургуулийн байцаагчийн гэр бүлд төрсөн. Хуулийн мэдлэг эзэмшиж, марксист хувьсгалч болон Сибирьт цөлөгдөж, олон жил Европт цагаачлан амьдарсан. 1917 оны Октябрийн хувьсгалыг удирдаж, Зөвлөлт засгийн газрын тэргүүн болсон. 1922 онд ЗХУ байгуулагдахад үүсгэн байгуулагчдын нэг байсан бөгөөд 1924 онд нас барсан.",
+    "matrix_note": "Баруун орой дахь 16 буюу Бүтээн байгуулалт нь хуучин хаант төрийг нурааж, шинэ төрийг босгосон хувьсгалтай нь шууд дүйцдэг. Авьяасын цэг дэх 4 буюу Удирдагч нь чанд зохион байгуулалттай нам бий болгосон чадвартай нь холбогддог. Хувийн зорилго дахь 21 буюу Ертөнц нь Европт олон жил цагаачилж, дэлхий нийтийн хувьсгалын санааг дэвшүүлсэнтэй нь нийцнэ.",
+    "sources": [
+      "https://www.britannica.com/biography/Vladimir-Lenin",
+      "https://en.wikipedia.org/wiki/Vladimir_Lenin",
+      "https://www.wikidata.org/wiki/Q1394"
+    ],
+    "image": {
+      "page": "https://commons.wikimedia.org/wiki/File:Lenin_in_1920_(cropped).jpg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c0/Lenin_in_1920_%28cropped%29.jpg/960px-Lenin_in_1920_%28cropped%29.jpg",
+      "license": "Public domain",
+      "author": "Unknown"
+    }
+  },
+  {
+    "id": "mao",
+    "name": "Мао Зэдун",
+    "name_orig": "Mao Zedong",
+    "category": "Дэлхийн түүхэн удирдагчид",
+    "role": "БНХАУ-ыг үндэслэгч",
+    "born": "1893-12-26",
+    "died": "1976-09-09",
+    "date_note": "",
+    "bio": "Хунань мужийн Шаошань тосгонд чинээлэг тариачны гэр бүлд төрсөн. Багшийн сургууль төгсөж, Хятадын Коммунист намыг үүсгэн байгуулагчдын нэг болсон. Иргэний дайн, Их аяны дараа 1949 онд Бүгд Найрамдах Хятад Ард Улсыг тунхаглаж, нас барах хүртлээ удирдсан. Түүний үед хэрэгжсэн Их үсрэлт, Соёлын хувьсгал зэрэг кампанит ажил улс орны түүхэнд гүн ул мөр үлдээсэн.",
+    "matrix_note": "Сүнсний сорилт дахь 5 буюу Багш нь түүний багш мэргэжил, олон боть онолын бүтээлтэй нь дүйцдэг. Нийгмийн зорилго дахь 11 буюу Хүч нь Их аян, зэвсэгт тэмцлээр засгийн эрхэнд гарсан замналыг санагдуулна. Баруун орой, Сүнслэг зорилго хоёуланд нь 21 буюу Ертөнц байгаа нь хамгийн олон хүн амтай улсыг шинээр үндэслэж, олон улсын тавцанд нөлөө үзүүлсэнтэй нь нийцнэ.",
+    "sources": [
+      "https://www.britannica.com/biography/Mao-Zedong",
+      "https://en.wikipedia.org/wiki/Mao_Zedong",
+      "https://www.wikidata.org/wiki/Q5816"
+    ],
+    "image": {
+      "page": "https://commons.wikimedia.org/wiki/File:Mao_Zedong_1950_Portrait_(3x4_cropped)(2).jpg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/5/5e/Mao_Zedong_1950_Portrait_%283x4_cropped%29%282%29.jpg",
+      "license": "Public domain",
+      "author": "Chen Zhengqing"
+    }
+  },
+  {
+    "id": "elizabeth-ii",
+    "name": "Хатан хаан Элизабет",
+    "name_orig": "Elizabeth II (Elizabeth Alexandra Mary)",
+    "category": "Дэлхийн түүхэн удирдагчид",
+    "role": "Их Британийн хатан хаан",
+    "born": "1926-04-21",
+    "died": "2022-09-08",
+    "date_note": "",
+    "bio": "Лондонд хааны гэр бүлд төрж, эцэг нь хаан ширээнд суусны дараа залгамжлагч болсон. 1952 онд 25 настайдаа Хоёрдугаар Элизабет нэрээр хаан ширээнд суусан. Түүний 70 жилийн хаанчлал Их Британийн түүхэн дэх хамгийн урт хаанчлал юм. Хамтын нөхөрлөлийн тэргүүний хувьд дэлхийн зуу гаруй оронд айлчилсан.",
+    "matrix_note": "Зан чанарын цэг дэх 21 буюу Ертөнц нь Хамтын нөхөрлөлийн олон орныг холбож, хамгийн их аялсан хаадын нэг болсонтой нь дүйцдэг. Тав тухын бүсэд нь 5 буюу Багш, Авьяасын цэгт 4 буюу Удирдагч байгаа нь уламжлалыг чанд сахиж, 70 жил тогтвортой хаанчилсантай нь холбогддог. Түүний үйлийн үрийн сүүл анхны Ерөнхий сайд Уинстон Черчиллийнхтэй яг адил 7-19-12.",
+    "sources": [
+      "https://www.britannica.com/biography/Elizabeth-II",
+      "https://www.princeofwales.gov.uk/announcement-death-queen",
+      "https://en.wikipedia.org/wiki/Elizabeth_II"
+    ],
+    "image": {
+      "page": "https://commons.wikimedia.org/wiki/File:Queen_Elizabeth_II_official_portrait_for_1959_tour_(retouched)_(cropped)_(3-to-4_aspect_ratio).jpg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/1/11/Queen_Elizabeth_II_official_portrait_for_1959_tour_%28retouched%29_%28cropped%29_%283-to-4_aspect_ratio%29.jpg",
+      "license": "Public domain",
+      "author": "Donald McKague"
+    }
+  },
+  {
+    "id": "king",
+    "name": "Мартин Лютер Кинг",
+    "name_orig": "Martin Luther King Jr.",
+    "category": "Дэлхийн түүхэн удирдагчид",
+    "role": "АНУ-ын иргэний эрхийн хөдөлгөөний удирдагч",
+    "born": "1929-01-15",
+    "died": "1968-04-04",
+    "date_note": "",
+    "bio": "Жоржиа мужийн Атланта хотод баптист пасторын гэр бүлд төрж, теологийн докторын зэрэг хамгаалан өөрөө пастор болсон. 1955 оноос арьс өнгөөр ялгаварлахын эсрэг хүчирхийллийн бус иргэний эрхийн хөдөлгөөнийг удирдсан. 1963 онд Вашингтонд «Надад мөрөөдөл бий» хэмээх алдарт илтгэлээ тавьж, 1964 онд Энхтайвны Нобелийн шагнал хүртсэн. 1968 онд Мемфис хотод буудуулж нас барсан.",
+    "matrix_note": "Авьяасын цэг дэх 1 буюу Илбэчин нь үгээрээ олныг өдөөж, «Надад мөрөөдөл бий» илтгэлээрээ түүхэнд үлдсэнтэй нь дүйцдэг. Тав тухын бүсэд нь 11 буюу Хүч байгаа нь жил гаруй үргэлжилсэн Монтгомеригийн автобусны бойкот, олон удаагийн баривчилгааг тэвчсэн тэсвэр хатуужилтай нь холбогддог. Нийгмийн зорилго дахь 4 буюу Удирдагч нь олон нийтийн хөдөлгөөнийг зохион байгуулж удирдсан үүрэгтэй нь нийцнэ.",
+    "sources": [
+      "https://www.nobelprize.org/prizes/peace/1964/king/facts/",
+      "https://www.britannica.com/biography/Martin-Luther-King-Jr",
+      "https://en.wikipedia.org/wiki/Martin_Luther_King_Jr."
+    ],
+    "image": {
+      "page": "https://commons.wikimedia.org/wiki/File:Martin_Luther_King,_Jr..jpg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/Martin_Luther_King%2C_Jr..jpg/960px-Martin_Luther_King%2C_Jr..jpg",
+      "license": "Public domain",
+      "author": "Bernie Faingold"
+    }
+  },
+  {
+    "id": "einstein",
+    "name": "Альберт Эйнштейн",
+    "name_orig": "Albert Einstein",
+    "category": "Дэлхийн түүхэн удирдагчид",
+    "role": "Физикч, Нобелийн шагналт",
+    "born": "1879-03-14",
+    "died": "1955-04-18",
+    "date_note": "",
+    "bio": "Германы Ульм хотод еврей гэр бүлд төрсөн. 1905 онд Швейцарийн патентын газарт ажиллаж байхдаа харьцангуйн тусгай онол зэрэг физикийг өөрчилсөн бүтээлүүдээ нийтэлсэн. Фотоэффектийн хуулийг нээснийхээ төлөө 1921 оны физикийн Нобелийн шагнал хүртсэн. Германд нацистууд засгийн эрхэнд гарсны дараа АНУ-д суурьшиж, Принстонд насан эцэслэтлээ ажилласан.",
+    "matrix_note": "Тав тухын бүс, Авьяасын цэг, Хувийн зорилго гурвууланд нь 3 буюу Үржил шим байгаа нь нэг жилийн дотор хэд хэдэн шинэ онол төрүүлсэн бүтээлч үржил шимтэй нь дүйцдэг. Зан чанарын цэг дэх 14 буюу Тэнцвэр ба урлаг нь насан туршдаа хийл тоглож, хөгжмөөс амар амгалан олдог байсантай нь нийцнэ. Сүнслэг зорилго дахь 9 буюу Мэргэн ухаан нь бодлын туршилт, ертөнцийн тухай гүн ухааны эргэцүүлэлтэй нь холбогддог.",
+    "sources": [
+      "https://www.nobelprize.org/prizes/physics/1921/einstein/facts/",
+      "https://www.britannica.com/biography/Albert-Einstein",
+      "https://en.wikipedia.org/wiki/Albert_Einstein"
+    ],
+    "image": {
+      "page": "https://commons.wikimedia.org/wiki/File:Albert_Einstein_Head_cleaned.jpg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/28/Albert_Einstein_Head_cleaned.jpg/960px-Albert_Einstein_Head_cleaned.jpg",
+      "license": "Public domain",
+      "author": "Oren Jack Turner"
+    }
+  },
+  {
+    "id": "tesla",
+    "name": "Никола Тесла",
+    "name_orig": "Никола Тесла (Nikola Tesla)",
+    "category": "Дэлхийн түүхэн удирдагчид",
+    "role": "Зохион бүтээгч, инженер",
+    "born": "1856-07-10",
+    "died": "1943-01-07",
+    "date_note": "Хуучин тооллоор 1856.06.28. Шөнө дунд төрсөн гэдэг тул зарим эх сурвалжид 7 дугаар сарын 9/10 гэж бичдэг; энд нийтлэг хэрэглэдэг 10-ны өдрийг авав.",
+    "bio": "Австрийн эзэнт гүрний Смилян тосгонд (одоогийн Хорват) серб санваартны гэр бүлд төрсөн. 1884 онд АНУ-д ирж, хувьсах гүйдлийн систем, индукцийн хөдөлгүүрийг бүтээснээр орчин үеийн цахилгаан сүлжээний үндсийг тавьсан. Радио, утасгүй дамжуулалтын салбарт олон патент авсан. Амьдралынхаа сүүлийг Нью-Йоркийн зочид буудалд ганцаараа өнгөрөөж, тэндээ нас барсан.",
+    "matrix_note": "Тав тухын бүсэд нь 11 буюу Хүч байгаа нь цахилгаан, эрчим хүчний тухай насан туршийн хүсэл тэмүүлэл, шөнө өдөргүй ажилладаг байсантай нь дүйцдэг. Зан чанарын цэг, Сүнсний сорилт хоёуланд нь 10 буюу Аз хийморь байгаа нь алдар нэрийн оргилоос амьдралынхаа сүүлд хөрөнгөгүй болтлоо эргэсэн хувь заяаг санагдуулна. Үйлийн үрийн сүүл 10-4-21-ийн төгсгөл дэх 21 буюу Ертөнц нь дэлхий даяар утасгүй цахилгаан дамжуулах түүний мөрөөдөлтэй холбогддог.",
+    "sources": [
+      "https://www.britannica.com/biography/Nikola-Tesla",
+      "https://snaccooperative.org/sources/83746048/12157663",
+      "https://en.wikipedia.org/wiki/Nikola_Tesla"
+    ],
+    "image": {
+      "page": "https://commons.wikimedia.org/wiki/File:Tesla_circa_1890.jpeg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/7/79/Tesla_circa_1890.jpeg",
+      "license": "Public domain",
+      "author": "Napoleon Sarony"
+    }
+  }
+]

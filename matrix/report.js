@@ -2,7 +2,7 @@
 // difference between the two variants and the readings from the manuscript.
 // Shared by the page and by the standalone export (tools/render_report.mjs).
 import { PYTHAGORAS_LINES, formula, pythagoras, reduce, ringPointAt } from './matrix.js';
-import { HAND_LETTERS as L, POINT_AGES, POINT_MEANINGS } from './draw.js';
+import { HAND_LETTERS as L, POINT_AGES, POINT_MEANINGS, renderLocator } from './draw.js';
 import { TALENTS } from './talents.js';
 import { CHAPTERS } from './chapters.js';
 
@@ -170,9 +170,13 @@ function talentsHtml(hand) {
     ['Эхээс өгсөн авьяас', 'Ж шугам, эхийн удам', hand.talents.mother],
     ['Эцгээс өгсөн авьяас', 'Е шугам, эцгийн удам', hand.talents.father],
   ];
+  const told = new Set();
   return '<h3>Авьяас</h3>' + groups.map(([title, where, values]) => {
-    const items = [...new Set(values)].map((n) =>
-      `<p class="place"><b>${esc(TALENTS[n].name)} (${n}).</b> ${esc(TALENTS[n].text)}</p>`).join('');
+    const items = [...new Set(values)].map((n) => {
+      const first = !told.has(n);
+      told.add(n);
+      return `<p class="place"><b>${esc(TALENTS[n].name)} (${n}).</b> ${first ? esc(TALENTS[n].text) : '<span class="soft">дээр тайлбарласан</span>'}</p>`;
+    }).join('');
     return `<h4>${title} <span class="soft">· ${where}: ${values.join(' · ')}</span></h4>${items}`;
   }).join('');
 }
@@ -302,8 +306,8 @@ export function pythagorasHtml(date, data) {
 // chapter shows the number(s) at its positions; opening it shows its
 // question and, where written (matrix/texts/<id>.json), the card for that
 // number: essence, strength, trap and first step.
-export const FIELDS = [['essence', 'Мөн чанар'], ['strength', 'Хүч'], ['trap', 'Хавх'], ['step', 'Эхний алхам']];
-export const TAIL_FIELDS = [['past', 'Өнгөрсөн амьдрал'], ['present', 'Энэ амьдралд'], ['trap', 'Хавх'], ['step', 'Чөлөөлөх алхам']];
+export const FIELDS = [['essence', 'Мөн чанар'], ['strength', 'Хүч'], ['trap', 'Сул тал'], ['step', 'Зөвлөгөө']];
+export const TAIL_FIELDS = [['past', 'Өнгөрсөн амьдрал'], ['present', 'Энэ амьдралд'], ['trap', 'Сул тал'], ['step', 'Зөвлөгөө']];
 
 function nextAge(hand, today) {
   const now = currentAge(hand, today);
@@ -355,7 +359,7 @@ const SOURCES = {
   'purposes.personal': ['Хувийн зорилго', '(Дээд + доод орой) + (зүүн + баруун орой).'],
   'purposes.social': ['Нийгмийн зорилго', '(Эцгийн удмын хоёр булан) + (эхийн удмын хоёр булан).'],
   'purposes.spiritual': ['Сүнслэг зорилго', 'Хувийн зорилго + нийгмийн зорилго.'],
-  'purposes.planetary': ['Гарагийн зорилго', 'Нийгмийн зорилго + сүнслэг зорилго.'],
+  'purposes.planetary': ['Хорвоо ертөнцийн зорилго', 'Нийгмийн зорилго + сүнслэг зорилго.'],
 };
 export const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII', 'XIII', 'XIV', 'XV', 'XVI', 'XVII', 'XVIII', 'XIX', 'XX', 'XXI', 'XXII'];
 
@@ -385,6 +389,7 @@ function chapterValuesFor(chapter, hand, now, next, today) {
 function isWritten(chapter, values, texts) {
   const written = texts?.[chapter.id];
   if (chapter.id === 'karmic-tails') return Boolean(written?.tails?.[values.join('-')]);
+  if (chapter.id === 'career') return Boolean(written?.pairs?.[values.join('-')]);
   return Boolean(written?.texts && values.some((n) => written.texts[n]));
 }
 
@@ -410,47 +415,92 @@ export function genderHtml(entry, gender) {
   return text ? `<div class="gender-note"><h5>${GENDER_TITLES[gender]}</h5>${String(text).split(/\n\n+/).map((p) => `<p>${esc(p)}</p>`).join('')}</div>` : '';
 }
 
-function chapterDialogBody(chapter, values, texts, note, gender = '') {
+// The chart with the chapter's positions lit, beside what the chapter asks.
+export const locatorHtml = (m, at, rows) => `<div class="dlg-loc"><figure>${renderLocator(m, at)}<figcaption>Матриц дээрх байрлал</figcaption></figure><dl class="dlg-meta">${rows}</dl></div>`;
+
+function chapterDialogBody(chapter, values, texts, note, gender = '', hand = null) {
   const written = texts?.[chapter.id];
-  let out = `<h3 class="dlg-title">${esc(chapter.name)}</h3><dl class="dlg-meta">`
-    + `<dt>Энэ тоо хаанаас гардаг</dt><dd>${esc(sourceText(chapter))}${note ? ` ${esc(note)}` : ''}</dd>`
-    + `<dt>Энэ байрлал асуудаг</dt><dd>${esc(chapter.asks)}</dd></dl>`;
+  // the tail is keyed from the centre outwards but read from the outside in
+  const tail = chapter.id === 'karmic-tails' ? written?.tails?.[values.join('-')] : null;
+  const rows = (tail ? `<dt>Таны үйлийн үр</dt><dd><b>${[...values].reverse().join(' · ')} · ${esc(tail.name)}</b></dd>` : '')
+    + `<dt>Энэ бүлэг хариулдаг асуулт</dt><dd>${esc(chapter.asks)}</dd>${note ? `<dt>Одоо</dt><dd>${esc(note)}</dd>` : ''}`;
+  let out = `<h3 class="dlg-title">${esc(chapter.name)}</h3>${hand ? locatorHtml(hand, chapter.at, rows) : `<dl class="dlg-meta"><dt>Энэ тоо хаанаас гардаг</dt><dd>${esc(sourceText(chapter))}</dd>${rows}</dl>`}`;
   if (chapter.id === 'karmic-tails') {
     const code = values.join('-');
     const entry = written?.tails?.[code];
-    return `${out}<div class="dlg-card"><div class="tail">${values.map((n) => arcana(n)).join('')}<em>${esc(code)}</em></div>`
+    return `${out}<div class="dlg-card"><div class="tail">${[...values].reverse().map((n) => arcana(n)).join('')}<em>${[...values].reverse().join('-')}</em></div>`
       + `<div><h4>${entry ? esc(entry.name) : 'Товчхондоо'}</h4>${entry ? shortTable(entry, TAIL_FIELDS) : '<p class="soft">Энэ сүүлний тайлбар бичигдэж байна.</p>'}</div></div>`
       + longHtml(written?.long?.[code]) + genderHtml(written?.gender?.[code], gender);
   }
+  if (chapter.id === 'career') return out + careerHtml(values, written, hand, gender);
   // chapters that read several positions show each position with its own card
   const many = chapter.at.length > 1 && chapter.id !== 'sexuality';
-  const seen = new Set();
+  const seen = new Map();
   values.forEach((n, k) => {
     const key = chapter.at[k];
     if (!n || (seen.has(n) && !many)) return;
-    seen.add(n);
     const where = key in POINT_AGES ? `${POINT_AGES[key]} нас · ${POINT_MEANINGS[key].word}` : SOURCES[key]?.[0] ?? '';
-    const entry = written?.texts?.[n];
+    // the same number in a second position of this chapter: point back to its
+    // reading instead of printing it again
+    if (seen.has(n)) {
+      out += `${where ? `<p class="dlg-where">${esc(where)}</p>` : ''}<div class="dlg-card">${arcana(n)}<div><p>`
+        + `Энэ байрлалд ч мөн ${n} · ${esc(TALENTS[n].name)} эрчим ирсэн. Түүний тайлбарыг дээр${seen.get(n) ? `, «${esc(seen.get(n))}» хэсэгт` : ''} уншина уу. `
+        + 'Нэг эрчим хоёр байрлалд давхар гарсан нь энэ сэдэвт түүний нөлөө онцгой хүчтэй гэсэн үг.</p></div></div>';
+      return;
+    }
+    seen.set(n, where);
+    // a reading for a man or a woman uses that version where it is written;
+    // its gender note is then already woven into the text
+    const own = gender ? written?.byGender?.[gender] : null;
+    const entry = own?.texts?.[n] ?? written?.texts?.[n];
+    const long = own?.long?.[n] ?? written?.long?.[n];
     out += `${many && where ? `<p class="dlg-where">${esc(where)}</p>` : ''}<div class="dlg-card">${arcana(n, true)}<div><h4>Товчхондоо</h4>`
       + (entry ? shortTable(entry, FIELDS) : `<p>${esc(TALENTS[n].text)}</p><p class="soft">Энэ бүлгийн дэлгэрэнгүй тайлбар бичигдэж байна.</p>`)
-      + `</div></div>${longHtml(written?.long?.[n])}${genderHtml(written?.gender?.[n], gender)}<p class="more"><a href="numbers.html#n=${n}">${n} · ${esc(TALENTS[n].name)} эрчмийн тухай бүгдийг унших</a></p>`;
+      + `</div></div>${longHtml(long)}${own?.long?.[n] ? '' : genderHtml(written?.gender?.[n], gender)}<p class="more"><a href="numbers.html#n=${n}">${n} · ${esc(TALENTS[n].name)} эрчмийн тухай бүгдийг унших</a></p>`;
   });
-  if (PAIR_CHAPTERS.includes(chapter.id)) out += pairsHtml(values, texts?.pairs);
+  if (PAIR_CHAPTERS.includes(chapter.id)) out += pairsHtml(values, texts?.pairs, texts?.pairsCtx?.[chapter.id]);
   return out;
 }
+
+// The career chapter reads the talent (top) and the money channel (money
+// point) together: concrete professions, skills and work setting for that
+// pair, then how the number repeated most in the chart colours the work.
+function careerHtml([talent, money], written, hand, gender) {
+  const own = gender ? written?.byGender?.[gender] : null;
+  const pair = own?.pairs?.[`${talent}-${money}`] ?? written?.pairs?.[`${talent}-${money}`];
+  if (!pair) return `<p class="soft">Энэ хослолын мэргэжлийн тайлбар бичигдэж байна.</p>`;
+  const strong = hand?.dominant?.values?.[0];
+  const accent = strong ? (own?.accents?.[strong] ?? written?.accents?.[strong]) : null;
+  const list = (title, items) => (items?.length ? `<h5>${title}</h5><ul>${items.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>` : '');
+  return `<p class="pair-arcana">${arcana(talent)}<span>+</span>${arcana(money)}</p>`
+    + `<div class="dlg-long"><p class="lead">${esc(pair.summary)}</p>`
+    + list('Тохирох ажил мэргэжил', pair.professions) + list('Таны ажлын чадварууд', pair.skills)
+    + (pair.environment ? `<h5>Танд тохирох ажлын орчин</h5><p>${esc(pair.environment)}</p>` : '')
+    + (pair.avoid ? `<h5>Болгоомжлох зүйл</h5><p>${esc(pair.avoid)}</p>` : '')
+    + (accent ? `<h5>Таны хамгийн хүчтэй эрчим ${strong} · ${esc(TALENTS[strong].name)} ажилд тань</h5><p>${esc(accent)}</p>` : '')
+    + '</div>';
+}
+
+// Combination texts written for one context each (texts/pairs-ctx/<file>.json):
+// the ten point pairs keyed "x-y" in position order, and the pair sections of
+// four chapters keyed "a-b" with a < b. Where a context has no text yet the
+// generic pair text (texts/pairs/) stands in.
+export const PAIR_CONTEXTS = ['centre+top', 'centre+left', 'centre+right', 'centre+bottom', 'left+top', 'top+right', 'right+bottom',
+  'left+bottom', 'centre+loveMoney.love', 'right+loveMoney.money', 'sexuality', 'parents', 'children', 'family-programmes'];
+export const pairContextFile = (context) => context.replace('+', '_').replace('.', '-');
 
 // Chapters that show several numbers also show how each two of them work
 // together in one person (texts/pairs/<a>.json, every pair a ≤ b).
 const PAIR_CHAPTERS = ['sexuality', 'parents', 'children', 'family-programmes'];
 
-function pairsHtml(values, pairs) {
-  if (!pairs) return '';
+function pairsHtml(values, pairs, own = null) {
+  if (!pairs && !own) return '';
   const distinct = [...new Set(values.filter(Boolean))].sort((x, y) => x - y);
   let out = '';
   for (let i = 0; i < distinct.length; i += 1) {
     for (let j = i + 1; j < distinct.length; j += 1) {
       const [a, b] = [distinct[i], distinct[j]];
-      out += pairHtml(a, b, pairs[a]?.[b]);
+      out += pairHtml(a, b, own?.[`${a}-${b}`] ?? pairs?.[a]?.[b]);
     }
   }
   return out ? `<div class="dlg-pairs"><h4>Эрчмүүдийн хослол</h4>${out}</div>` : '';
@@ -475,29 +525,32 @@ const POINT_PAIRS = [
   ['centre', 'loveMoney.love'], ['right', 'loveMoney.money'],
 ];
 
-function pointPairParts(hand, pairs, roman) {
+function pointPairParts(hand, pairs, roman, own = {}) {
   if (!pairs) return null;
   let rows = '';
   let templates = '';
   let count = 0;
   const part = `${roman} · Гол цэгүүдийн хослол`;
+  const usedGeneric = new Map(); // a generic pair text is printed once, then pointed to
   for (const [p, q] of POINT_PAIRS) {
     const [x, y] = chapterValues(hand, [p, q]);
     const [a, b] = x <= y ? [x, y] : [y, x];
-    const pair = pairs[a]?.[b];
+    const fitted = own?.[`${p}+${q}`]?.[`${x}-${y}`];
+    const pair = fitted ?? pairs[a]?.[b];
     if (!pair) continue;
+    const before = fitted ? null : usedGeneric.get(`${a}-${b}`);
+    if (!fitted && !before) usedGeneric.set(`${a}-${b}`, `${POINT_NAMES[p]} ба ${POINT_NAMES[q].toLowerCase()}`);
     count += 1;
     const id = `pair-${p}-${q}`;
     const name = `${POINT_NAMES[p]} ба ${POINT_NAMES[q].toLowerCase()}`;
     rows += `<button type="button" class="book-row ready" data-chapter="${id}">${arcana(x)}<span class="name">${esc(name)}</span>`
       + `<span class="nums">${x} + ${y}</span><span class="badge">Унших</span></button>`;
-    const where = (key) => (key in HAND_POINT ? `${HAND_POINT[key]} цэг (${SOURCES[key][0].toLowerCase()})` : (SOURCES[key]?.[0] ?? '').toLowerCase());
-    const body = `<h3 class="dlg-title">${esc(name)}</h3><dl class="dlg-meta"><dt>Хаанаас</dt>`
-      + `<dd>${esc(POINT_NAMES[p])}: ${esc(where(p))}, ${x}. ${esc(POINT_NAMES[q])}: ${esc(where(q))}, ${y}.</dd>`
-      + '<dt>Юуг уншдаг</dt><dd>Хоёр цэгийн эрчим нэг хүнд хамт ажиллахдаа юу бүтээж, хаана мөргөлддөгийг.</dd></dl>'
-      + `<div class="dlg-card">${arcana(x, true)}<div><h4>${esc(POINT_NAMES[p])}</h4><p>${esc(TALENTS[x].text)}</p></div></div>`
-      + `<div class="dlg-card">${arcana(y, true)}<div><h4>${esc(POINT_NAMES[q])}</h4><p>${esc(TALENTS[y].text)}</p></div></div>`
-      + `<div class="dlg-pairs"><h4>Хамтдаа</h4>${pairHtml(a, b, pair)}</div>`
+    const body = `<h3 class="dlg-title">${esc(name)}</h3>`
+      + locatorHtml(hand, [p, q], `<dt>${esc(POINT_NAMES[p])}</dt><dd>${x} · ${esc(TALENTS[x].name)}</dd><dt>${esc(POINT_NAMES[q])}</dt><dd>${y} · ${esc(TALENTS[y].name)}</dd>`)
+      + `<p class="pair-arcana">${arcana(x)}<span>+</span>${arcana(y)}</p>`
+      + `<div class="dlg-pairs"><h4>Хамтдаа</h4>${before
+        ? `<p class="soft">${x} ба ${y} тооны хослолын тайлбар «${esc(before)}» хэсэгт бий. Эдгээр хоёр цэгт зориулсан тусгай тайлбар бичигдэж байна.</p>`
+        : pairHtml(x, y, pair)}</div>`
       + `<p class="more"><a href="numbers.html#n=${x}">${x} · ${esc(TALENTS[x].name)}</a>${x === y ? '' : ` · <a href="numbers.html#n=${y}">${y} · ${esc(TALENTS[y].name)}</a>`}</p>`;
     templates += `<template data-chapter="${id}" data-part="${part}">${body}</template>`;
   }
@@ -517,7 +570,11 @@ const LINKS = [
   ['family-men', 'familyMen', 'Е + Ж · 10 ба 30 нас'],
   ['family-women', 'familyWomen', 'И + З · 50 ба 70 нас'],
 ];
-const LINK_FIELDS = [['essence', 'Мөн чанар'], ['gift', 'Бэлэг'], ['trap', 'Хавх'], ['step', 'Эхний алхам']];
+const LINK_POINTS = {
+  'sky-earth': ['top', 'bottom'], 'fate-struggle': ['left', 'right'], 'father-line': ['tl', 'br'],
+  'mother-line': ['tr', 'bl'], 'family-men': ['tl', 'tr'], 'family-women': ['br', 'bl'],
+};
+const LINK_FIELDS = [['essence', 'Мөн чанар'], ['gift', 'Бэлэг'], ['trap', 'Сул тал'], ['step', 'Зөвлөгөө']];
 
 function linkParts(hand, links) {
   if (!links) return null;
@@ -534,9 +591,9 @@ function linkParts(hand, links) {
     const entry = file.texts[base];
     rows += `<button type="button" class="book-row ready" data-chapter="link-${id}">${arcana(base)}<span class="name">${esc(file.name)}</span>`
       + `<span class="nums">${detail ? `${base} · ${detail}` : base}</span><span class="badge">Унших</span></button>`;
-    let body = `<h3 class="dlg-title">${esc(file.name)}</h3><dl class="dlg-meta"><dt>Энэ тоо хаанаас гардаг</dt>`
-      + `<dd>${esc(points)}. Үндсэн тоо нь хоёр цэгийн нийлбэр${detail ? `, дэлгэрэнгүй тоо нь хоёр цэгийн хоорондох бүх тооны нийлбэр (${link.detail.sum} → ${detail})` : ''}.</dd>`
-      + `<dt>Энэ холбоос юуг уншдаг</dt><dd>${esc(file.about)}</dd></dl>`
+    let body = `<h3 class="dlg-title">${esc(file.name)}</h3>`
+      + locatorHtml(hand, LINK_POINTS[id], `<dt>Тоо</dt><dd>Үндсэн тоо ${base} нь хоёр цэгийн нийлбэр${detail ? `, дэлгэрэнгүй тоо ${detail} нь хоёр цэгийн хоорондох бүх тооны нийлбэр` : ''}.</dd>`
+        + `<dt>Энэ холбоос юуг уншдаг</dt><dd>${esc(file.about)}</dd>`)
       + `<p class="dlg-where">Үндсэн тоо</p><div class="dlg-card">${arcana(base, true)}<div><h4>Товчхондоо</h4>${entry ? shortTable(entry, LINK_FIELDS) : ''}</div></div>`;
     if (detail && file.texts[detail]) {
       body += `<p class="dlg-where">Дэлгэрэнгүй тоо</p><div class="dlg-card">${arcana(detail, true)}<div><h4>Далд давхарга</h4><p>${esc(file.texts[detail].deeper)}</p></div></div>`;
@@ -584,19 +641,19 @@ export function chaptersHtml(hand, texts, today = new Date(), gender = '') {
       let note = '';
       if (chapter.id === 'age-now' && now) note = `Одоо ${now.years} нас: ${now.label} насны цэг.`;
       if (chapter.id === 'age-next' && next) note = `${String(next.from).replace('.', ',')} наснаас эхэлнэ.`;
-      const shown = chapter.id === 'karmic-tails' || chapter.id === 'decades' ? values : [...new Set(values)];
+      const shown = chapter.id === 'karmic-tails' ? [...values].reverse() : chapter.id === 'decades' ? values : [...new Set(values)];
       const written = isWritten(chapter, values, texts);
       total += 1;
       ready += written ? 1 : 0;
       rows += `<button type="button" class="book-row${written ? ' ready' : ''}" data-chapter="${chapter.id}">`
-        + `${arcana(values[0])}<span class="name">${esc(chapter.name)}</span><span class="nums">${shown.join(' · ')}</span>`
+        + `${arcana(shown[0])}<span class="name">${esc(chapter.name)}</span><span class="nums">${shown.join(' · ')}</span>`
         + `<span class="badge">${written ? 'Унших' : 'Удахгүй'}</span></button>`;
-      templates += `<template data-chapter="${chapter.id}" data-part="${ROMAN[index]} · ${esc(part.title)}">${chapterDialogBody(chapter, values, texts, note, gender)}</template>`;
+      templates += `<template data-chapter="${chapter.id}" data-part="${ROMAN[index]} · ${esc(part.title)}">${chapterDialogBody(chapter, values, texts, note, gender, hand)}</template>`;
     }
     rows += '</div>';
   });
   const links = linkParts(hand, texts?.links);
-  const combos = pointPairParts(hand, texts?.pairs, ROMAN[CHAPTERS.length + (links ? 1 : 0)]);
+  const combos = pointPairParts(hand, texts?.pairs, ROMAN[CHAPTERS.length + (links ? 1 : 0)], texts?.pairsCtx);
   for (const extra of [links, combos]) {
     if (!extra) continue;
     rows += extra.rows;

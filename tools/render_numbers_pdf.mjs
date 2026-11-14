@@ -67,7 +67,7 @@ function book(n) {
     html += `<h3 class="ptitle">${ROMAN[part.index]} · ${esc(part.title)}</h3>`;
     for (const c of part.chapters) {
       html += `<article class="ch"><h4>${esc(c.name)}</h4><p class="meta"><b>Хаанаас гардаг:</b> ${esc(c.source)}<br><b>Асуудаг:</b> ${esc(c.asks)}</p>`
-        + (c.short ? table([['Мөн чанар', c.short.essence], ['Хүч', c.short.strength], ['Хавх', c.short.trap], ['Эхний алхам', c.short.step]]) : '')
+        + (c.short ? table([['Мөн чанар', c.short.essence], ['Хүч', c.short.strength], ['Сул тал', c.short.trap], ['Зөвлөгөө', c.short.step]]) : '')
         + `${longHtml(c.long)}${genders(c.gender)}</article>`;
     }
   }
@@ -75,11 +75,11 @@ function book(n) {
 
   if (page.tails.length) {
     section('tails', 'Энэ тоо орсон үйлийн үрийн сүүл', page.tails.map((t) => `<article class="ch"><h4>${esc(t.code)} · ${esc(t.name)}</h4>`
-      + table([['Өнгөрсөн амьдрал', t.past], ['Энэ амьдралд', t.present], ['Хавх', t.trap], ['Чөлөөлөх алхам', t.step]]) + `${longHtml(t.long)}${genders(t.gender)}</article>`).join(''));
+      + table([['Өнгөрсөн амьдрал', t.past], ['Энэ амьдралд', t.present], ['Сул тал', t.trap], ['Зөвлөгөө', t.step]]) + `${longHtml(t.long)}${genders(t.gender)}</article>`).join(''));
   }
   if (page.links.length) {
     section('links', 'Зургаан холбоос дээр', page.links.map((l) => `<article class="ch"><h4>${esc(l.name)}</h4><p class="meta">${esc(l.about)}</p>`
-      + table([['Мөн чанар', l.essence], ['Бэлэг', l.gift], ['Хавх', l.trap], ['Эхний алхам', l.step]])
+      + table([['Мөн чанар', l.essence], ['Бэлэг', l.gift], ['Сул тал', l.trap], ['Зөвлөгөө', l.step]])
       + `<p><b>Дэлгэрэнгүй тоо болбол:</b> ${esc(l.deeper)}</p></article>`).join(''));
   }
   if (page.pairs.length) {

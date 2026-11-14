@@ -129,17 +129,21 @@ function line(outer, centre, innerHalf) {
 export function computeMatrix({ year, month, day }, variant = 'hand') {
   if (!VARIANTS.includes(variant)) throw new Error(`Unknown variant: ${variant}`);
   if (!isValidDate(year, month, day)) throw new Error(`Not a calendar date: ${year}-${month}-${day}`);
-  const hand = variant === 'hand';
-
   const a = reduce(day);
   const b = reduce(month);
   const c = reduce(digitSum(year));
   const d = add(a, b, c);
-  const centre = add(a, b, c, d);
-  const tl = add(a, b);
-  const tr = add(b, c);
-  const br = add(c, d);
-  const bl = add(d, a);
+  const points = { left: a, top: b, right: c, bottom: d, centre: add(a, b, c, d), tl: add(a, b), tr: add(b, c), br: add(c, d), bl: add(d, a) };
+  const matrix = fromPoints(points, variant);
+  matrix.date = { year, month, day };
+  matrix.yearSum = digitSum(year);
+  return matrix;
+}
+
+// Everything else on the chart follows from the nine main points.
+function fromPoints(points, variant) {
+  const hand = variant === 'hand';
+  const { left: a, top: b, right: c, bottom: d, centre, tl, tr, br, bl } = points;
   const familyCentre = add(tl, tr, br, bl);
   const diagonalCentre = hand ? centre : familyCentre;
 
@@ -192,8 +196,6 @@ export function computeMatrix({ year, month, day }, variant = 'hand') {
 
   const matrix = {
     variant,
-    date: { year, month, day },
-    yearSum: digitSum(year),
     points: { left: a, top: b, right: c, bottom: d, centre, tl, tr, br, bl },
     lines,
     loveMoney,
@@ -238,6 +240,45 @@ export function computeMatrix({ year, month, day }, variant = 'hand') {
     matrix.health = [...rows, { chakra: 'Result', physics: total('physics'), energy: total('energy'), emotions: total('emotions') }];
   }
   return matrix;
+}
+
+// The couple matrix (матрица совместимости): the two partners' matrices
+// (guide type) added position by position. Two ways are in use:
+// 'all' — every position is the sum of the partners' same position, and only
+//   the personal, social, spiritual and planetary purposes are rebuilt from
+//   the summed sky, earth, father and mother lines (matrica-sudby.ru, numefy.ru);
+// 'outer' — only the nine main points are summed and everything inside is
+//   rebuilt from them by the usual rules (matrix-destiny.com).
+// Both agree on the main points, corners, top and right lines, the bottom
+// inner number, the love-line cross point and the purposes.
+export const COUPLE_METHODS = ['all', 'outer'];
+
+export function computeCouple(dateA, dateB, method = 'all') {
+  if (!COUPLE_METHODS.includes(method)) throw new Error(`Unknown couple method: ${method}`);
+  const [A, B] = [computeMatrix(dateA, 'guide'), computeMatrix(dateB, 'guide')];
+  const points = Object.fromEntries(Object.keys(A.points).map((key) => [key, add(A.points[key], B.points[key])]));
+  const couple = fromPoints(points, 'guide');
+  if (method === 'all') {
+    // sum every number of the two charts that sits at the same place
+    const sum = (x, y) => (typeof x === 'number' && typeof y === 'number' ? add(x, y)
+      : Array.isArray(x) ? x.map((v, k) => sum(v, y[k]))
+        : x && typeof x === 'object' ? Object.fromEntries(Object.entries(x).map(([k, v]) => [k, k === 'position' || k === 'age' ? v : sum(v, y[k])]))
+          : x);
+    for (const key of ['lines', 'loveMoney', 'ring', 'health']) couple[key] = sum(A[key], B[key]);
+    couple.karma = [couple.points.bottom, couple.lines.bottom.mid, couple.lines.bottom.inner];
+    const { sky, earth, father, mother } = sum(A.purposes, B.purposes);
+    const personal = add(sky, earth);
+    const social = add(father, mother);
+    const spiritual = add(personal, social);
+    Object.assign(couple.purposes, { sky, earth, father, mother, personal, social, spiritual, planetary: add(social, spiritual) });
+  }
+  // the links and the life purpose belong to one person's chart, not a pair
+  for (const key of ['skyEarth', 'fate', 'fatherLine', 'motherLine', 'familyMen', 'familyWomen', 'innerPower']) delete couple[key];
+  delete couple.purposes.life;
+  couple.method = method;
+  couple.dates = [dateA, dateB];
+  couple.partners = [A, B];
+  return couple;
 }
 
 // Age ranges of the seven ring points within a decade, as the guide's

@@ -13,7 +13,7 @@ const SECTIONS = [
   ['shadow', 'Сөрөг тал'], ['advice', 'Зөвлөгөө'],
 ];
 const SCORES = [['love', 'Хайр'], ['family', 'Гэр бүл'], ['business', 'Бизнес'], ['friendship', 'Найз'], ['money', 'Мөнгө']];
-const LINK_FIELDS = [['essence', 'Мөн чанар'], ['gift', 'Бэлэг'], ['trap', 'Хавх'], ['step', 'Эхний алхам']];
+const LINK_FIELDS = [['essence', 'Мөн чанар'], ['gift', 'Бэлэг'], ['trap', 'Сул тал'], ['step', 'Зөвлөгөө']];
 
 const paragraphs = (text) => String(text).split(/\n\n+/).map((p) => `<p>${esc(p)}</p>`).join('');
 const dots = (score) => '●'.repeat(score) + '○'.repeat(5 - score);
@@ -44,7 +44,7 @@ function chaptersHtml(page) {
     out += `<h4 class="part">${ROMAN[part.index]} · ${esc(part.title)}</h4>`;
     for (const c of part.chapters) {
       out += `<details class="energy chapter-read"><summary><span>${esc(c.name)}</span></summary>`
-        + `<dl class="dlg-meta"><dt>Энэ тоо хаанаас гардаг</dt><dd>${esc(c.source)}</dd><dt>Энэ байрлал асуудаг</dt><dd>${esc(c.asks)}</dd></dl>`
+        + `<dl class="dlg-meta"><dt>Энэ тоо хаанаас гардаг</dt><dd>${esc(c.source)}</dd><dt>Энэ бүлэг хариулдаг асуулт</dt><dd>${esc(c.asks)}</dd></dl>`
         + `${c.short ? shortTable(c.short, FIELDS) : ''}${longHtml(c.long)}${bothGenders(c.gender)}</details>`;
     }
   }

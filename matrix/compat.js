@@ -2,9 +2,11 @@
 // matrix). Texts: texts/compat/<a>-<b>.json with a ≤ b. The dates live in the
 // URL fragment (#d1=YYYY-MM-DD&d2=…), or two numbers can be given directly
 // (#a=9&b=16); names are never put in the URL.
-import { computeMatrix, isValidDate } from './matrix.js';
+import { computeCouple, computeMatrix, isValidDate } from './matrix.js';
+import { renderMap } from './draw.js';
+import { COUPLE_TAIL_FILES, PAIR_KINDS, coupleParts } from './couple.js';
 import { TALENTS } from './talents.js';
-import { ROMAN, arcana, dateStamp, esc } from './report.js';
+import { ROMAN, arcana, dateStamp, esc, wireBook } from './report.js';
 
 const $ = (id) => document.getElementById(id);
 const AREAS = [['love', 'Хайр дурлал'], ['family', 'Гэр бүл'], ['business', 'Бизнесийн түнш'], ['friendship', 'Нөхөрлөл'], ['money', 'Мөнгө']];
@@ -55,9 +57,55 @@ async function show() {
   const people = [[numbers[0], $('n1').value || 'Нэгдүгээр хүн', dates[0]], [numbers[1], $('n2').value || 'Хоёрдугаар хүн', dates[1]]];
   $('result').innerHTML = text ? resultHtml(text, people)
     : `<div class="compat-head">${personHtml(...people[0])}<span class="compat-plus">+</span>${personHtml(...people[1])}</div><p class="soft">${a} ба ${b} амин тооны тохирлын тайлбар бичигдэж байна.</p>`;
+  if (dates[0] && dates[1]) {
+    const method = params.get('m') === 'outer' ? 'outer' : 'all';
+    $('result').insertAdjacentHTML('beforeend', await coupleHtml(dates, method, 'couple') + await coupleHtml(dates, method, 'business'));
+  }
   document.title = `${a} + ${b} · Хоёр хүний тохирол`;
   $('result').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
+
+// The whole two charts added together and read zone by zone, each zone a
+// row that opens in a dialog like the chapters of the personal reading.
+const pairTexts = {};
+const KIND_TEXT = {
+  couple: ['Хосын матриц', 'Хосын уншлага', 'Хоёр хүний матрицын байрлал бүрийг хооронд нь нэмж бодсон хосын матриц. Тоо бүр харилцааны нэг талыг уншина.'],
+  business: ['Бизнесийн түншлэл', 'Түншлэлийн уншлага', 'Нөгөө л хос матрицыг бизнесийн түншлэлийн өнцгөөс уншина: шийдвэр, мөнгө, үүрэг, эрсдэл, хамтын зорилго.'],
+};
+async function coupleHtml(dates, method, kind = 'couple') {
+  const { ids, dir } = PAIR_KINDS[kind];
+  const get = (path) => fetch(path).then((r) => (r.ok ? r.json() : null)).catch(() => null);
+  if (!pairTexts[kind]) {
+    const texts = Object.fromEntries((await Promise.all(ids.map((id) => get(`texts/${dir}/${id}.json`)))).filter(Boolean).map((f) => [f.id, f]));
+    texts.tails = kind === 'couple'
+      ? Object.assign({}, ...(await Promise.all(COUPLE_TAIL_FILES.map((f) => get(`texts/couple/tails/${f}.json`)))).map((f) => f?.tails ?? {}))
+      : (await get('texts/business/tails.json'))?.tails ?? {};
+    pairTexts[kind] = texts;
+  }
+  const coupleTexts = pairTexts[kind];
+  const couple = computeCouple(dates[0], dates[1], method);
+  const parts = coupleParts(couple, coupleTexts, kind);
+  let rows = '';
+  let templates = '';
+  parts.forEach((part, i) => {
+    rows += `<div class="book-part"><header><span>${ROMAN[i]}</span><b>${esc(part.title)}</b><small>${part.zones.length} бүс</small></header>`;
+    for (const zone of part.zones) {
+      const ready = Boolean(coupleTexts[zone.id]);
+      rows += `<button type="button" class="book-row${ready ? ' ready' : ''}" data-chapter="${zone.id}">${arcana(zone.values[0])}<span class="name">${esc(zone.name)}</span>`
+        + `<span class="nums">${[...new Set(zone.values)].join(' · ')}</span><span class="badge">${ready ? 'Унших' : 'Удахгүй'}</span></button>`;
+      templates += `<template data-chapter="${zone.id}" data-part="${ROMAN[i]} · ${esc(part.title)}">${zone.html}</template>`;
+    }
+    rows += '</div>';
+  });
+  const [heading, readingTitle, about] = KIND_TEXT[kind];
+  return `<section class="book couple-book" id="${kind}"><h3>${heading}</h3><p class="soft">${about}</p>`
+    + (kind === 'couple' ? `<div class="paper">${renderMap(couple)}</div>` : '')
+    + `<h3>${readingTitle}</h3><div class="book-paper">${rows}</div>${templates}`
+    + `<dialog class="book-dialog"><header><div><small></small><b>${dateStamp(dates[0])} + ${dateStamp(dates[1])}</b></div>`
+    + '<button type="button" class="close" aria-label="Хаах">×</button></header><div class="dlg-body"></div>'
+    + '<footer><button type="button" class="close">Хаах</button></footer></dialog></section>';
+}
+wireBook($('result'));
 
 $('compat-form').addEventListener('submit', (event) => {
   event.preventDefault();
