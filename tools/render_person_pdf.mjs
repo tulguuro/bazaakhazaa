@@ -1,5 +1,5 @@
 // Print one person's full reading as a PDF book, the same text the site
-// shows: the drawings, the energy of the present age, the manuscript reading,
+// shows: the drawings, the portrait and life timeline,
 // then every chapter of the eleven parts opened one after another (short
 // card, long text, the male or female note, pairs, links, point pairs).
 // With two people it also prints their compatibility by амин тоо.
@@ -195,7 +195,7 @@ function portraitHtml(hand, gender) {
     + `<div class="portrait-head">${arcana(n, true)}<p class="ptitle">${esc(t.title)}</p></div>`
     + paras(t.who.join('\n\n'))
     + `<h3>Таны агуу хувилбар</h3>${paras(t.greatness.join('\n\n'))}`
-    + `<h3>Тийш хүрэх зам</h3>${paras(t.path)}`
+    + `<h3>Агуу хувилбартаа хүрэх зам</h3>${paras(t.path)}`
     + `<p class="blessing">${esc(t.blessing)}</p></section>`;
 }
 
@@ -305,7 +305,7 @@ function personBook({ date, name, gender, clan = '', father = '' }) {
   const opening = [['portrait', 'Таны хөрөг', portraitHtml(hand, gender)], ['together', 'Таны тоонууд хамтдаа', togetherHtml(hand)],
     ['famous', 'Таны амин тоотой алдартнууд', famousHtml(hand)], ['details', 'Танд тохирох нарийн зүйлс', detailsHtml(hand)],
     ['timeline', 'Өнгөрсөн · Одоо · Ирээдүй', timelineHtml(hand, gender, now)]].filter(([, , html]) => html);
-  const toc = [['drawings', 'Матрицын зураг'], ...opening.map(([id, t]) => [id, t]), ...(readings ? [['manuscript', 'Гар бичмэлийн тайлбар']] : []),
+  const toc = [['drawings', 'Матрицын зураг'], ...opening.map(([id, t]) => [id, t]), ...(readings ? [['energies', 'Таны гол эрчмүүд']] : []),
     ...parts.map((p, i) => [`part-${i}`, p.title]), ['pythagoras', 'Нэмэлт бонус · Пифагорын квадрат']];
   let body = `<section class="cover"><p class="kicker">Хувь тавилангийн матриц</p><h1>${esc(name)}</h1>`
     + (clan || father ? `<p class="who">${esc(personText({ clan, father, name }))}</p>` : '')
@@ -315,7 +315,7 @@ function personBook({ date, name, gender, clan = '', father = '' }) {
   body += `<section class="drawing" id="drawings"><h2>Матрицын гол цэгүүд</h2>${renderMap(hand)}</section>`
     + `<section class="drawing"><h2>Гар зургийн матриц</h2>${renderHand(hand)}</section>`;
   body += opening.map(([, , html]) => html).join('');
-  if (readings) body += `<section class="part" id="manuscript"><h2>Гар бичмэлийн тайлбар</h2>${readingHtml(hand, readings, new Date(), { places: false })}</section>`;
+  if (readings) body += `<section class="part" id="energies"><h2>Таны гол эрчмүүд</h2>${readingHtml(hand, readings, new Date(), { places: false, locate: true })}</section>`;
   parts.forEach((part, i) => {
     body += `<section class="part book" id="part-${i}"><h2>${esc(part.title)}</h2>${part.chapters.map((c) => `<article class="chap">${c}</article>`).join('')}</section>`;
   });
@@ -335,6 +335,7 @@ const SHORT = [['essence', 'Мөн чанар'], ['strength', 'Хүч'], ['trap'
 function loveSide(person, index) {
   const hand = computeMatrix(person.date, 'hand');
   const texts = loadTexts(matrixDir);
+  const readings = readText(matrixDir, '..', 'data', 'readings.json');
   let html = `<section class="couple side" id="side-${index}"><h2>Хайр, харилцаанд · ${esc(person.name)}</h2>`;
   for (const [id, key] of LOVE_CHAPTERS) {
     const chapter = CHAPTERS.flatMap((part) => part.chapters).find((c) => c.id === id);

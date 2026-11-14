@@ -436,6 +436,12 @@ export function renderLocator(m, at, { blank = false } = {}) {
     nodes.push([`${key}.inner`, on(key, Math.SQRT1_2), m.lines[key].inner, 38, 36]);
     nodes.push([`${key}.mid`, on(key, 0.86), m.lines[key].mid, 38, 36]);
   }
+  // a corner's line towards the centre is drawn only when it is asked for
+  for (const key of DIAGONALS) {
+    if (!at.some((k) => k.startsWith(`${key}.`)) || !m.lines[key]) continue;
+    nodes.push([`${key}.inner`, on(key, Math.SQRT1_2), m.lines[key].inner, 38, 36]);
+    nodes.push([`${key}.mid`, on(key, 0.86), m.lines[key].mid, 38, 36]);
+  }
   nodes.push(['loveMoney.love', mix(loveFrom, loveTo, 0.25), m.loveMoney.love, 38, 36]);
   nodes.push(['loveMoney.mid', mix(loveFrom, loveTo, 0.5), m.loveMoney.mid, 38, 36]);
   nodes.push(['loveMoney.money', mix(loveFrom, loveTo, 0.75), m.loveMoney.money, 38, 36]);
@@ -447,9 +453,11 @@ export function renderLocator(m, at, { blank = false } = {}) {
   for (const [key, xy, value, r, size] of nodes) {
     const lit = hot.has(key);
     // lit positions are drawn larger, with a soft halo
-    out += (lit ? circle(xy, r * 1.12 + 12, { fill: 'rgba(184,138,46,0.22)' }) : '')
-      + circle(xy, lit ? r * 1.12 : r, { fill: lit ? LOC.hot : LOC.node, stroke: lit ? LOC.hotEdge : LOC.edge, width: lit ? 6 : 3 })
-      + text(xy, blank ? '' : value, { size: lit ? size * 1.12 : size, fill: lit ? LOC.hotInk : LOC.ink, weight: lit ? 700 : 500 });
+    // the small line points sit close together, so only the main points grow
+    const grow = lit && r > 40 ? 1.12 : 1;
+    out += (lit && r > 40 ? circle(xy, r * grow + 12, { fill: 'rgba(184,138,46,0.22)' }) : '')
+      + circle(xy, r * grow, { fill: lit ? LOC.hot : LOC.node, stroke: lit ? LOC.hotEdge : LOC.edge, width: lit ? 5 : 3 })
+      + text(xy, blank ? '' : value, { size: size * grow, fill: lit ? LOC.hotInk : LOC.ink, weight: lit ? 700 : 500 });
   }
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="20 20 1000 1000" class="locator" role="img" font-family="${FONT}"><title>Матриц дээрх байрлал</title>${out}</svg>`;
 }

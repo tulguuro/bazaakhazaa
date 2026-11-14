@@ -164,19 +164,20 @@ const purposeTitle = (data, n) => (data.purposes[n].name ? `${n} · ${data.purpo
 // Talents (авьяас): from God on the top line, from the mother on her line,
 // from the father on his line. A number repeated within a group is shown
 // once; the texts are our own (talents.js).
-function talentsHtml(hand) {
+function talentsHtml(hand, locate = false) {
   const groups = [
-    ['Бурхнаас өгсөн авьяас', 'Б шугам', hand.talents.god],
-    ['Эхээс өгсөн авьяас', 'Ж шугам, эхийн удам', hand.talents.mother],
-    ['Эцгээс өгсөн авьяас', 'Е шугам, эцгийн удам', hand.talents.father],
+    ['Бурхнаас өгсөн авьяас', 'Б шугам', hand.talents.god, ['top', 'top.mid', 'top.inner'], 'Дээд цэг ба түүнээс төв рүү чиглэсэн шугам'],
+    ['Эхээс өгсөн авьяас', 'Ж шугам, эхийн удам', hand.talents.mother, ['tr', 'tr.mid', 'tr.inner'], 'Баруун дээд булан ба түүнээс төв рүү чиглэсэн эхийн удмын шугам'],
+    ['Эцгээс өгсөн авьяас', 'Е шугам, эцгийн удам', hand.talents.father, ['tl', 'tl.mid', 'tl.inner'], 'Зүүн дээд булан ба түүнээс төв рүү чиглэсэн эцгийн удмын шугам'],
   ];
   const told = new Set();
-  return '<h3>Авьяас</h3>' + groups.map(([title, where, values]) => {
+  return '<h3>Авьяас</h3>' + groups.map(([title, where, values, at, words]) => {
     const items = [...new Set(values)].map((n) => {
       const first = !told.has(n);
       told.add(n);
       return `<p class="place"><b>${esc(TALENTS[n].name)} (${n}).</b> ${first ? esc(TALENTS[n].text) : '<span class="soft">дээр тайлбарласан</span>'}</p>`;
     }).join('');
+    if (locate) return `<h4>${title}</h4>${locatorHtml(hand, at, `<dt>Байрлал</dt><dd>${esc(words)}</dd><dt>Тоонууд</dt><dd>${values.join(' · ')}</dd>`)}${items}`;
     return `<h4>${title} <span class="soft">· ${where}: ${values.join(' · ')}</span></h4>${items}`;
   }).join('');
 }
@@ -195,9 +196,9 @@ export function coreNumbers(hand) {
   const d1 = p.centre;
   const d2 = reduce(p.bl + p.tl + p.tr + p.br);
   return [
-    { key: 'Д-1', name: 'Амин тоо', value: d1, how: 'төвийн тоо' },
-    { key: 'Д-2', name: 'Энэ насны эрчим', value: d2, how: `${L.bl} + ${L.tl} + ${L.tr} + ${L.br}: ${formula(p.bl, p.tl, p.tr, p.br)}` },
-    { key: 'Д-3', name: 'Нийлбэр тоо', value: hand.purposes.life, how: `Д-1 + Д-2: ${formula(d1, d2)}` },
+    { key: 'Д-1', name: 'Амин тоо', value: d1, how: 'төвийн тоо', at: ['centre'], words: 'Матрицын төв' },
+    { key: 'Д-2', name: 'Энэ насны эрчим', value: d2, how: `${L.bl} + ${L.tl} + ${L.tr} + ${L.br}: ${formula(p.bl, p.tl, p.tr, p.br)}`, at: ['tl', 'tr', 'br', 'bl'], words: 'Дөрвөн булангийн тоо нийлж үүсдэг' },
+    { key: 'Д-3', name: 'Нийлбэр тоо', value: hand.purposes.life, how: `Д-1 + Д-2: ${formula(d1, d2)}`, at: ['centre', 'tl', 'tr', 'br', 'bl'], words: 'Төв ба дөрвөн булан нийлж үүсдэг' },
   ];
 }
 
@@ -221,23 +222,27 @@ const AROUND_ORDER = ['left', 'tl', 'top', 'tr', 'right', 'br', 'bottom', 'bl'];
 // First the life purpose text for Д-3, then the 22 readings of Д-1, Д-2 and
 // Д-3 (a number shared by two of them is written once), then what the other
 // points mean.
-export function readingHtml(hand, data, today = new Date(), { places = true } = {}) {
+export function readingHtml(hand, data, today = new Date(), { places = true, locate = false } = {}) {
   if (!data) return NO_DATA;
   const core = coreNumbers(hand);
   const life = hand.purposes.life;
+  // printed, a number's origin is shown on the matrix instead of as a formula
+  const origin = (numbers) => (locate
+    ? locatorHtml(hand, [...new Set(numbers.flatMap((n) => n.at))], numbers.map((n) => `<dt>${esc(n.name)}</dt><dd>${esc(n.words)}</dd>`).join(''))
+    : `<p class="soft">${esc(numbers.map((n) => `${n.key}: ${n.how}`).join(' · '))}</p>`);
   let out = `<h3>Энэ насны зорилго, үүрэг даалгавар</h3><article class="purpose life"><span class="number">${esc(purposeTitle(data, life))}</span>`
-    + `<p class="soft">Нийлбэр тоо Д-3 = Д-1 + Д-2: ${esc(formula(core[0].value, core[1].value))}</p>${paragraphs(data.purposes[life].text)}</article>`;
+    + (locate ? origin([core[2]]) : `<p class="soft">Нийлбэр тоо Д-3 = Д-1 + Д-2: ${esc(formula(core[0].value, core[1].value))}</p>`) + `${paragraphs(data.purposes[life].text)}</article>`;
 
   out += '<h3>Амин тоо, энэ насны эрчим, нийлбэр тоо</h3>';
   const byValue = new Map();
   for (const number of core) byValue.set(number.value, [...(byValue.get(number.value) ?? []), number]);
   for (const [value, numbers] of byValue) {
-    const label = numbers.map((n) => `${n.key} · ${n.name}`).join(' · ');
-    const how = numbers.map((n) => `${n.key}: ${n.how}`).join(' · ');
-    out += `<details class="energy" open><summary><b>${value}</b><span>${esc(label)}</span></summary><p class="soft">${esc(how)}</p>${traits(data.energies[value])}</details>`;
+    const label = numbers.map((n) => (locate ? n.name : `${n.key} · ${n.name}`)).join(' · ');
+    out += `<details class="energy" open><summary><b>${value}</b><span>${esc(label)}</span></summary>${origin(numbers)}${traits(data.energies[value])}</details>`;
   }
 
-  out += talentsHtml(hand);
+  out += talentsHtml(hand, locate);
+  if (locate) return out;
   // the printed reading leaves this out: the site shows it on the animated matrix
   if (places) out += `<h3>Цэгүүдийн утга</h3>${placesHtml(hand)}`;
   const { values: strongest, count, total } = hand.dominant;
