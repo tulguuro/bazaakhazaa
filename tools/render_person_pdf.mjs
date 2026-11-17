@@ -85,6 +85,7 @@ details > summary { list-style: none; }
 .tf-row span { margin-left: 2mm; font-size: 8.5pt; color: var(--gold); } .tf-row small { display: block; color: var(--muted); } .tf-row p { margin: 1mm 0 0 !important; }
 .opening p { font: 11.5pt/1.55 var(--serif); margin: 0 0 3mm; }
 .opening .lead { font-style: italic; color: var(--muted); }
+.opening .keys { font: 600 8.5pt/1.5 var(--sans); letter-spacing: .14em; text-transform: uppercase; color: var(--gold); }
 .portrait-head { display: flex; align-items: center; gap: 6mm; margin: 4mm 0 5mm; }
 .portrait-head .ptitle { font: 600 24pt/1.15 var(--serif); color: var(--gold); margin: 0; }
 .fold-title { font: 600 17pt/1.2 var(--serif); color: var(--ink); margin: 9mm 0 3mm; padding-top: 5mm; border-top: 1px solid #e6dcc3; break-after: avoid; }
@@ -209,8 +210,16 @@ function portraitHtml(hand, gender, history) {
   const n = hand.points.centre;
   const t = gendered('portrait', gender)[n];
   if (!t) return '';
+  // what the energy means in general comes first; the scenes of the portrait
+  // are examples of it and follow (the owner, 2026-11-17)
+  const energy = readText(matrixDir, 'numbers', `${n}.json`);
+  const meaning = energy
+    ? `<h3>Энэ эрчим юуг илэрхийлдэг вэ</h3><p class="keys">${esc(energy.keywords.join(' · '))}</p><p>${esc(TALENTS[n].text)}</p>`
+      + `${paras(energy.sections.character)}<h3>Таны амьдралд хэрхэн илэрдэг вэ</h3>`
+    : '';
   return `<section class="part opening" id="portrait"><p class="kicker">Амин тоо ${n} · ${esc(TALENTS[n].name)}</p><h2>Таны хөрөг</h2>`
     + `<div class="portrait-head"><span class="side-loc">${renderLocator(hand, ['centre'])}</span>${arcana(n, true)}<p class="ptitle">${esc(t.title)}</p></div>`
+    + meaning
     + paras(t.who.join('\n\n'))
     + `<h3>Таны хүрч болох дээд боломж</h3>${paras(t.greatness.join('\n\n'))}`
     + `<h3>Тэр боломжоо хэрэгжүүлэх зам</h3>${paras(t.path)}`
