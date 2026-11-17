@@ -3,16 +3,17 @@
 // turns into the matrix), then the birth form, the numbers arriving, the
 // amin too formed out of stars and the journey through the matrix, where
 // every stop opens its chapters.
+// A second birth date opens the couple matrix and its own journey.
 //
 // For checking a single frame: ?t=12 holds the intro at 12 seconds, ?skip
 // starts at the form, ?demo=1990-01-01,male sends the form by itself and
-// &stage=amin or &stage=journey jumps on.
+// &stage=amin or &stage=journey jumps on; &pair=1992-02-02 adds a second person.
 import * as THREE from 'three';
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
-import { AROUND, computeMatrix, isValidDate, reduce } from '../matrix.js';
+import { AROUND, computeCouple, computeMatrix, isValidDate, reduce } from '../matrix.js';
 import { POINT_AGES, POINT_MEANINGS } from '../draw.js';
 import { CHAPTERS } from '../chapters.js';
 import {
@@ -20,6 +21,9 @@ import {
   currentAge, nextAge, pairContextFile, pairName,
 } from '../report.js';
 import { TALENTS } from '../talents.js';
+import {
+  COUPLE_PARTS, COUPLE_TAIL_FILES, COUPLE_ZONE_IDS, FIELDS as COUPLE_FIELDS, TAIL_FIELDS as COUPLE_TAIL_FIELDS, WHERE as COUPLE_WHERE,
+} from '../couple.js';
 import { createWorld } from './world.js';
 import { REVEAL_T, createMatrix } from './matrix3d.js';
 import { easeIn, easeInOut, easeOut, lerp, seg, smooth } from './gfx.js';
@@ -184,7 +188,7 @@ function introAt(t) {
 }
 
 // ── after the intro
-const form = $('form'); const amin = $('amin'); const journey = $('journey'); const reading = $('reading');
+const form = $('form'); const amin = $('amin'); const journey = $('journey'); const reading = $('reading'); const form2 = $('form2');
 const show = (el) => { el.hidden = false; requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add('on'))); };
 const hide = (el) => { el.classList.remove('on'); el.hidden = true; };
 
@@ -204,14 +208,23 @@ function enter(next) {
   matrix.setBeam(null);
   matrix.setMarker(null);
   current = null;
-  for (const el of [form, amin, journey, reading]) hide(el);
+  for (const el of [form, amin, journey, reading, form2]) hide(el);
   $('skip').hidden = next !== 'intro';
   caption.style.opacity = '0';
   veil.style.opacity = '0';
-  if (next === 'form') { show(form); view.wantFigure = 0; view.wantDim = 1; }
+  if (next === 'form') { mode = 'person'; show(form); view.wantFigure = 0; view.wantDim = 1; }
+  if (next === 'partner') { show(form2); view.wantFigure = 0; view.wantDim = 1; }
   if (next === 'reveal') { view.wantFigure = 0; view.wantDim = 1; }
   if (next === 'amin') { show(amin); view.wantFigure = 1; view.wantDim = 0.14; }
-  if (next === 'journey') { show(journey); view.wantFigure = 0; view.wantDim = 1; }
+  if (next === 'journey') {
+    $('own').hidden = mode !== 'couple';
+    $('pair').hidden = mode === 'couple';
+    $('hint').textContent = mode === 'couple'
+      ? `${couple.names.join(' + ')} · хосын матриц`
+      : 'Цэг дээр дарж тайлбарыг нь уншина уу. Хослол, холбоос, бүлгүүд «Агуулга» дотор бий.';
+    show(journey);
+    view.wantFigure = 0; view.wantDim = 1;
+  }
 }
 
 function endIntro() {
@@ -255,7 +268,7 @@ for (const button of document.querySelectorAll('.gender button')) {
   });
 }
 $('skip').addEventListener('click', endIntro);
-$('go').addEventListener('click', () => { enter('journey'); goTo(ROUTE[0]); });
+$('go').addEventListener('click', () => { enter('journey'); goTo(route()[0]); });
 $('overview').addEventListener('click', () => enter('journey'));
 $('again').addEventListener('click', () => enter('form'));
 $('again2').addEventListener('click', () => enter('form'));
@@ -295,6 +308,7 @@ const GROUPS = [
   ['Таны хөрөг', ['portrait']], ['Матрицын цэгүүд', ['place']], ['Бүлгүүд', ['tail', 'many', 'career', 'age', 'one']],
   ['Зургаан холбоос', ['link']], ['Гол цэгүүдийн хослол', ['pair']], ['Алдартнууд', ['famous']],
 ];
+for (const stop of ROUTE) stop.group = GROUPS.find(([, kinds]) => kinds.includes(stop.kind))[0];
 // chapters that read several places and the combinations of their numbers
 const MANY = ROUTE.filter((stop) => stop.kind === 'many').map((stop) => stop.id);
 const PLACE = {
@@ -381,8 +395,10 @@ const pairBlock = (x, y, pair, rows = PAIR_ROWS, lead = '') => block(
 
 // the name of a stop in the contents, and the numbers it reads
 function stopLabel(stop, texts) {
-  const { m } = person;
+  const m = subject();
   const numbers = (keys) => keys.map((key) => valueAt(m, key)).join(' · ');
+  if (stop.kind === 'compat') return ['Амин тоогоор тохирол', `${couple.a} + ${couple.b}`];
+  if (stop.kind === 'zone') return [texts.zones[stop.id]?.name ?? stop.zone.name, numbers(stop.zone.at)];
   if (stop.kind === 'portrait') return [person.portrait?.title ?? 'Хөрөг', String(m.points.centre)];
   if (stop.kind === 'place') return [placeName(stop.id), String(valueAt(m, stop.id))];
   if (stop.kind === 'link') return [texts.links[stop.id]?.name ?? stop.id, String(m[stop.prop].value)];
@@ -395,12 +411,12 @@ function stopLabel(stop, texts) {
 
 // what one stop says: [kicker, title, blocks]
 function stopContent(stop, texts) {
-  const { m } = person;
+  const m = subject();
   if (stop.kind === 'contents') {
-    return ['Аялал', 'Агуулга', GROUPS.map(([title, kinds]) => {
+    return [mode === 'couple' ? couple.names.join(' + ') : 'Аялал', 'Агуулга', [...new Set(route().map((s) => s.group))].map((title) => {
       const section = make('section', 'toc', '');
       section.append(make('h3', '', title));
-      for (const item of ROUTE.filter((s) => kinds.includes(s.kind))) {
+      for (const item of route().filter((s) => s.group === title)) {
         const [name, numbers] = stopLabel(item, texts);
         const row = make('button', 'toc__row', '');
         row.type = 'button';
@@ -411,6 +427,7 @@ function stopContent(stop, texts) {
       return section;
     })];
   }
+  if (mode === 'couple') return coupleContent(stop, texts);
   const c = chapterOf(stop.id);
   if (stop.kind === 'tail') {
     // keyed from the centre outwards, read from the outside in
@@ -548,9 +565,9 @@ async function goTo(stop) {
   body.replaceChildren();
   $('r-kicker').textContent = '';
   $('r-title').textContent = '';
-  $('r-count').textContent = stop === CONTENTS ? '' : `${ROUTE.indexOf(stop) + 1} / ${ROUTE.length}`;
+  $('r-count').textContent = stop === CONTENTS ? '' : `${route().indexOf(stop) + 1} / ${route().length}`;
   show(reading);
-  const texts = await person.texts;
+  const texts = await (mode === 'couple' ? couple : person).texts;
   if (current !== stop) return;
   const [kicker, title, blocks] = stopContent(stop, texts);
   $('r-kicker').textContent = kicker;
@@ -558,9 +575,11 @@ async function goTo(stop) {
   body.append(...blocks);
   $('r-scroll').scrollTop = 0;
 }
-const travel = (step) => goTo(ROUTE[(ROUTE.indexOf(current) + step + ROUTE.length) % ROUTE.length]);
-const placeStop = (key) => ROUTE.find((stop) => stop.kind === 'place' && stop.id === key) ?? null;
-$('start').addEventListener('click', () => goTo(ROUTE[0]));
+const travel = (step) => goTo(route()[(route().indexOf(current) + step + route().length) % route().length]);
+// the stop that reads one seat: its own stop, or in a couple matrix the zone that reads that place alone
+const placeStop = (key) => route().find((stop) => (stop.kind === 'place' && stop.id === key)
+  || (stop.kind === 'zone' && stop.zone.at.length === 1 && stop.zone.at[0] === key)) ?? null;
+$('start').addEventListener('click', () => goTo(route()[0]));
 $('prev').addEventListener('click', () => travel(-1));
 $('next').addEventListener('click', () => travel(1));
 $('close').addEventListener('click', () => goTo(null));
@@ -582,7 +601,107 @@ $('scene').addEventListener('pointermove', (e) => {
   $('scene').style.cursor = matrix.pick(e.clientX, e.clientY, camera, W, H, PLACES) ? 'pointer' : '';
 });
 
-const bottomOf = { form, amin, journey };
+// ── two people: the couple matrix (both charts added place by place) read
+// zone by zone, after the compatibility of the two amin too
+let mode = 'person';
+let couple = null; // { m, a, b, names, texts }
+const AREAS = [['love', 'Хайр дурлал'], ['family', 'Гэр бүл'], ['business', 'Бизнесийн түнш'], ['friendship', 'Нөхөрлөл'], ['money', 'Мөнгө']];
+const PURPOSE_SEATS = {
+  'purposes.father': ['tl', 'br'], 'purposes.mother': ['tr', 'bl'],
+  'purposes.personal': ['left', 'top', 'right', 'bottom'], 'purposes.social': CORNERS, 'purposes.spiritual': AROUND,
+};
+const COUPLE_ROUTE = [
+  { kind: 'compat', id: 'compat', seats: [], group: 'Амин тоогоор тохирол' },
+  ...COUPLE_PARTS.flatMap((part) => part.zones.map((zone) => {
+    const seats = [...new Set(zone.at.flatMap((key) => PURPOSE_SEATS[key] ?? [key]))];
+    return { kind: 'zone', id: zone.id, zone, seats, group: part.title, beam: seats.length === 2 || seats.length === 3 ? seats : null };
+  })),
+];
+const route = () => (mode === 'couple' ? COUPLE_ROUTE : ROUTE);
+const subject = () => (mode === 'couple' ? couple.m : person.m);
+function loadCoupleTexts(a, b) {
+  const get = (path) => fetch(`../texts/${path}.json`).then((r) => (r.ok ? r.json() : null)).catch(() => null);
+  return (async () => {
+    const [zones, tails, compat] = await Promise.all([
+      Promise.all(COUPLE_ZONE_IDS.map((id) => get(`couple/${id}`).then((d) => [id, d]))).then(Object.fromEntries),
+      Promise.all(COUPLE_TAIL_FILES.map((f) => get(`couple/tails/${f}`))).then((files) => Object.assign({}, ...files.map((f) => f?.tails ?? {}))),
+      get(`compat/${Math.min(a, b)}-${Math.max(a, b)}`),
+    ]);
+    return { zones, tails, compat };
+  })();
+}
+function coupleContent(stop, texts) {
+  const { m, a, b } = couple;
+  if (stop.kind === 'compat') {
+    const text = texts.compat;
+    const title = `${TALENTS[a].name} + ${TALENTS[b].name}`;
+    if (!text) return [`Амин тоо ${a} + ${b}`, title, [para(`${a} ба ${b} амин тооны тохирлын тайлбар бичигдэж байна.`)]];
+    const scores = make('ul', 'scores', '');
+    for (const [key, name] of AREAS) {
+      const score = text[key]?.score ?? 0;
+      const li = make('li', '', '');
+      const bar = make('i', '', '');
+      const fill = make('b', '', '');
+      fill.style.width = `${score * 20}%`;
+      bar.append(fill);
+      li.append(make('span', '', name), bar, make('small', '', `${score}/5`));
+      scores.append(li);
+    }
+    return [`Амин тоо ${a} + ${b}`, title, [
+      para(text.headline, 'blessing'), scores, ...paragraphs(text.overview).map(([, line]) => para(line)),
+      ...AREAS.filter(([key]) => text[key]).map(([key, name]) => block(name, '', paragraphs(text[key].text))),
+      bullets('Юу сайн ажилладаг', text.strengths), bullets('Хаана мөргөлддөг', text.tensions),
+      block('Зөвлөгөө', '', paragraphs(text.advice)),
+    ]];
+  }
+  const { zone } = stop;
+  const file = texts.zones[zone.id];
+  const values = zone.at.map((key) => valueAt(m, key));
+  const out = [para(file?.asks ?? '', 'reading__ask')];
+  // the three numbers of the bottom line are also read as one story
+  if (zone.id === 'couple-tail') {
+    const code = [...values].reverse().join('-');
+    const combo = texts.tails[code];
+    if (combo) out.push(block(combo.name, `Гурван тоо хамтдаа · ${code}`, [['', combo.story], ...fieldRows(combo, COUPLE_TAIL_FIELDS)]));
+  }
+  const seen = new Set();
+  values.forEach((n, k) => {
+    if (!n || seen.has(n)) return;
+    seen.add(n);
+    const entry = file?.texts?.[n];
+    out.push(block(numberName(n), zone.at.length > 1 ? COUPLE_WHERE[zone.at[k]] ?? '' : '',
+      entry ? [...fieldRows(entry, COUPLE_FIELDS), ['', entry.more]] : [['', TALENTS[n].text]]));
+  });
+  return [stop.group, file?.name ?? zone.name, out];
+}
+
+async function submitPartner() {
+  const [year, month, day] = ['year2', 'month2', 'day2'].map((id) => Number($(id).value.trim()));
+  const error = $('error2');
+  error.textContent = '';
+  if (!isValidDate(year, month, day)) { error.textContent = 'Төрсөн он, сар, өдрийг зөв оруулна уу.'; return; }
+  const a = person.n;
+  const b = computeMatrix({ year, month, day }, 'hand').points.centre;
+  couple = {
+    m: computeCouple(person.m.date, { year, month, day }, 'all'), a, b,
+    names: [$('name').value.trim() || 'Та', $('name2').value.trim() || 'Хос тань'],
+    texts: loadCoupleTexts(a, b),
+  };
+  mode = 'couple';
+  matrix.setMatrix(couple.m);
+  enter('reveal');
+}
+function backToPerson() {
+  mode = 'person';
+  matrix.setMatrix(person.m);
+  enter('journey');
+}
+form2.addEventListener('submit', (e) => { e.preventDefault(); submitPartner(); });
+for (const id of ['pair', 'pair0']) $(id).addEventListener('click', () => enter('partner'));
+$('back').addEventListener('click', () => enter('journey'));
+$('own').addEventListener('click', backToPerson);
+
+const bottomOf = { form, amin, journey, partner: form2 };
 function interactive(dt) {
   const el = bottomOf[state];
   // the chapters of a stop take the right side of a wide screen, the lower part of a narrow one
@@ -617,7 +736,12 @@ function interactive(dt) {
 
   const s = time - stateStart;
   if (state === 'form') { matrix.drawBlank(1); matrix.idle(time); }
-  if (state === 'reveal') { matrix.reveal(s); if (s > REVEAL_T) enter('amin'); }
+  if (state === 'reveal') {
+    matrix.reveal(s);
+    // one person goes on to the amin too, a couple straight to its first text
+    if (s > REVEAL_T && mode === 'couple') { enter('journey'); goTo(route()[0]); } else if (s > REVEAL_T) enter('amin');
+  }
+  if (state === 'partner') { matrix.reveal(99); matrix.idle(time); }
   if (state === 'amin') matrix.reveal(99);
   if (state === 'journey') { matrix.reveal(99); matrix.idle(time); }
 
@@ -662,6 +786,11 @@ if (query.has('demo')) {
   gender = g || 'male';
   await submit();
   const stage = query.get('stage');
+  if (query.has('pair')) {
+    const [y2, m2, d2] = query.get('pair').split('-');
+    $('year2').value = y2; $('month2').value = Number(m2); $('day2').value = Number(d2);
+    await submitPartner();
+  }
   if (stage) { matrix.reveal(99); enter(stage); }
 }
 requestAnimationFrame(frame);

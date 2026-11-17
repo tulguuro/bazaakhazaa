@@ -205,7 +205,12 @@ export function createMatrix() {
 
     setMatrix(m) {
       for (const [key, node] of Object.entries(nodes)) node.num.material.map = numberTexture(m.points[key], 600);
-      for (const s of smalls) s.num.material.map = numberTexture(m.lines[s.key][s.field]);
+      // a couple matrix has no numbers on the inner half of its lines: those seats stay empty
+      for (const s of smalls) {
+        const value = m.lines[s.key][s.field];
+        s.off = value == null;
+        if (!s.off) s.num.material.map = numberTexture(value);
+      }
       for (const s of loveSeats) s.num.material.map = numberTexture(m.loveMoney[s.field]);
       for (const s of [...Object.values(nodes), ...smalls, ...loveSeats]) s.num.material.needsUpdate = true;
       figGeo.attributes.aTarget.array.set(textPoints(String(m.points.centre), N, 4.3, 5.8));
@@ -277,8 +282,8 @@ export function createMatrix() {
         const size = s.size * (1 + 0.45 * s.flash) * (chosen ? 1.35 : 1);
         s.ring.scale.setScalar(size);
         s.num.scale.setScalar(size * 0.8);
-        s.ring.material.opacity = s.show * d;
-        s.num.material.opacity = s.show * d;
+        s.ring.material.opacity = s.off ? 0 : s.show * d;
+        s.num.material.opacity = s.off ? 0 : s.show * d;
         s.ring.material.color.copy(s.color).multiplyScalar(1.1 + 3 * s.flash + (chosen ? 1.2 : 0));
         s.num.material.color.setScalar(1 + 2.5 * s.flash);
         if (s.dot) {

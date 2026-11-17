@@ -71,7 +71,7 @@ export const BUSINESS_ZONE_IDS = BUSINESS_PARTS.flatMap((part) => part.zones.map
 export const PAIR_KINDS = { couple: { parts: COUPLE_PARTS, ids: COUPLE_ZONE_IDS, dir: 'couple' }, business: { parts: BUSINESS_PARTS, ids: BUSINESS_ZONE_IDS, dir: 'business' } };
 
 // where each position sits on the couple chart, shown above its card
-const WHERE = {
+export const WHERE = {
   centre: 'Төв', left: 'Зүүн орой', top: 'Дээд орой', right: 'Баруун орой', bottom: 'Доод орой',
   tl: 'Зүүн дээд булан', tr: 'Баруун дээд булан', 'bottom.mid': 'Доод шугамын дунд тоо', 'bottom.inner': 'Доод шугамын дотор тоо',
   'loveMoney.mid': 'Хайр, мөнгөний уулзвар', 'loveMoney.love': 'Хайрын цэг', 'loveMoney.money': 'Мөнгөний цэг',
@@ -79,8 +79,8 @@ const WHERE = {
   'purposes.father': 'Эцгийн удмын шугам', 'purposes.mother': 'Эхийн удмын шугам',
   'purposes.personal': 'Хувийн зорилго', 'purposes.social': 'Нийгмийн зорилго', 'purposes.spiritual': 'Сүнслэг зорилго',
 };
-const FIELDS = [['essence', 'Мөн чанар'], ['gift', 'Бэлэг'], ['trap', 'Сул тал'], ['step', 'Зөвлөгөө']];
-const TAIL_FIELDS = [['now', 'Өнөөдөр'], ['trap', 'Сул тал'], ['key', 'Түлхүүр'], ['step', 'Зөвлөгөө']];
+export const FIELDS = [['essence', 'Мөн чанар'], ['gift', 'Бэлэг'], ['trap', 'Сул тал'], ['step', 'Зөвлөгөө']];
+export const TAIL_FIELDS = [['now', 'Өнөөдөр'], ['trap', 'Сул тал'], ['key', 'Түлхүүр'], ['step', 'Зөвлөгөө']];
 // files of texts/couple/tails/ holding the 97 three-number couple tails
 export const COUPLE_TAIL_FILES = ['part1', 'part2'];
 

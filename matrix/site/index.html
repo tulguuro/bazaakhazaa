@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600&display=swap">
-  <link rel="stylesheet" href="site.css?v=5">
+  <link rel="stylesheet" href="site.css?v=7">
   <!-- The server lets browsers keep scripts for an hour. Raise every ?v= number
        on this page together when any script or the style sheet changes, so a
        visitor never runs a new file against an old one. -->
@@ -17,14 +17,15 @@
       "imports": {
         "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
         "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/",
-        "./world.js": "./world.js?v=5",
-        "./matrix3d.js": "./matrix3d.js?v=5",
-        "./gfx.js": "./gfx.js?v=5",
-        "../matrix.js": "../matrix.js?v=5",
-        "../draw.js": "../draw.js?v=5",
-        "../talents.js": "../talents.js?v=5",
-        "../chapters.js": "../chapters.js?v=5",
-        "../report.js": "../report.js?v=5"
+        "./world.js": "./world.js?v=7",
+        "./matrix3d.js": "./matrix3d.js?v=7",
+        "./gfx.js": "./gfx.js?v=7",
+        "../matrix.js": "../matrix.js?v=7",
+        "../draw.js": "../draw.js?v=7",
+        "../talents.js": "../talents.js?v=7",
+        "../chapters.js": "../chapters.js?v=7",
+        "../report.js": "../report.js?v=7",
+        "../couple.js": "../couple.js?v=7"
       }
     }
   </script>
@@ -56,6 +57,19 @@
     <p id="error" class="birth__error" role="alert"></p>
   </form>
 
+  <form id="form2" class="birth" hidden novalidate>
+    <p class="birth__lead">Хосынхоо төрсөн өдрийг оруулна уу</p>
+    <div class="birth__row">
+      <label><span>Он</span><input id="year2" inputmode="numeric" maxlength="4" autocomplete="off"></label>
+      <label><span>Сар</span><input id="month2" inputmode="numeric" maxlength="2" autocomplete="off"></label>
+      <label><span>Өдөр</span><input id="day2" inputmode="numeric" maxlength="2" autocomplete="off"></label>
+      <label class="wide"><span>Нэр</span><input id="name2" autocomplete="off"></label>
+      <button type="submit" class="cta">Тохирлыг нээх</button>
+      <button id="back" class="ghost" type="button">Буцах</button>
+    </div>
+    <p id="error2" class="birth__error" role="alert"></p>
+  </form>
+
   <section id="amin" class="amin" hidden>
     <p id="who" class="amin__who"></p>
     <p id="amin-kicker" class="kicker"></p>
@@ -65,15 +79,18 @@
     <div class="amin__actions">
       <button id="go" class="cta" type="button">Хөргөө унших</button>
       <button id="overview" class="ghost" type="button">Бүтэн матриц</button>
+      <button id="pair0" class="ghost" type="button">Хосын тохирол</button>
       <button id="again" class="ghost" type="button">Өөр өдөр</button>
     </div>
   </section>
 
   <section id="journey" class="journey" hidden>
-    <p class="journey__hint">Цэг дээр дарж тайлбарыг нь уншина уу. Хослол, холбоос, бүлгүүд «Агуулга» дотор бий.</p>
+    <p id="hint" class="journey__hint"></p>
     <p class="journey__pay">
       <button id="start" class="cta cta--small" type="button">Аяллыг эхлүүлэх</button>
       <button id="contents2" class="ghost" type="button">Агуулга</button>
+      <button id="pair" class="ghost" type="button">Хосын тохирол</button>
+      <button id="own" class="ghost" type="button" hidden>Өөрийн матриц</button>
       <button id="again2" class="ghost" type="button">Өөр өдөр</button>
     </p>
   </section>
@@ -93,6 +110,6 @@
     </nav>
   </aside>
 
-  <script type="module" src="main.js?v=5"></script>
+  <script type="module" src="main.js?v=7"></script>
 </body>
 </html>
