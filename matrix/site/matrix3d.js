@@ -48,6 +48,11 @@ export function createMatrix() {
   const loveTo = on('right', Math.SQRT1_2);
   const love = line([loveFrom, loveTo], ROSE, 0.1);
 
+  // the line of light between the two places of a link or a combination
+  const beam = line([centre, on('top')], PALE, 0.14);
+  lines.pop();
+  let beamOn = false;
+
   // a number in its round seat
   function seat(at, size, color) {
     const ringSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: seatMap, color: color.clone(), transparent: true, depthTest: false, opacity: 0 }));
@@ -223,6 +228,18 @@ export function createMatrix() {
         const x = ((time * 0.11 + i * 0.173) % 1) * 2.6 - 0.8;
         pulse(l, x, 0.45);
       });
+      if (beamOn) pulse(beam, ((time * 0.42) % 1) * 1.3 - 0.15, 1.2);
+    },
+
+    // join two seats with a line of light, or take it away with null
+    setBeam(keys) {
+      beamOn = Boolean(keys);
+      if (keys) {
+        beam.mesh.geometry.dispose();
+        beam.mesh.geometry = ribbon(keys.map((key) => seats[key].at), 0.14);
+      }
+      beam.u.uProgress.value = beamOn ? 1 : 0;
+      beam.u.uPulseAmp.value = 0;
     },
 
     // 0 scattered stars, 1 the amin too
@@ -238,7 +255,7 @@ export function createMatrix() {
       figMat.uniforms.uProj.value = proj;
       const d = dim.value;
       const paint = (s) => {
-        const chosen = api.focus && seats[api.focus] === s;
+        const chosen = api.focus && api.focus.some((key) => seats[key] === s);
         const size = s.size * (1 + 0.45 * s.flash) * (chosen ? 1.35 : 1);
         s.ring.scale.setScalar(size);
         s.num.scale.setScalar(size * 0.8);

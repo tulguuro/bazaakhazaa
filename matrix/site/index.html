@@ -8,12 +8,23 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600&display=swap">
-  <link rel="stylesheet" href="site.css">
+  <link rel="stylesheet" href="site.css?v=3">
+  <!-- The server lets browsers keep scripts for an hour. Raise every ?v= number
+       on this page together when any script or the style sheet changes, so a
+       visitor never runs a new file against an old one. -->
   <script type="importmap">
     {
       "imports": {
         "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
-        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/",
+        "./world.js": "./world.js?v=3",
+        "./matrix3d.js": "./matrix3d.js?v=3",
+        "./gfx.js": "./gfx.js?v=3",
+        "../matrix.js": "../matrix.js?v=3",
+        "../draw.js": "../draw.js?v=3",
+        "../talents.js": "../talents.js?v=3",
+        "../chapters.js": "../chapters.js?v=3",
+        "../report.js": "../report.js?v=3"
       }
     }
   </script>
@@ -52,7 +63,8 @@
     <p id="amin-name" class="amin__name"></p>
     <p id="amin-text" class="amin__text"></p>
     <div class="amin__actions">
-      <button id="go" class="cta" type="button">Аяллаа үргэлжлүүлэх</button>
+      <button id="go" class="cta" type="button">Хөргөө унших</button>
+      <button id="overview" class="ghost" type="button">Бүтэн матриц</button>
       <button id="again" class="ghost" type="button">Өөр өдөр</button>
     </div>
   </section>
@@ -79,6 +91,6 @@
     </nav>
   </aside>
 
-  <script type="module" src="main.js"></script>
+  <script type="module" src="main.js?v=3"></script>
 </body>
 </html>

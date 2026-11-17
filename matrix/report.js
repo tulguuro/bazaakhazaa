@@ -553,10 +553,10 @@ export const pairName = (x, y) => (x === y ? `${x} давхар`
   : / ба /.test(x + y) ? `${x}, ${y} хоёр` : `${x} ба ${y}`);
 const pairTitle = (a, b) => esc(pairName(TALENTS[a].name, TALENTS[b].name));
 
-const PAIR_ROWS = [['gift', 'Бэлэг'], ['tension', 'Зөрчил'], ['balance', 'Тэнцвэр']];
+export const PAIR_ROWS = [['gift', 'Бэлэг'], ['tension', 'Зөрчил'], ['balance', 'Тэнцвэр']];
 // Pairs with the bottom point read as meeting the soul's test.
 const TEST_ROWS = [['tension', 'Сорилт хэрхэн илэрдэг'], ['gift', 'Давсан үед'], ['balance', 'Түлхүүр']];
-const PAIR_ROWS_BY_CONTEXT = { 'centre+bottom': TEST_ROWS, 'right+bottom': TEST_ROWS, 'left+bottom': TEST_ROWS };
+export const PAIR_ROWS_BY_CONTEXT = { 'centre+bottom': TEST_ROWS, 'right+bottom': TEST_ROWS, 'left+bottom': TEST_ROWS };
 const pairHtml = (a, b, pair, rows = PAIR_ROWS) => (pair
   ? `<div class="pair"><h5>${a} + ${b} · ${pairTitle(a, b)}</h5><p>${esc(pair.together)}</p>`
     + `<table class="short">${rows.map(([key, label]) => `<tr><th>${label}</th><td>${esc(pair[key])}</td></tr>`).join('')}</table></div>`
@@ -565,11 +565,11 @@ const pairHtml = (a, b, pair, rows = PAIR_ROWS) => (pair
 // The main points of the chart read two at a time: how the numbers of, say,
 // the centre and the top work together in one person. Pairs that the six
 // links already read (А + В, Б + Г, the family corners) are left out.
-const POINT_NAMES = {
+export const POINT_NAMES = {
   centre: 'Амин тоо', top: 'Авьяас', left: 'Зан чанар', right: 'Сүнсний зорилго', bottom: 'Сүнсний сорилт',
   'loveMoney.love': 'Тохирох хань', 'loveMoney.money': 'Санхүүгийн суваг',
 };
-const POINT_PAIRS = [
+export const POINT_PAIRS = [
   ['centre', 'top'], ['centre', 'left'], ['centre', 'right'], ['centre', 'bottom'],
   ['left', 'top'], ['top', 'right'], ['right', 'bottom'], ['left', 'bottom'],
   ['centre', 'loveMoney.love'], ['right', 'loveMoney.money'],
@@ -612,7 +612,7 @@ const HAND_POINT = { left: 'А', top: 'Б', right: 'В', bottom: 'Г', centre: '
 // The owner's six links as a tenth part of the contents. Each has a base
 // number (its two points added) and a detailed number (every number between
 // them); texts in matrix/texts/links/<id>.json.
-const LINKS = [
+export const LINKS = [
   ['sky-earth', 'skyEarth', 'Б + Г · 20 ба 60 нас'],
   ['fate-struggle', 'fate', 'А + В · 0 ба 40 нас'],
   ['father-line', 'fatherLine', 'Е + И · 10 ба 50 нас'],
@@ -620,11 +620,11 @@ const LINKS = [
   ['family-men', 'familyMen', 'Е + Ж · 10 ба 30 нас'],
   ['family-women', 'familyWomen', 'И + З · 50 ба 70 нас'],
 ];
-const LINK_POINTS = {
+export const LINK_POINTS = {
   'sky-earth': ['top', 'bottom'], 'fate-struggle': ['left', 'right'], 'father-line': ['tl', 'br'],
   'mother-line': ['tr', 'bl'], 'family-men': ['tl', 'tr'], 'family-women': ['br', 'bl'],
 };
-const LINK_FIELDS = [['essence', 'Мөн чанар'], ['gift', 'Бэлэг'], ['trap', 'Сул тал'], ['step', 'Зөвлөгөө']];
+export const LINK_FIELDS = [['essence', 'Мөн чанар'], ['gift', 'Бэлэг'], ['trap', 'Сул тал'], ['step', 'Зөвлөгөө']];
 
 function linkParts(hand, links) {
   if (!links) return null;

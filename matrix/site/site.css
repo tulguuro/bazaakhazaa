@@ -130,6 +130,9 @@ html, body {
 .chapter__asks { margin: 0 0 6px; font: italic 500 18px/1.35 var(--serif); color: var(--dim); }
 .chapter h4 { margin: 16px 0 5px; font: 500 10px/1 var(--sans); letter-spacing: 0.26em; text-transform: uppercase; color: var(--dim); }
 .chapter p:not(.chapter__asks) { margin: 0; font: 400 15px/1.72 var(--sans); color: rgba(244, 236, 220, 0.9); }
+.reading__p, .blessing { margin: 0 0 16px; font: 400 15px/1.72 var(--sans); color: rgba(244, 236, 220, 0.9); }
+.reading__p + .chapter { margin-top: 30px; }
+.blessing { margin-top: -10px; font: italic 500 21px/1.4 var(--serif); color: var(--gold); }
 .reading__nav { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; padding-top: 12px; }
 #r-count { font: 500 11px/1 var(--sans); letter-spacing: 0.14em; color: var(--dim); }
 #close { margin-left: auto; }

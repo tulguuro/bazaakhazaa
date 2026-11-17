@@ -15,7 +15,7 @@ import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { computeMatrix, isValidDate } from '../matrix.js';
 import { POINT_AGES, POINT_MEANINGS } from '../draw.js';
 import { CHAPTERS } from '../chapters.js';
-import { FIELDS } from '../report.js';
+import { FIELDS, LINKS, LINK_FIELDS, LINK_POINTS, PAIR_ROWS, PAIR_ROWS_BY_CONTEXT, POINT_NAMES, POINT_PAIRS, pairContextFile, pairName } from '../report.js';
 import { TALENTS } from '../talents.js';
 import { createWorld } from './world.js';
 import { REVEAL_T, createMatrix } from './matrix3d.js';
@@ -198,6 +198,8 @@ function enter(next) {
   state = next;
   stateStart = time;
   matrix.focus = null;
+  matrix.setBeam(null);
+  current = null;
   for (const el of [form, amin, journey, reading]) hide(el);
   $('skip').hidden = next !== 'intro';
   caption.style.opacity = '0';
@@ -231,7 +233,7 @@ async function submit() {
   const entry = texts?.texts?.[n];
   const name = $('name').value.trim();
   const stamp = [year, String(month).padStart(2, '0'), String(day).padStart(2, '0')].join('.');
-  person = { m, n, texts: loadChapters(gender) };
+  person = { m, n, portrait: entry, texts: loadTexts(gender) };
   matrix.setMatrix(m);
   $('who').textContent = [$('clan').value.trim(), $('father').value.trim(), name, stamp].filter(Boolean).join(' · ');
   $('amin-kicker').textContent = name ? `${name}, таны амин тоо` : 'Таны амин тоо';
@@ -249,15 +251,23 @@ for (const button of document.querySelectorAll('.gender button')) {
   });
 }
 $('skip').addEventListener('click', endIntro);
-$('go').addEventListener('click', () => enter('journey'));
+$('go').addEventListener('click', () => { enter('journey'); goTo(ROUTE[0]); });
+$('overview').addEventListener('click', () => enter('journey'));
 $('again').addEventListener('click', () => enter('form'));
 $('again2').addEventListener('click', () => enter('form'));
 window.addEventListener('pointermove', (e) => { pointer.x = (e.clientX / W) * 2 - 1; pointer.y = (e.clientY / H) * 2 - 1; });
 
-// ── the journey: every stop is a place on the matrix with its own chapters
-const ROUTE = ['centre', 'left', 'tl', 'top', 'tr', 'right', 'br', 'bottom', 'bl',
+// ── the journey: every stop is one place on the matrix, or two places read
+// together, with its texts. It begins with the portrait of the amin too.
+const PLACES = ['centre', 'left', 'tl', 'top', 'tr', 'right', 'br', 'bottom', 'bl',
   'top.mid', 'top.inner', 'right.mid', 'right.inner', 'bottom.mid', 'bottom.inner',
   'loveMoney.love', 'loveMoney.mid', 'loveMoney.money'];
+const ROUTE = [
+  { kind: 'portrait', id: 'portrait', seats: ['centre'] },
+  ...PLACES.map((key) => ({ kind: 'place', id: key, seats: [key] })),
+  ...LINKS.map(([id, prop]) => ({ kind: 'link', id, prop, seats: LINK_POINTS[id] })),
+  ...POINT_PAIRS.map(([p, q]) => ({ kind: 'pair', id: `${p}+${q}`, seats: [p, q] })),
+];
 const PLACE = {
   centre: 'Төв цэг · Амин тоо',
   'top.mid': 'Дээд дунд тоо', 'top.inner': 'Дээд дотор тоо',
@@ -277,13 +287,25 @@ const valueAt = (m, key) => {
   const [group, part] = key.split('.');
   return group === 'loveMoney' ? m.loveMoney[part] : m.lines[group][part];
 };
-const chapterCache = {};
-function loadChapters(g) {
-  chapterCache[g] ??= Promise.all([...new Set(ROUTE.flatMap(chaptersAt))].map((c) =>
-    fetch(`../texts/by-gender/${g}/${c.id}.json`).then((r) => (r.ok ? r.json() : null)).catch(() => null)
-      .then((data) => [c.id, data?.texts ?? {}])))
-    .then(Object.fromEntries);
-  return chapterCache[g];
+const numberName = (n) => `${n} · ${TALENTS[n].name}`;
+
+// every text the journey shows: the chapters in the person's gender, the six
+// links, and the combinations (written for a pair of places, or the general one)
+const textCache = {};
+function loadTexts(g) {
+  const get = (path) => fetch(`../texts/${path}.json`).then((r) => (r.ok ? r.json() : null)).catch(() => null);
+  const table = (list) => Promise.all(list).then(Object.fromEntries);
+  textCache[g] ??= (async () => {
+    const ids = [...new Set(PLACES.flatMap(chaptersAt).map((c) => c.id))];
+    const [chapters, links, own, generic] = await Promise.all([
+      table(ids.map((id) => get(`by-gender/${g}/${id}`).then((d) => [id, d?.texts ?? {}]))),
+      table(LINKS.map(([id]) => get(`links/${id}`).then((d) => [id, d]))),
+      table(POINT_PAIRS.map(([p, q]) => get(`pairs-ctx/${pairContextFile(`${p}+${q}`)}`).then((d) => [`${p}+${q}`, d?.pairs ?? {}]))),
+      table(Array.from({ length: 22 }, (_, k) => get(`pairs/${k + 1}`).then((d) => [k + 1, d?.pairs ?? {}]))),
+    ]);
+    return { chapters, links, own, generic };
+  })();
+  return textCache[g];
 }
 const make = (tag, cls, text) => {
   const node = document.createElement(tag);
@@ -291,50 +313,101 @@ const make = (tag, cls, text) => {
   node.textContent = text;
   return node;
 };
+// a titled block: heading, an optional line under it, then label and text rows
+function block(title, lead, rows) {
+  const section = make('section', 'chapter', '');
+  section.append(make('h3', '', title));
+  if (lead) section.append(make('p', 'chapter__asks', lead));
+  for (const [label, text] of rows) {
+    if (!text) continue;
+    if (label) section.append(make('h4', '', label));
+    section.append(make('p', '', text));
+  }
+  return section;
+}
 
-async function focusOn(key) {
-  matrix.focus = key;
-  if (!key) { hide(reading); if (state === 'journey') show(journey); return; }
+// what one stop says: [kicker, title, blocks]
+function stopContent(stop, texts) {
+  const { m } = person;
+  if (stop.kind === 'portrait') {
+    const entry = person.portrait;
+    const n = m.points.centre;
+    if (!entry) return [`Таны амин тоо ${n}`, TALENTS[n].name, [block(numberName(n), '', [['', TALENTS[n].text]])]];
+    const out = (entry.who ?? []).map((text) => make('p', 'reading__p', text));
+    if (entry.greatness?.length) out.push(block('Таны хүрч болох дээд боломж', '', entry.greatness.map((text) => ['', text])));
+    if (entry.path) out.push(block('Тэр боломжоо хэрэгжүүлэх зам', '', [['', entry.path]]));
+    if (entry.blessing) out.push(make('p', 'blessing', entry.blessing));
+    return [`Таны хөрөг · ${numberName(n)}`, entry.title, out];
+  }
+  if (stop.kind === 'place') {
+    const key = stop.id;
+    const n = valueAt(m, key);
+    const age = POINT_AGES[key];
+    const blocks = chaptersAt(key).filter((c) => texts.chapters[c.id]?.[n]).map((c) => block(
+      c.id === 'decades' ? `${age} наснаас ${age + 10} нас хүртэл` : c.name, c.asks,
+      FIELDS.map(([field, label]) => [label, texts.chapters[c.id][n][field]])));
+    return [PLACE[key] ?? `${age} нас · ${POINT_MEANINGS[key].word}`, numberName(n), blocks];
+  }
+  if (stop.kind === 'link') {
+    const file = texts.links[stop.id];
+    const base = m[stop.prop].value;
+    const detail = m[stop.prop].detail?.value;
+    const blocks = [];
+    if (file?.texts?.[base]) blocks.push(block(numberName(base), 'Үндсэн тоо', LINK_FIELDS.map(([field, label]) => [label, file.texts[base][field]])));
+    if (detail && file?.texts?.[detail]?.deeper) blocks.push(block(numberName(detail), 'Дэлгэрэнгүй тоо', [['Далд давхарга', file.texts[detail].deeper]]));
+    return [`Холбоос · ${stop.seats.map((key) => POINT_AGES[key]).join(' ба ')} нас`, file?.name ?? '', blocks];
+  }
+  const [p, q] = stop.seats;
+  const [x, y] = [valueAt(m, p), valueAt(m, q)];
+  const fitted = texts.own[stop.id]?.[`${x}-${y}`];
+  const pair = fitted ?? texts.generic[Math.min(x, y)]?.[Math.max(x, y)];
+  const rows = (fitted && PAIR_ROWS_BY_CONTEXT[stop.id]) || PAIR_ROWS;
+  const blocks = pair ? [block(`${x} + ${y} · ${pairName(TALENTS[x].name, TALENTS[y].name)}`, '',
+    [['', pair.together], ...rows.map(([field, label]) => [label, pair[field]])])] : [];
+  return ['Хослол', `${POINT_NAMES[p]} ба ${POINT_NAMES[q].toLowerCase()}`, blocks];
+}
+
+let current = null; // the stop being read
+async function goTo(stop) {
+  current = stop;
+  matrix.focus = stop && stop.kind !== 'portrait' ? stop.seats : null;
+  matrix.setBeam(stop && stop.seats.length === 2 ? stop.seats : null);
+  if (!stop) { hide(reading); if (state === 'journey') show(journey); return; }
   hide(journey);
-  const n = valueAt(person.m, key);
-  $('r-kicker').textContent = PLACE[key] ?? `${POINT_AGES[key]} нас · ${POINT_MEANINGS[key].word}`;
-  $('r-title').textContent = `${n} · ${TALENTS[n].name}`;
-  $('r-count').textContent = `${ROUTE.indexOf(key) + 1} / ${ROUTE.length}`;
   const body = $('r-body');
   body.replaceChildren();
+  $('r-kicker').textContent = '';
+  $('r-title').textContent = '';
+  $('r-count').textContent = `${ROUTE.indexOf(stop) + 1} / ${ROUTE.length}`;
   show(reading);
   const texts = await person.texts;
-  if (matrix.focus !== key) return;
-  for (const c of chaptersAt(key)) {
-    const entry = texts[c.id]?.[n];
-    if (!entry) continue;
-    const age = POINT_AGES[key];
-    const block = make('section', 'chapter', '');
-    block.append(make('h3', '', c.id === 'decades' ? `${age} наснаас ${age + 10} нас хүртэл` : c.name), make('p', 'chapter__asks', c.asks));
-    for (const [field, name] of FIELDS) if (entry[field]) block.append(make('h4', '', name), make('p', '', entry[field]));
-    body.append(block);
-  }
+  if (current !== stop) return;
+  const [kicker, title, blocks] = stopContent(stop, texts);
+  $('r-kicker').textContent = kicker;
+  $('r-title').textContent = title;
+  body.append(...blocks);
   $('r-scroll').scrollTop = 0;
 }
-const travel = (step) => focusOn(ROUTE[(ROUTE.indexOf(matrix.focus) + step + ROUTE.length) % ROUTE.length]);
-$('start').addEventListener('click', () => focusOn(ROUTE[0]));
+const travel = (step) => goTo(ROUTE[(ROUTE.indexOf(current) + step + ROUTE.length) % ROUTE.length]);
+const placeStop = (key) => ROUTE.find((stop) => stop.kind === 'place' && stop.id === key) ?? null;
+$('start').addEventListener('click', () => goTo(ROUTE[0]));
 $('prev').addEventListener('click', () => travel(-1));
 $('next').addEventListener('click', () => travel(1));
-$('close').addEventListener('click', () => focusOn(null));
+$('close').addEventListener('click', () => goTo(null));
 window.addEventListener('keydown', (e) => {
-  if (state !== 'journey' || !matrix.focus) return;
+  if (state !== 'journey' || !current) return;
   if (e.key === 'ArrowRight') travel(1);
   if (e.key === 'ArrowLeft') travel(-1);
-  if (e.key === 'Escape') focusOn(null);
+  if (e.key === 'Escape') goTo(null);
 });
 $('scene').addEventListener('click', (e) => {
   if (state !== 'journey') return;
-  const key = matrix.pick(e.clientX, e.clientY, camera, W, H, ROUTE);
-  if (key !== matrix.focus) focusOn(key);
+  const stop = placeStop(matrix.pick(e.clientX, e.clientY, camera, W, H, PLACES));
+  if (stop !== current) goTo(stop);
 });
 $('scene').addEventListener('pointermove', (e) => {
   if (state !== 'journey') return;
-  $('scene').style.cursor = matrix.pick(e.clientX, e.clientY, camera, W, H, ROUTE) ? 'pointer' : '';
+  $('scene').style.cursor = matrix.pick(e.clientX, e.clientY, camera, W, H, PLACES) ? 'pointer' : '';
 });
 
 const bottomOf = { form, amin, journey };
@@ -342,16 +415,21 @@ function interactive(dt) {
   const el = bottomOf[state];
   // the chapters of a stop take the right side of a wide screen, the lower part of a narrow one
   const wide = W > 860;
-  const reads = matrix.focus && !reading.hidden;
+  const reads = current && !reading.hidden;
   view.wantBottom = reads ? (wide ? 0 : reading.offsetHeight * 0.9) : el && !el.hidden ? el.offsetHeight + 8 : 0;
   view.wantSide = reads && wide ? reading.offsetWidth * 0.5 : 0;
   const a = 1 - Math.exp(-dt * 3.2);
   view.bottom = lerp(view.bottom, view.wantBottom, a);
   view.side = lerp(view.side, view.wantSide, a);
-  const focus = matrix.focus ? matrix.seats[matrix.focus].at : null;
-  // a chosen stop is brought close
+  // a chosen stop is brought close: one place, or two places and the line between them.
+  // The portrait keeps the whole matrix, with the amin too in stars over it.
+  const portrait = current?.kind === 'portrait';
+  if (state === 'journey') { view.wantFigure = portrait ? 1 : 0; view.wantDim = portrait ? 0.14 : 1; }
+  const places = current && !portrait ? current.seats.map((key) => matrix.seats[key].at) : null;
+  const focus = places ? places[0].clone().add(places.at(-1)).multiplyScalar(0.5) : null;
+  const span = places ? places[0].distanceTo(places.at(-1)) : 0;
   const goal = focus
-    ? V(focus.x, focus.y, fitDistance(0) * (wide ? 0.74 : 0.6))
+    ? V(focus.x, focus.y, fitDistance(0) * Math.min(1, Math.max(wide ? 0.74 : 0.6, (span + 4.6) / 9.7)))
     : V(-pointer.x * 0.45, pointer.y * 0.3, fitDistance(view.bottom));
   view.pos.lerp(goal, a);
   view.look.lerp(focus ? V(focus.x, focus.y, 0) : V(0, 0, 0), a);
