@@ -246,17 +246,22 @@ async function submit() {
   if (!gender) { error.textContent = 'Хүйсээ сонгоно уу.'; return; }
   const m = computeMatrix({ year, month, day }, 'hand');
   const n = m.points.centre;
-  const texts = await fetch(`../texts/by-gender/${gender}/portrait.json`).then((r) => (r.ok ? r.json() : null)).catch(() => null);
+  const read = (path) => fetch(`../texts/${path}.json`).then((r) => (r.ok ? r.json() : null)).catch(() => null);
+  // the portrait of the amin too, and what its energy means in general
+  const [texts, energy] = await Promise.all([read(`by-gender/${gender}/portrait`), read(`numbers/${n}`)]);
   const entry = texts?.texts?.[n];
+  const character = String(energy?.sections?.character ?? '').split(/\n\n+/).filter(Boolean);
   const name = $('name').value.trim();
   const stamp = [year, String(month).padStart(2, '0'), String(day).padStart(2, '0')].join('.');
-  person = { m, n, portrait: entry, texts: loadTexts(gender) };
+  person = { m, n, portrait: entry, keywords: energy?.keywords ?? [], character, texts: loadTexts(gender) };
   matrix.setMatrix(m);
   $('who').textContent = [$('clan').value.trim(), $('father').value.trim(), name, stamp].filter(Boolean).join(' · ');
   $('amin-kicker').textContent = name ? `${name}, таны амин тоо` : 'Таны амин тоо';
   $('amin-title').textContent = entry?.title ?? TALENTS[n].name;
   $('amin-name').textContent = `${n} · ${TALENTS[n].name}`;
-  $('amin-text').textContent = entry?.who?.[0] ? sentences(entry.who[0], 2) : TALENTS[n].text;
+  // first what the energy means, not a scene from the portrait: that is read in the journey
+  $('amin-keys').textContent = person.keywords.join(' · ');
+  $('amin-text').textContent = [TALENTS[n].text, character[0] ? sentences(character[0], 2) : ''].filter(Boolean).join(' ');
   enter('reveal');
 }
 
@@ -515,8 +520,10 @@ function stopContent(stop, texts) {
   if (stop.kind === 'portrait') {
     const entry = person.portrait;
     const n = m.points.centre;
-    if (!entry) return [`Таны амин тоо ${n}`, TALENTS[n].name, [block(numberName(n), '', [['', TALENTS[n].text]])]];
-    const out = (entry.who ?? []).map((text) => make('p', 'reading__p', text));
+    // what the energy means comes first, then the person's own portrait
+    const meaning = block('Энэ эрчим юуг илэрхийлдэг вэ', person.keywords.join(' · '), [['', TALENTS[n].text], ...person.character.map((text) => ['', text])]);
+    if (!entry) return [`Таны амин тоо ${n}`, TALENTS[n].name, [meaning]];
+    const out = [meaning, block('Таны хөрөг', '', (entry.who ?? []).map((text) => ['', text]))];
     if (entry.greatness?.length) out.push(block('Таны хүрч болох дээд боломж', '', entry.greatness.map((text) => ['', text])));
     if (entry.path) out.push(block('Тэр боломжоо хэрэгжүүлэх зам', '', [['', entry.path]]));
     if (entry.blessing) out.push(make('p', 'blessing', entry.blessing));
