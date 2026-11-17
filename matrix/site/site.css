@@ -133,9 +133,26 @@ html, body {
 .reading__p, .blessing { margin: 0 0 16px; font: 400 15px/1.72 var(--sans); color: rgba(244, 236, 220, 0.9); }
 .reading__p + .chapter { margin-top: 30px; }
 .blessing { margin-top: -10px; font: italic 500 21px/1.4 var(--serif); color: var(--gold); }
+.reading__ask { margin: -14px 0 24px; font: italic 500 19px/1.35 var(--serif); color: var(--dim); }
+.reading__list { margin: 8px 0 0; padding-left: 18px; font: 400 15px/1.7 var(--sans); color: rgba(244, 236, 220, 0.9); }
+.reading__list li { margin-bottom: 6px; }
+.famous { margin: 10px 0 0; padding: 0; list-style: none; }
+.famous li { margin: 0 0 14px; }
+.famous b { margin-right: 10px; font: 600 20px/1.2 var(--serif); }
+.famous span { font: 500 11px/1 var(--sans); letter-spacing: 0.08em; color: var(--gold); }
+.famous small { display: block; margin-top: 2px; font: 400 13px/1.45 var(--sans); color: var(--dim); }
+.toc { margin: 0 0 30px; }
+.toc h3 { margin: 0 0 6px; font: 600 24px/1.2 var(--serif); color: var(--gold); }
+.toc__row {
+  display: flex; justify-content: space-between; align-items: baseline; gap: 16px; width: 100%; padding: 10px 0;
+  background: none; border: 0; border-bottom: 1px solid rgba(244, 236, 220, 0.12); cursor: pointer;
+  font: 400 15px/1.3 var(--sans); color: var(--ink); text-align: left; transition: color 0.2s;
+}
+.toc__row:hover, .toc__row:focus-visible { color: var(--gold); outline: 0; }
+.toc__row em { font: 500 12px/1 var(--sans); letter-spacing: 0.06em; color: var(--dim); white-space: nowrap; }
 .reading__nav { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; padding-top: 12px; }
 #r-count { font: 500 11px/1 var(--sans); letter-spacing: 0.14em; color: var(--dim); }
-#close { margin-left: auto; }
+#contents { margin-left: auto; }
 
 @media (max-width: 640px) {
   .brand { top: 20px; left: 18px; font-size: 10px; letter-spacing: 0.26em; }

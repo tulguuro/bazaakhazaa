@@ -33,7 +33,7 @@ function ageOn(date, today) {
 
 // The number of the person's current age on the age ring, or null outside
 // the ring's 80 years.
-function currentAge(hand, today = new Date()) {
+export function currentAge(hand, today = new Date()) {
   const age = ageOn(hand.date, today);
   if (!(age >= 0 && age < 80)) return null;
   // whole years, as datemyst and mind.university count: at 37 the point
@@ -315,7 +315,7 @@ export function pythagorasHtml(date, data) {
 export const FIELDS = [['essence', 'Мөн чанар'], ['strength', 'Хүч'], ['trap', 'Сул тал'], ['step', 'Зөвлөгөө']];
 export const TAIL_FIELDS = [['past', 'Өнгөрсөн амьдрал'], ['present', 'Энэ амьдралд'], ['trap', 'Сул тал'], ['step', 'Зөвлөгөө']];
 
-function nextAge(hand, today) {
+export function nextAge(hand, today = new Date()) {
   const now = currentAge(hand, today);
   if (!now) return null;
   for (let year = now.years + 1; year <= now.years + 3; year += 1) {

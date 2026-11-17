@@ -12,10 +12,13 @@ import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
-import { computeMatrix, isValidDate } from '../matrix.js';
+import { AROUND, computeMatrix, isValidDate, reduce } from '../matrix.js';
 import { POINT_AGES, POINT_MEANINGS } from '../draw.js';
 import { CHAPTERS } from '../chapters.js';
-import { FIELDS, LINKS, LINK_FIELDS, LINK_POINTS, PAIR_ROWS, PAIR_ROWS_BY_CONTEXT, POINT_NAMES, POINT_PAIRS, pairContextFile, pairName } from '../report.js';
+import {
+  FIELDS, LINKS, LINK_FIELDS, LINK_POINTS, PAIR_ROWS, PAIR_ROWS_BY_CONTEXT, POINT_NAMES, POINT_PAIRS, TAIL_FIELDS,
+  currentAge, nextAge, pairContextFile, pairName,
+} from '../report.js';
 import { TALENTS } from '../talents.js';
 import { createWorld } from './world.js';
 import { REVEAL_T, createMatrix } from './matrix3d.js';
@@ -199,6 +202,7 @@ function enter(next) {
   stateStart = time;
   matrix.focus = null;
   matrix.setBeam(null);
+  matrix.setMarker(null);
   current = null;
   for (const el of [form, amin, journey, reading]) hide(el);
   $('skip').hidden = next !== 'intro';
@@ -262,14 +266,40 @@ window.addEventListener('pointermove', (e) => { pointer.x = (e.clientX / W) * 2 
 const PLACES = ['centre', 'left', 'tl', 'top', 'tr', 'right', 'br', 'bottom', 'bl',
   'top.mid', 'top.inner', 'right.mid', 'right.inner', 'bottom.mid', 'bottom.inner',
   'loveMoney.love', 'loveMoney.mid', 'loveMoney.money'];
+const CORNERS = ['tl', 'tr', 'br', 'bl'];
+const SQUARE = [...CORNERS, 'tl'];
+// `seats` light up, `beam` is the path of the line of light between them
 const ROUTE = [
   { kind: 'portrait', id: 'portrait', seats: ['centre'] },
   ...PLACES.map((key) => ({ kind: 'place', id: key, seats: [key] })),
+  { kind: 'tail', id: 'karmic-tails', seats: ['bottom.inner', 'bottom.mid', 'bottom'], beam: ['bottom.inner', 'bottom'] },
+  { kind: 'many', id: 'sexuality', seats: ['centre', 'bottom.inner', 'bottom'], beam: ['centre', 'bottom'] },
+  { kind: 'career', id: 'career', seats: ['top', 'loveMoney.money'] },
+  { kind: 'many', id: 'parents', seats: ['left', 'left.mid', 'left.inner'], beam: ['left', 'left.inner'] },
+  { kind: 'many', id: 'children', seats: ['left', 'left.mid', 'left.inner'], beam: ['left', 'left.inner'] },
+  { kind: 'age', id: 'age-now', seats: [] },
+  { kind: 'age', id: 'age-next', seats: [] },
+  { kind: 'one', id: 'family-comfort', key: 'familyCentre', seats: CORNERS, beam: SQUARE },
+  { kind: 'many', id: 'family-programmes', seats: CORNERS, beam: SQUARE },
+  { kind: 'one', id: 'destiny-personal', key: 'purposes.personal', seats: ['left', 'top', 'right', 'bottom'], beam: ['left', 'top', 'right', 'bottom', 'left'] },
+  { kind: 'one', id: 'destiny-social', key: 'purposes.social', seats: CORNERS, beam: SQUARE },
+  { kind: 'one', id: 'destiny-spiritual', key: 'purposes.spiritual', seats: AROUND },
+  { kind: 'one', id: 'destiny-planetary', key: 'purposes.planetary', seats: AROUND },
   ...LINKS.map(([id, prop]) => ({ kind: 'link', id, prop, seats: LINK_POINTS[id] })),
   ...POINT_PAIRS.map(([p, q]) => ({ kind: 'pair', id: `${p}+${q}`, seats: [p, q] })),
+  { kind: 'famous', id: 'famous', seats: ['centre'] },
 ];
+// the list of every stop, shown in the same column as a stop's text
+const CONTENTS = { kind: 'contents', id: 'contents', seats: [] };
+const GROUPS = [
+  ['Таны хөрөг', ['portrait']], ['Матрицын цэгүүд', ['place']], ['Бүлгүүд', ['tail', 'many', 'career', 'age', 'one']],
+  ['Зургаан холбоос', ['link']], ['Гол цэгүүдийн хослол', ['pair']], ['Алдартнууд', ['famous']],
+];
+// chapters that read several places and the combinations of their numbers
+const MANY = ROUTE.filter((stop) => stop.kind === 'many').map((stop) => stop.id);
 const PLACE = {
-  centre: 'Төв цэг · Амин тоо',
+  centre: 'Төв цэг · Амин тоо', familyCentre: 'Удмын төв',
+  'left.mid': 'Зүүн дунд тоо', 'left.inner': 'Зүүн дотор тоо',
   'top.mid': 'Дээд дунд тоо', 'top.inner': 'Дээд дотор тоо',
   'right.mid': 'Баруун дунд тоо', 'right.inner': 'Баруун дотор тоо',
   'bottom.mid': 'Доод дунд тоо', 'bottom.inner': 'Доод дотор тоо',
@@ -282,12 +312,17 @@ const chaptersAt = (key) => [
   ...ALL_CHAPTERS.filter((c) => c.at.length === 1 && c.at[0] === key),
   ...(key in POINT_AGES ? ALL_CHAPTERS.filter((c) => c.id === 'decades') : []),
 ];
+const chapterOf = (id) => ALL_CHAPTERS.find((c) => c.id === id);
+const partOf = (id) => CHAPTERS.find((part) => part.chapters.some((c) => c.id === id)).title;
 const valueAt = (m, key) => {
   if (key in m.points) return m.points[key];
+  if (key === 'familyCentre') return reduce(CORNERS.reduce((sum, corner) => sum + m.points[corner], 0));
   const [group, part] = key.split('.');
+  if (group === 'purposes') return m.purposes[part];
   return group === 'loveMoney' ? m.loveMoney[part] : m.lines[group][part];
 };
 const numberName = (n) => `${n} · ${TALENTS[n].name}`;
+const placeName = (key) => PLACE[key] ?? `${POINT_AGES[key]} нас · ${POINT_MEANINGS[key].word}`;
 
 // every text the journey shows: the chapters in the person's gender, the six
 // links, and the combinations (written for a pair of places, or the general one)
@@ -296,14 +331,17 @@ function loadTexts(g) {
   const get = (path) => fetch(`../texts/${path}.json`).then((r) => (r.ok ? r.json() : null)).catch(() => null);
   const table = (list) => Promise.all(list).then(Object.fromEntries);
   textCache[g] ??= (async () => {
-    const ids = [...new Set(PLACES.flatMap(chaptersAt).map((c) => c.id))];
-    const [chapters, links, own, generic] = await Promise.all([
+    const ids = [...new Set([...PLACES.flatMap(chaptersAt).map((c) => c.id), 'decades-age',
+      ...ROUTE.filter((stop) => ['many', 'age', 'one'].includes(stop.kind)).map((stop) => stop.id)])];
+    const contexts = [...POINT_PAIRS.map(([p, q]) => `${p}+${q}`), ...MANY];
+    const [chapters, links, own, generic, tails, tailsDeep, career, famous] = await Promise.all([
       table(ids.map((id) => get(`by-gender/${g}/${id}`).then((d) => [id, d?.texts ?? {}]))),
       table(LINKS.map(([id]) => get(`links/${id}`).then((d) => [id, d]))),
-      table(POINT_PAIRS.map(([p, q]) => get(`pairs-ctx/${pairContextFile(`${p}+${q}`)}`).then((d) => [`${p}+${q}`, d?.pairs ?? {}]))),
+      table(contexts.map((context) => get(`pairs-ctx/${pairContextFile(context)}`).then((d) => [context, d?.pairs ?? {}]))),
       table(Array.from({ length: 22 }, (_, k) => get(`pairs/${k + 1}`).then((d) => [k + 1, d?.pairs ?? {}]))),
+      get('karmic-tails'), get('karmic-tails-deep'), get('career'), get('famous-by-amin'),
     ]);
-    return { chapters, links, own, generic };
+    return { chapters, links, own, generic, tails, tailsDeep, career, famous };
   })();
   return textCache[g];
 }
@@ -325,10 +363,138 @@ function block(title, lead, rows) {
   }
   return section;
 }
+const para = (text, cls = 'reading__p') => make('p', cls, text);
+const paragraphs = (text) => String(text ?? '').split(/\n\n+/).filter(Boolean).map((line) => ['', line]);
+// a titled block that holds a list
+function listBlock(title, items, cls = 'reading__list') {
+  const section = block(title, '', []);
+  const ul = make('ul', cls, '');
+  ul.append(...items);
+  section.append(ul);
+  return section;
+}
+const bullets = (title, items) => listBlock(title, (items ?? []).map((text) => make('li', '', text)));
+const fieldRows = (entry, fields = FIELDS) => fields.map(([field, label]) => [label, entry[field]]);
+const pairBlock = (x, y, pair, rows = PAIR_ROWS, lead = '') => block(
+  `${x} + ${y} · ${pairName(TALENTS[x].name, TALENTS[y].name)}`, lead,
+  [['', pair.together], ...rows.map(([field, label]) => [label, pair[field]])]);
+
+// the name of a stop in the contents, and the numbers it reads
+function stopLabel(stop, texts) {
+  const { m } = person;
+  const numbers = (keys) => keys.map((key) => valueAt(m, key)).join(' · ');
+  if (stop.kind === 'portrait') return [person.portrait?.title ?? 'Хөрөг', String(m.points.centre)];
+  if (stop.kind === 'place') return [placeName(stop.id), String(valueAt(m, stop.id))];
+  if (stop.kind === 'link') return [texts.links[stop.id]?.name ?? stop.id, String(m[stop.prop].value)];
+  if (stop.kind === 'pair') return [`${POINT_NAMES[stop.seats[0]]} ба ${POINT_NAMES[stop.seats[1]].toLowerCase()}`, numbers(stop.seats).replace(' · ', ' + ')];
+  if (stop.kind === 'famous') return [texts.famous?.title ?? 'Алдартнууд', ''];
+  if (stop.kind === 'one') return [chapterOf(stop.id).name, String(valueAt(m, stop.key))];
+  if (stop.kind === 'age') return [chapterOf(stop.id).name, ''];
+  return [chapterOf(stop.id).name, numbers(stop.kind === 'tail' ? [...stop.seats].reverse() : stop.seats)];
+}
 
 // what one stop says: [kicker, title, blocks]
 function stopContent(stop, texts) {
   const { m } = person;
+  if (stop.kind === 'contents') {
+    return ['Аялал', 'Агуулга', GROUPS.map(([title, kinds]) => {
+      const section = make('section', 'toc', '');
+      section.append(make('h3', '', title));
+      for (const item of ROUTE.filter((s) => kinds.includes(s.kind))) {
+        const [name, numbers] = stopLabel(item, texts);
+        const row = make('button', 'toc__row', '');
+        row.type = 'button';
+        row.append(make('span', '', name), make('em', '', numbers));
+        row.addEventListener('click', () => goTo(item));
+        section.append(row);
+      }
+      return section;
+    })];
+  }
+  const c = chapterOf(stop.id);
+  if (stop.kind === 'tail') {
+    // keyed from the centre outwards, read from the outside in
+    const values = stop.seats.map((key) => valueAt(m, key));
+    const code = values.join('-');
+    const tail = texts.tails?.tails?.[code];
+    const all = texts.tailsDeep?.texts?.[code];
+    const deep = all ? { ...all.neutral, ...(gender ? all[gender] : {}) } : null;
+    const out = [para(c.asks, 'reading__ask')];
+    if (deep?.headline) out.push(para(deep.headline, 'blessing'));
+    if (tail) out.push(block('Товчхондоо', '', fieldRows(tail, TAIL_FIELDS)));
+    if (deep) {
+      out.push(block('Гурван тоо хамтдаа', '', paragraphs(deep.numbers)));
+      out.push(block('Өнгөрсөн төрөл', '', (deep.past ?? []).map((line) => ['', line])));
+      out.push(block('Бага нас, төрсөн гэр бүл', '', paragraphs(deep.childhood)));
+      out.push(block('Одоо, таны амьдралд', '', [['Хайр, хань', deep.present?.love], ['Ажил, мөнгө', deep.present?.work_money],
+        ['Гэр бүл, ураг төрөл', deep.present?.family], ['Бие, эрч хүч', deep.present?.body]]));
+      out.push(bullets('Энэ гурван тоо таны амьдралд идэвхтэй байгаагийн шинж', deep.signs));
+      out.push(block('Ирээдүй', '', [['Сургамжаа ойлгоогүй үед', deep.future_unworked], ['Сургамжаа давж гарсан үед', deep.future_worked]]));
+      out.push(bullets('Чөлөөлөх алхмууд', deep.steps));
+    }
+    return [`${c.name} · ${[...values].reverse().join(' · ')}`, tail?.name ?? c.name, out];
+  }
+  if (stop.kind === 'many') {
+    // every number once, with the places where it stands; then the numbers two at a time
+    const where = new Map();
+    for (const key of c.at) {
+      const n = valueAt(m, key);
+      where.set(n, [...(where.get(n) ?? []), placeName(key)]);
+    }
+    const written = texts.chapters[c.id] ?? {};
+    const out = [para(c.asks, 'reading__ask')];
+    for (const [n, names] of where) if (written[n]) out.push(block(numberName(n), names.join(' · '), fieldRows(written[n])));
+    const distinct = [...where.keys()].sort((a, b) => a - b);
+    distinct.forEach((a, i) => distinct.slice(i + 1).forEach((b) => {
+      const pair = texts.own[c.id]?.[`${a}-${b}`] ?? texts.generic[a]?.[b];
+      if (pair) out.push(pairBlock(a, b, pair, PAIR_ROWS, 'Эрчмүүдийн хослол'));
+    }));
+    return [partOf(c.id), c.name, out];
+  }
+  if (stop.kind === 'career') {
+    const [talent, money] = stop.seats.map((key) => valueAt(m, key));
+    const pair = texts.career?.pairs?.[`${talent}-${money}`];
+    const out = [para(c.asks, 'reading__ask')];
+    if (pair) {
+      out.push(para(pair.summary), bullets('Тохирох ажил мэргэжил', pair.professions), bullets('Таны ажлын чадварууд', pair.skills));
+      if (pair.environment) out.push(block('Танд тохирох ажлын орчин', '', [['', pair.environment]]));
+      if (pair.avoid) out.push(block('Болгоомжлох зүйл', '', [['', pair.avoid]]));
+      const strong = m.dominant?.values?.[0];
+      const accent = strong && texts.career.accents?.[strong];
+      if (accent) out.push(block(`Таны хамгийн хүчтэй эрчим ${numberName(strong)} ажилд тань`, '', [['', accent]]));
+    }
+    return [`Авьяас ${talent} · мөнгөний цэг ${money}`, c.name, out];
+  }
+  if (stop.kind === 'age') {
+    const now = currentAge(m);
+    const point = stop.id === 'age-now' ? now : nextAge(m);
+    const out = [para(c.asks, 'reading__ask')];
+    if (!point) return [partOf(c.id), c.name, out];
+    const entry = texts.chapters[c.id]?.[point.value];
+    out.push(block(numberName(point.value), '', entry ? fieldRows(entry) : [['', TALENTS[point.value].text]]));
+    return [stop.id === 'age-now' ? `Одоо · ${now.years} нас` : `${point.from} наснаас`, c.name, out];
+  }
+  if (stop.kind === 'one') {
+    const n = valueAt(m, stop.key);
+    const entry = texts.chapters[c.id]?.[n];
+    return [partOf(c.id), c.name, [para(c.asks, 'reading__ask'),
+      block(numberName(n), '', entry ? fieldRows(entry) : [['', TALENTS[n].text]])]];
+  }
+  if (stop.kind === 'famous') {
+    const n = m.points.centre;
+    const people = texts.famous?.texts?.[n] ?? [];
+    const out = [para(`Эдгээр алдартан тантай ижил ${numberName(n)} амин тоотой. Нэг эрчим хүн бүрт өөр замаар илэрдэг ч тэдний амьдралаас өөрийнхөө хүчийг таньж болно.`)];
+    for (const [region, title] of [['mongolia', 'Монгол'], ['world', 'Дэлхий']]) {
+      const group = people.filter((p) => p.region === region);
+      if (!group.length) continue;
+      out.push(listBlock(title, group.map((p) => {
+        const li = make('li', '', '');
+        li.append(make('b', '', p.name), make('span', '', p.born.split('-').reverse().join('.')), make('small', '', p.who));
+        return li;
+      }), 'famous'));
+    }
+    return [numberName(n), texts.famous?.title ?? 'Алдартнууд', out];
+  }
   if (stop.kind === 'portrait') {
     const entry = person.portrait;
     const n = m.points.centre;
@@ -343,9 +509,11 @@ function stopContent(stop, texts) {
     const key = stop.id;
     const n = valueAt(m, key);
     const age = POINT_AGES[key];
-    const blocks = chaptersAt(key).filter((c) => texts.chapters[c.id]?.[n]).map((c) => block(
-      c.id === 'decades' ? `${age} наснаас ${age + 10} нас хүртэл` : c.name, c.asks,
-      FIELDS.map(([field, label]) => [label, texts.chapters[c.id][n][field]])));
+    // the decade that begins at an outer point is read for that age where it is written
+    const decade = texts.chapters['decades-age']?.[age]?.[n];
+    const blocks = chaptersAt(key).filter((ch) => texts.chapters[ch.id]?.[n] && !(decade && ch.id === 'decades')).map((ch) => block(
+      ch.id === 'decades' ? `${age} наснаас ${age + 10} нас хүртэл` : ch.name, ch.asks, fieldRows(texts.chapters[ch.id][n])));
+    if (decade) blocks.push(block(`${age} наснаас ${age + 10} нас хүртэл`, decade.title, [['', decade.text], ['Энэ арван жилийн сургамж', decade.lesson]]));
     return [PLACE[key] ?? `${age} нас · ${POINT_MEANINGS[key].word}`, numberName(n), blocks];
   }
   if (stop.kind === 'link') {
@@ -362,8 +530,7 @@ function stopContent(stop, texts) {
   const fitted = texts.own[stop.id]?.[`${x}-${y}`];
   const pair = fitted ?? texts.generic[Math.min(x, y)]?.[Math.max(x, y)];
   const rows = (fitted && PAIR_ROWS_BY_CONTEXT[stop.id]) || PAIR_ROWS;
-  const blocks = pair ? [block(`${x} + ${y} · ${pairName(TALENTS[x].name, TALENTS[y].name)}`, '',
-    [['', pair.together], ...rows.map(([field, label]) => [label, pair[field]])])] : [];
+  const blocks = pair ? [pairBlock(x, y, pair, rows)] : [];
   return ['Хослол', `${POINT_NAMES[p]} ба ${POINT_NAMES[q].toLowerCase()}`, blocks];
 }
 
@@ -371,14 +538,17 @@ let current = null; // the stop being read
 async function goTo(stop) {
   current = stop;
   matrix.focus = stop && stop.kind !== 'portrait' ? stop.seats : null;
-  matrix.setBeam(stop && stop.seats.length === 2 ? stop.seats : null);
+  matrix.setBeam(stop ? stop.beam ?? (stop.seats.length === 2 ? stop.seats : null) : null);
+  // the chapters about age mark the person's place on the age ring
+  const agePoint = stop?.kind === 'age' ? (stop.id === 'age-now' ? currentAge(person.m) : nextAge(person.m)) : null;
+  matrix.setMarker(agePoint ? agePoint.years ?? agePoint.from : null);
   if (!stop) { hide(reading); if (state === 'journey') show(journey); return; }
   hide(journey);
   const body = $('r-body');
   body.replaceChildren();
   $('r-kicker').textContent = '';
   $('r-title').textContent = '';
-  $('r-count').textContent = `${ROUTE.indexOf(stop) + 1} / ${ROUTE.length}`;
+  $('r-count').textContent = stop === CONTENTS ? '' : `${ROUTE.indexOf(stop) + 1} / ${ROUTE.length}`;
   show(reading);
   const texts = await person.texts;
   if (current !== stop) return;
@@ -394,6 +564,8 @@ $('start').addEventListener('click', () => goTo(ROUTE[0]));
 $('prev').addEventListener('click', () => travel(-1));
 $('next').addEventListener('click', () => travel(1));
 $('close').addEventListener('click', () => goTo(null));
+$('contents').addEventListener('click', () => goTo(CONTENTS));
+$('contents2').addEventListener('click', () => goTo(CONTENTS));
 window.addEventListener('keydown', (e) => {
   if (state !== 'journey' || !current) return;
   if (e.key === 'ArrowRight') travel(1);
@@ -425,9 +597,9 @@ function interactive(dt) {
   // The portrait keeps the whole matrix, with the amin too in stars over it.
   const portrait = current?.kind === 'portrait';
   if (state === 'journey') { view.wantFigure = portrait ? 1 : 0; view.wantDim = portrait ? 0.14 : 1; }
-  const places = current && !portrait ? current.seats.map((key) => matrix.seats[key].at) : null;
-  const focus = places ? places[0].clone().add(places.at(-1)).multiplyScalar(0.5) : null;
-  const span = places ? places[0].distanceTo(places.at(-1)) : 0;
+  const places = !current || portrait ? [] : matrix.marker ? [matrix.marker] : current.seats.map((key) => matrix.seats[key].at);
+  const focus = places.length ? places.reduce((sum, p) => sum.add(p), V(0, 0, 0)).multiplyScalar(1 / places.length) : null;
+  const span = focus ? Math.max(...places.map((p) => p.distanceTo(focus))) * 2 : 0;
   const goal = focus
     ? V(focus.x, focus.y, fitDistance(0) * Math.min(1, Math.max(wide ? 0.74 : 0.6, (span + 4.6) / 9.7)))
     : V(-pointer.x * 0.45, pointer.y * 0.3, fitDistance(view.bottom));

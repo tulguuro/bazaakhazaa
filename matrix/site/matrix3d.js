@@ -53,6 +53,14 @@ export function createMatrix() {
   lines.pop();
   let beamOn = false;
 
+  // where the person stands on the age ring, for the chapters about age
+  const markerSprite = new THREE.Sprite(new THREE.SpriteMaterial({
+    map: glow, color: new THREE.Color(3.4, 2.5, 1.2), transparent: true, depthTest: false, blending: THREE.AdditiveBlending,
+  }));
+  markerSprite.renderOrder = 4;
+  markerSprite.visible = false;
+  group.add(markerSprite);
+
   // a number in its round seat
   function seat(at, size, color) {
     const ringSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: seatMap, color: color.clone(), transparent: true, depthTest: false, opacity: 0 }));
@@ -182,7 +190,7 @@ export function createMatrix() {
   };
 
   const api = {
-    group, nodes, seats, dim, focus: null,
+    group, nodes, seats, dim, focus: null, marker: null,
 
     // the empty matrix growing out of the toono: 0 nothing, 1 all its lines
     drawBlank(p) {
@@ -242,6 +250,14 @@ export function createMatrix() {
       beam.u.uPulseAmp.value = 0;
     },
 
+    // mark an age on the ring (a year takes 4.5 degrees, clockwise from the left point)
+    setMarker(years) {
+      const a = (180 - (years ?? 0) * 4.5) * DEG;
+      api.marker = years == null ? null : new THREE.Vector3(Math.cos(a) * R, Math.sin(a) * R, 0);
+      markerSprite.visible = Boolean(api.marker);
+      if (api.marker) markerSprite.position.copy(api.marker);
+    },
+
     // 0 scattered stars, 1 the amin too
     setFigure(form, time) {
       figMat.uniforms.uForm.value = form;
@@ -254,6 +270,8 @@ export function createMatrix() {
       ageMat.uniforms.uProj.value = proj;
       figMat.uniforms.uProj.value = proj;
       const d = dim.value;
+      markerSprite.scale.setScalar(1.15 + 0.3 * Math.sin(figMat.uniforms.uTime.value * 3));
+      markerSprite.material.opacity = d;
       const paint = (s) => {
         const chosen = api.focus && api.focus.some((key) => seats[key] === s);
         const size = s.size * (1 + 0.45 * s.flash) * (chosen ? 1.35 : 1);
