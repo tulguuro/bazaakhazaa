@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="mn">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Хувь тавилангийн матриц</title>
+  <meta name="robots" content="noindex">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600&display=swap">
+  <link rel="stylesheet" href="site.css">
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+      }
+    }
+  </script>
+</head>
+<body>
+  <canvas id="scene"></canvas>
+  <div id="veil" aria-hidden="true"></div>
+  <p class="brand">Хувь тавилангийн матриц</p>
+  <p class="credit">Тэнгэр, дэлхийн зураг: <a href="https://www.solarsystemscope.com/textures/" target="_blank" rel="noopener">Solar System Scope</a>, CC BY 4.0</p>
+  <button id="skip" class="ghost" type="button">Алгасах</button>
+  <p id="caption" class="caption" aria-live="polite"></p>
+  <p id="loader" class="loader">Одод цуглаж байна</p>
+
+  <form id="form" class="birth" hidden novalidate>
+    <p class="birth__lead">Төрсөн өдрөө оруулна уу</p>
+    <div class="birth__row">
+      <label><span>Он</span><input id="year" inputmode="numeric" maxlength="4" autocomplete="off"></label>
+      <label><span>Сар</span><input id="month" inputmode="numeric" maxlength="2" autocomplete="off"></label>
+      <label><span>Өдөр</span><input id="day" inputmode="numeric" maxlength="2" autocomplete="off"></label>
+      <label class="wide"><span>Овог</span><input id="clan" autocomplete="off"></label>
+      <label class="wide"><span>Эцгийн нэр</span><input id="father" autocomplete="off"></label>
+      <label class="wide"><span>Нэр</span><input id="name" autocomplete="off"></label>
+      <div class="gender" role="radiogroup" aria-label="Хүйс">
+        <button type="button" role="radio" aria-checked="false" data-g="male">Эрэгтэй</button>
+        <button type="button" role="radio" aria-checked="false" data-g="female">Эмэгтэй</button>
+      </div>
+      <button type="submit" class="cta">Матрицаа нээх</button>
+    </div>
+    <p id="error" class="birth__error" role="alert"></p>
+  </form>
+
+  <section id="amin" class="amin" hidden>
+    <p id="who" class="amin__who"></p>
+    <p id="amin-kicker" class="kicker"></p>
+    <h1 id="amin-title"></h1>
+    <p id="amin-name" class="amin__name"></p>
+    <p id="amin-text" class="amin__text"></p>
+    <div class="amin__actions">
+      <button id="go" class="cta" type="button">Аяллаа үргэлжлүүлэх</button>
+      <button id="again" class="ghost" type="button">Өөр өдөр</button>
+    </div>
+  </section>
+
+  <section id="journey" class="journey" hidden>
+    <p class="journey__hint">Цэг дээр дарж тайлбарыг нь уншина уу</p>
+    <p class="journey__pay">
+      <button id="start" class="cta cta--small" type="button">Аяллыг эхлүүлэх</button>
+      <button id="again2" class="ghost" type="button">Өөр өдөр</button>
+    </p>
+  </section>
+
+  <aside id="reading" class="reading" hidden>
+    <div id="r-scroll" class="reading__scroll">
+      <p id="r-kicker" class="kicker"></p>
+      <h2 id="r-title"></h2>
+      <div id="r-body"></div>
+    </div>
+    <nav class="reading__nav" aria-label="Аялал">
+      <button id="prev" class="ghost" type="button">Өмнөх</button>
+      <span id="r-count"></span>
+      <button id="next" class="cta cta--small" type="button">Дараагийн цэг</button>
+      <button id="close" class="ghost" type="button">Бүтэн матриц</button>
+    </nav>
+  </aside>
+
+  <script type="module" src="main.js"></script>
+</body>
+</html>
