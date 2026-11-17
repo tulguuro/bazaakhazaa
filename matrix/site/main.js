@@ -36,11 +36,16 @@ const renderer = new THREE.WebGLRenderer({ canvas: $('scene'), antialias: true, 
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.05;
 
+// the page sits at the top of the site and this file two folders below it,
+// so pictures and texts are found from this file, not from the page
+const asset = (name) => new URL(`../../assets/${name}`, import.meta.url).href;
+const textUrl = (path) => new URL(`../texts/${path}.json`, import.meta.url).href;
+
 const loader = new THREE.TextureLoader();
 const [skyMap, day, clouds] = await Promise.all([
-  loader.loadAsync('../../assets/sky_4k.jpg'),
-  loader.loadAsync('../../assets/2k_earth_daymap.jpg'),
-  loader.loadAsync('../../assets/2k_earth_clouds.jpg'),
+  loader.loadAsync(asset('sky_4k.jpg')),
+  loader.loadAsync(asset('2k_earth_daymap.jpg')),
+  loader.loadAsync(asset('2k_earth_clouds.jpg')),
   document.fonts.load('600 40px "Cormorant Garamond"'),
   document.fonts.load('500 40px Inter'),
   document.fonts.load('600 40px Inter'),
@@ -246,7 +251,7 @@ async function submit() {
   if (!gender) { error.textContent = 'Хүйсээ сонгоно уу.'; return; }
   const m = computeMatrix({ year, month, day }, 'hand');
   const n = m.points.centre;
-  const read = (path) => fetch(`../texts/${path}.json`).then((r) => (r.ok ? r.json() : null)).catch(() => null);
+  const read = (path) => fetch(textUrl(path)).then((r) => (r.ok ? r.json() : null)).catch(() => null);
   // the portrait of the amin too, and what its energy means in general
   const [texts, energy] = await Promise.all([read(`by-gender/${gender}/portrait`), read(`numbers/${n}`)]);
   const entry = texts?.texts?.[n];
@@ -347,7 +352,7 @@ const placeName = (key) => PLACE[key] ?? `${POINT_AGES[key]} нас · ${POINT_M
 // links, and the combinations (written for a pair of places, or the general one)
 const textCache = {};
 function loadTexts(g) {
-  const get = (path) => fetch(`../texts/${path}.json`).then((r) => (r.ok ? r.json() : null)).catch(() => null);
+  const get = (path) => fetch(textUrl(path)).then((r) => (r.ok ? r.json() : null)).catch(() => null);
   const table = (list) => Promise.all(list).then(Object.fromEntries);
   textCache[g] ??= (async () => {
     const ids = [...new Set([...PLACES.flatMap(chaptersAt).map((c) => c.id), 'decades-age',
@@ -627,7 +632,7 @@ const COUPLE_ROUTE = [
 const route = () => (mode === 'couple' ? COUPLE_ROUTE : ROUTE);
 const subject = () => (mode === 'couple' ? couple.m : person.m);
 function loadCoupleTexts(a, b) {
-  const get = (path) => fetch(`../texts/${path}.json`).then((r) => (r.ok ? r.json() : null)).catch(() => null);
+  const get = (path) => fetch(textUrl(path)).then((r) => (r.ok ? r.json() : null)).catch(() => null);
   return (async () => {
     const [zones, tails, compat] = await Promise.all([
       Promise.all(COUPLE_ZONE_IDS.map((id) => get(`couple/${id}`).then((d) => [id, d]))).then(Object.fromEntries),
