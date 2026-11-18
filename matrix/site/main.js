@@ -122,13 +122,8 @@ function lightTrail(t, from) {
   return Array.from({ length: world.light.TAIL }, (_, i) => lightAt(Math.max(from, t - i * 0.022)));
 }
 
-const CAPTIONS = [
-  [0.8, 4.4, 'Тэнгэрт нэг гэрэл хөдөллөө.'],
-  [5.2, 9.4, 'Тэр гэрэл дэлхийг зорив.'],
-  [11.2, 14.4, 'Монгол нутаг. Нэгэн гэрийн тооно.'],
-  [18, 21, 'Тооноор тэнгэр харагдана.'],
-  [21.6, 25, 'Тооно таны матриц болон хувирна.'],
-];
+// the intro says nothing in words: the owner wants the pictures alone to tell it
+const CAPTIONS = [];
 const caption = $('caption');
 const veil = $('veil');
 let captionText = '';
