@@ -23,11 +23,19 @@ html, body {
    the dark. The script sizes the box and slides the film inside it. */
 .filmbox { position: fixed; left: 0; top: 0; overflow: hidden; background: #03050b; pointer-events: none; }
 .filmbox video { position: absolute; left: 0; top: 0; max-width: none; will-change: transform; }
-.filmbox--tall::before, .filmbox--tall::after {
-  content: ""; position: absolute; left: 0; right: 0; height: 13%; z-index: 1;
+/* Above and below the box the screen is filled with the film itself: the same video,
+   drawn small on a canvas every frame, enlarged to the whole
+   screen, blurred and darkened (main.js, drawGlow). The sharp film melts into it at
+   its top and bottom, so the screen is one picture and the box has no edge. */
+.filmglow {
+  position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; background: #03050b;
+  filter: blur(18px) brightness(0.5) saturate(1.1); transform: scale(1.08);
 }
-.filmbox--tall::before { top: 0; background: linear-gradient(#03050b, rgba(3, 5, 11, 0)); }
-.filmbox--tall::after { bottom: 0; background: linear-gradient(rgba(3, 5, 11, 0), #03050b); }
+.filmbox--tall { background: none; }
+.filmbox--tall video {
+  -webkit-mask-image: linear-gradient(transparent, #000 24%, #000 76%, transparent);
+  mask-image: linear-gradient(transparent, #000 24%, #000 76%, transparent);
+}
 #veil { position: fixed; inset: 0; pointer-events: none; background: #03050b; opacity: 1; }
 
 .ghost {

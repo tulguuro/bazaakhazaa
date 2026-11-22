@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600&display=swap">
-  <link rel="stylesheet" href="matrix/site/site.css?v=86">
+  <link rel="stylesheet" href="matrix/site/site.css?v=90">
   <!-- The server lets browsers keep scripts for an hour. Raise every ?v= number
        on this page together when any script or the style sheet changes, so a
        visitor never runs a new file against an old one. -->
@@ -17,24 +17,25 @@
       "imports": {
         "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
         "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/",
-        "./matrix/site/world.js": "./matrix/site/world.js?v=86",
-        "./matrix/site/matrix3d.js": "./matrix/site/matrix3d.js?v=86",
-        "./matrix/site/gfx.js": "./matrix/site/gfx.js?v=86",
-        "./matrix/site/sound.js": "./matrix/site/sound.js?v=86",
-        "./matrix/site/backdrop.js": "./matrix/site/backdrop.js?v=86",
-        "./matrix/site/figures.js": "./matrix/site/figures.js?v=86",
-        "./matrix/matrix.js": "./matrix/matrix.js?v=86",
-        "./matrix/draw.js": "./matrix/draw.js?v=86",
-        "./matrix/talents.js": "./matrix/talents.js?v=86",
-        "./matrix/chapters.js": "./matrix/chapters.js?v=86",
-        "./matrix/report.js": "./matrix/report.js?v=86",
-        "./matrix/couple.js": "./matrix/couple.js?v=86"
+        "./matrix/site/world.js": "./matrix/site/world.js?v=90",
+        "./matrix/site/matrix3d.js": "./matrix/site/matrix3d.js?v=90",
+        "./matrix/site/gfx.js": "./matrix/site/gfx.js?v=90",
+        "./matrix/site/sound.js": "./matrix/site/sound.js?v=90",
+        "./matrix/site/backdrop.js": "./matrix/site/backdrop.js?v=90",
+        "./matrix/site/figures.js": "./matrix/site/figures.js?v=90",
+        "./matrix/matrix.js": "./matrix/matrix.js?v=90",
+        "./matrix/draw.js": "./matrix/draw.js?v=90",
+        "./matrix/talents.js": "./matrix/talents.js?v=90",
+        "./matrix/chapters.js": "./matrix/chapters.js?v=90",
+        "./matrix/report.js": "./matrix/report.js?v=90",
+        "./matrix/couple.js": "./matrix/couple.js?v=90"
       }
     }
   </script>
 </head>
 <body>
   <canvas id="scene"></canvas>
+  <canvas id="filmglow" class="filmglow" width="40" height="88" hidden aria-hidden="true"></canvas>
   <div id="filmbox" class="filmbox" aria-hidden="true">
     <video id="film" muted playsinline preload="auto" disableremoteplayback></video>
   </div>
@@ -142,6 +143,6 @@
     </nav>
   </aside>
 
-  <script type="module" src="matrix/site/main.js?v=86"></script>
+  <script type="module" src="matrix/site/main.js?v=90"></script>
 </body>
 </html>

@@ -185,6 +185,8 @@ const FOCUS = [
 // one gets a square across its middle. The film is slid with a transform,
 // which the phone's graphics chip does by itself, and only when it has moved.
 const filmBox = $('filmbox');
+const glow = $('filmglow');
+const glowPaint = glow.getContext('2d', { alpha: false });
 const laid = { box: '', move: '', fade: '' };
 function layoutFilm(t) {
   const tall = W < H;
@@ -197,6 +199,8 @@ function layoutFilm(t) {
   if (box !== laid.box) {
     laid.box = box;
     filmBox.classList.toggle('filmbox--tall', tall);
+    glow.hidden = !tall;
+    glow.height = Math.round(glow.width * (H / W));
     filmBox.style.width = `${W}px`;
     filmBox.style.height = `${boxH}px`;
     filmBox.style.top = `${top}px`;
@@ -210,6 +214,7 @@ function layoutFilm(t) {
   const x = -Math.min(Math.max(focus * vidW - W / 2, 0), vidW - W);
   const y = -(vidH - boxH) / 2;
   laid.geo = { vidW, vidH, x, y: top + y };
+  laid.focus = focus;
   const move = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0)`;
   if (move !== laid.move) { laid.move = move; film.style.transform = move; }
 }
@@ -233,12 +238,23 @@ const covered = () => state === 'intro' && introT < SCENE.from - 0.3;
 // the film, and after it the scene, at second `t` of the song
 function filmAt(t) {
   const fade = (1 - seg(t, SCENE.from, SCENE.to)).toFixed(3);
-  if (fade !== laid.fade) { laid.fade = fade; filmBox.style.opacity = fade; }
+  if (fade !== laid.fade) { laid.fade = fade; filmBox.style.opacity = fade; glow.style.opacity = fade; }
+  drawGlow();
   layoutFilm(Math.min(t, FRAMED));
   veil.style.background = '#03050b';
   veil.style.opacity = (1 - seg(t, 0, 1)).toFixed(3);
   if (t < SCENE.from - 0.3) return;
   sceneUnderClip();
+}
+// The film around its box on an upright screen: the same frame, enlarged to the
+// screen's height about the same point of the film, drawn tiny and left to the
+// browser to blur (site.css, .filmglow).
+function drawGlow() {
+  if (glow.hidden || film.readyState < 2) return;
+  const vw = film.videoWidth; const vh = film.videoHeight;
+  const sw = vh * (W / H);
+  const sx = Math.min(Math.max((laid.focus ?? 0.5) * vw - sw / 2, 0), vw - sw);
+  glowPaint.drawImage(film, sx, 0, sw, vh, 0, 0, glow.width, glow.height);
 }
 // the scene, waiting under the clip in the clip's own view
 function sceneUnderClip() {
@@ -371,6 +387,7 @@ let tail = null;         // when the film ended, and the second it ended on
 function endIntro() {
   film.pause();
   filmBox.hidden = true;
+  glow.hidden = true;
   lift();
   matrix.setGather(1);
   matrix.setHeart(1);
@@ -1137,7 +1154,12 @@ function warmScene() {
   for (const texture of matrix.warm(true)) renderer.initTexture(texture);
   draw();
   matrix.warm(false);
+  // and wiped again: the film comes first, and on an upright phone the screen above and
+  // below the film's box must be the film's own night, not this drawing left standing
+  // (its stars broke off at the box's edge, where the film fades into plain night)
+  if (!noIntro) { renderer.setClearColor(FILM_NIGHT, 1); renderer.clear(); }
 }
+const FILM_NIGHT = '#03050b';   // the colour the film's box fades into (site.css, .filmbox)
 // The start screen. The song and the film are loaded whole first, into memory,
 // so a phone never stops for the network midway (the ring fills as they come); then
 // one tap starts film and song together, the only way a browser lets sound begin.
