@@ -1,11 +1,12 @@
 // The matrix drawn in light: the ring and eight spokes that the toono turns
 // into, the rhombus and the square, the numbers of one person, the age ring
 // and the amin too formed out of stars. Each line is a hairline of light with
-// a path of tiny stars along it; gold for the upright cross, lavender for
-// the slanted one, on the violet night of the film.
+// a path of tiny stars along it; gold for the upright cross, a paler gold for
+// the slanted one, on the violet night of the film. Light runs along the lines as
+// small comets that shed sparks, and each number is born from a star.
 import * as THREE from 'three';
 import { AROUND } from '../matrix.js';
-import { easeInOut, easeOut, glowTexture, lightMaterial, numberTexture, ribbon, seatTexture, seg, textPoints } from './gfx.js';
+import { chosenTexture, easeInOut, easeOut, glintTexture, glowTexture, lightMaterial, numberTexture, ribbon, seatTexture, seg, textPoints } from './gfx.js';
 
 export const R = 4;
 // a phone draws the figure with fewer stars: the picture carries the detail
@@ -18,7 +19,9 @@ const ANGLE = { left: 180, tl: 135, top: 90, tr: 45, right: 0, br: -45, bottom: 
 const AXES = ['left', 'top', 'right', 'bottom'];
 const DIAGONALS = ['tl', 'tr', 'br', 'bl'];
 const GOLD = new THREE.Color(1.0, 0.76, 0.42);
-const SILVER = new THREE.Color(0.72, 0.64, 1.0); // lavender, the cool light of the film's sky
+// the slanted cross: a pale, cooler gold beside the warm gold of the upright one, so the
+// two families of lines differ and the matrix still stays gold on violet as painted
+const SILVER = new THREE.Color(0.95, 0.88, 0.8);
 const ROSE = new THREE.Color(1.0, 0.55, 0.5);
 const PALE = new THREE.Color(1.0, 0.93, 0.8);
 // where the five numbers of a line sit, as a share of the way out from the centre
@@ -26,22 +29,40 @@ const STEPS = [['mid', 0.85], ['inner', Math.SQRT1_2], ['step1', 0.53], ['step2'
 
 const on = (key, f = 1) => new THREE.Vector3(Math.cos(ANGLE[key] * DEG) * R * f, Math.sin(ANGLE[key] * DEG) * R * f, 0);
 const bump = (s, t0) => (s < t0 ? 0 : Math.exp(-(s - t0) * 3.5));
+// rises a little past 1 and settles back: a number arriving in its seat
+const backOut = (x) => 1 + 2.4 * (x - 1) ** 3 + 1.4 * (x - 1) ** 2;
 
 export function createMatrix() {
   const group = new THREE.Group();
   const dim = { value: 1 };
   const glow = glowTexture();
+  const glint = glintTexture();
   const seatMap = seatTexture();
 
   const lines = [];
   function line(points, color, width = 0.042) {
-    const mesh = new THREE.Mesh(ribbon(points, width), lightMaterial(color, dim));
+    const mesh = new THREE.Mesh(ribbon(points, width * 4), lightMaterial(color, dim));
     mesh.renderOrder = 1;
     group.add(mesh);
     const l = { mesh, u: mesh.material.uniforms, points, color };
+    measure(l);
     lines.push(l);
     return l;
   }
+  // a line's length and the way along it, for the light that runs on it
+  function measure(l) {
+    l.acc = [0];
+    for (let i = 1; i < l.points.length; i++) l.acc.push(l.acc[i - 1] + l.points[i].distanceTo(l.points[i - 1]));
+    l.total = l.acc[l.acc.length - 1] || 1;
+    l.u.uLen.value = l.total;
+  }
+  const pointOn = (l, x) => {
+    const d = Math.min(1, Math.max(0, x)) * l.total;
+    let i = 1;
+    while (i < l.acc.length - 1 && l.acc[i] < d) i++;
+    const f = (d - l.acc[i - 1]) / ((l.acc[i] - l.acc[i - 1]) || 1);
+    return l.points[i - 1].clone().lerp(l.points[i], f);
+  };
   const centre = new THREE.Vector3();
   const spokes = Object.fromEntries(AROUND.map((key) => [key, line([centre, on(key)], AXES.includes(key) ? GOLD : SILVER)]));
   const ring = line(Array.from({ length: 181 }, (_, i) => {
@@ -164,13 +185,16 @@ export function createMatrix() {
   let heartLevel = 1;
 
   // the line of light between the two places of a link or a combination
-  const beam = line([centre, on('top')], PALE, 0.1);
+  // (a fine line of warm light: a broad white one spreads into a haze under the glow)
+  const BEAM = new THREE.Color(1.0, 0.84, 0.56);
+  const BEAM_WIDTH = 0.04;
+  const beam = line([centre, on('top')], BEAM, BEAM_WIDTH);
   lines.pop();
   let beamOn = false;
 
   // where the person stands on the age ring, for the chapters about age
   const markerSprite = new THREE.Sprite(new THREE.SpriteMaterial({
-    map: glow, color: new THREE.Color(3.4, 2.5, 1.2), transparent: true, depthTest: false, blending: THREE.AdditiveBlending,
+    map: glow, color: new THREE.Color(2.4, 1.75, 0.85), transparent: true, depthTest: false, blending: THREE.AdditiveBlending,
   }));
   markerSprite.renderOrder = 4;
   markerSprite.visible = false;
@@ -182,8 +206,13 @@ export function createMatrix() {
     const num = new THREE.Sprite(new THREE.SpriteMaterial({ transparent: true, depthTest: false, opacity: 0 }));
     ringSprite.position.copy(at); num.position.copy(at);
     ringSprite.renderOrder = 2; num.renderOrder = 3;
-    group.add(ringSprite, num);
-    return { at, size, color, ring: ringSprite, num, show: 0, flash: 0, grow: 1 };
+    // the star the number is born from: it flashes with four fine rays and is gone
+    const star = new THREE.Sprite(new THREE.SpriteMaterial({
+      map: glint, color: new THREE.Color(1.5, 1.1, 0.55), transparent: true, depthTest: false, opacity: 0, blending: THREE.AdditiveBlending,
+    }));
+    star.position.copy(at); star.renderOrder = 4; star.visible = false;
+    group.add(ringSprite, num, star);
+    return { at, size, color, ring: ringSprite, num, star, show: 0, flash: 0, grow: 1, born: false, hit: -99 };
   }
   const nodes = {};
   for (const key of AROUND) nodes[key] = seat(on(key), 1.12, AXES.includes(key) ? GOLD : SILVER);
@@ -213,6 +242,101 @@ export function createMatrix() {
   for (const s of smalls) seats[`${s.key}.${s.field}`] = s;
   for (const s of loveSeats) seats[`loveMoney.${s.field}`] = s;
 
+  // the marks of the chosen places (see chosenTexture): a few rings of light, moved
+  // to whichever seats the stop being read lights up
+  const chosenMap = chosenTexture();
+  const CHOSEN = new THREE.Color(1.0, 0.8, 0.48);
+  const marks = Array.from({ length: 6 }, () => {
+    const sprite = new THREE.Sprite(new THREE.SpriteMaterial({
+      map: chosenMap, color: CHOSEN.clone(), transparent: true, depthTest: false, opacity: 0, blending: THREE.AdditiveBlending,
+    }));
+    sprite.renderOrder = 4;
+    sprite.visible = false;
+    group.add(sprite);
+    return { sprite, seat: null, level: 0 };
+  });
+  let markTime = 0;
+
+  // ── sparks: tiny stars shed by a light as it runs and thrown out where a number is
+  // born. A fixed number of them, each living about a second and reused after.
+  const SPARKS = PHONE ? 1200 : 3600;
+  const sp = {
+    pos: new Float32Array(SPARKS * 3), vel: new Float32Array(SPARKS * 3), life: new Float32Array(SPARKS), ttl: new Float32Array(SPARKS),
+    alpha: new Float32Array(SPARKS), size: new Float32Array(SPARKS), col: new Float32Array(SPARKS * 3), next: 0,
+  };
+  const sparkGeo = new THREE.BufferGeometry();
+  sparkGeo.setAttribute('position', new THREE.BufferAttribute(sp.pos, 3));
+  sparkGeo.setAttribute('aAlpha', new THREE.BufferAttribute(sp.alpha, 1));
+  sparkGeo.setAttribute('aSize', new THREE.BufferAttribute(sp.size, 1));
+  sparkGeo.setAttribute('aColor', new THREE.BufferAttribute(sp.col, 3));
+  const sparkMat = new THREE.ShaderMaterial({
+    uniforms: { uProj: { value: 600 }, uDim: dim },
+    vertexShader: `
+      attribute float aAlpha; attribute float aSize; attribute vec3 aColor; uniform float uProj; varying float vA; varying vec3 vC;
+      void main(){
+        vec4 mv = modelViewMatrix * vec4(position, 1.0);
+        gl_Position = projectionMatrix * mv;
+        gl_PointSize = max(1.0, aSize * uProj / -mv.z) * step(0.001, aAlpha);
+        vA = aAlpha; vC = aColor;
+      }`,
+    fragmentShader: `
+      uniform float uDim; varying float vA; varying vec3 vC;
+      void main(){
+        float r = length(gl_PointCoord - 0.5);
+        float a = smoothstep(0.5, 0.0, r);
+        gl_FragColor = vec4(vC, a * a * vA * uDim);
+      }`,
+    transparent: true, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending,
+  });
+  const sparkPoints = new THREE.Points(sparkGeo, sparkMat);
+  sparkPoints.frustumCulled = false;
+  sparkPoints.renderOrder = 4;
+  group.add(sparkPoints);
+  function emit(at, count, speed, color, ttl = 0.9) {
+    for (let n = 0; n < count; n++) {
+      const i = sp.next; sp.next = (sp.next + 1) % SPARKS;
+      const a = Math.random() * 6.283; const v = speed * (0.25 + 0.75 * Math.random() ** 2);
+      sp.pos[i * 3] = at.x; sp.pos[i * 3 + 1] = at.y; sp.pos[i * 3 + 2] = at.z;
+      sp.vel[i * 3] = Math.cos(a) * v; sp.vel[i * 3 + 1] = Math.sin(a) * v; sp.vel[i * 3 + 2] = (Math.random() - 0.5) * v * 0.4;
+      sp.ttl[i] = ttl * (0.5 + Math.random()); sp.life[i] = 1;
+      sp.size[i] = 0.028 + 0.085 * Math.random() ** 3;
+      const w = 0.75 + 0.5 * Math.random();
+      // warm gold, whatever sheds them, with a little of the shedder's own colour
+      sp.col[i * 3] = (0.75 + 0.25 * color.r) * w * 1.3; sp.col[i * 3 + 1] = (0.52 + 0.25 * color.g) * w * 1.3; sp.col[i * 3 + 2] = (0.22 + 0.2 * color.b) * w * 1.3;
+    }
+  }
+  function stepSparks(dt) {
+    const drag = Math.exp(-dt * 2.2);
+    for (let i = 0; i < SPARKS; i++) {
+      if (sp.life[i] <= 0) { sp.alpha[i] = 0; continue; }
+      sp.life[i] -= dt / sp.ttl[i];
+      sp.pos[i * 3] += sp.vel[i * 3] * dt; sp.pos[i * 3 + 1] += sp.vel[i * 3 + 1] * dt; sp.pos[i * 3 + 2] += sp.vel[i * 3 + 2] * dt;
+      sp.vel[i * 3] *= drag; sp.vel[i * 3 + 1] *= drag; sp.vel[i * 3 + 2] *= drag;
+      const k = Math.max(0, sp.life[i]);
+      sp.alpha[i] = k * k * (0.55 + 0.45 * Math.sin(k * 40.0 + i));
+    }
+    for (const key of ['position', 'aAlpha', 'aSize', 'aColor']) sparkGeo.attributes[key].needsUpdate = true;
+  }
+
+  // ── the heads of the lights running this frame: a small glow and a star with rays on
+  // each, and sparks shed behind. Whoever moves a light adds its head here (see pulse).
+  const heads = [];
+  const HEAD = new THREE.Color(1.0, 0.72, 0.34);
+  const headSprites = Array.from({ length: 14 }, () => {
+    const mk = (map, order) => {
+      const s = new THREE.Sprite(new THREE.SpriteMaterial({ map, color: HEAD.clone(), transparent: true, depthTest: false, opacity: 0, blending: THREE.AdditiveBlending }));
+      s.renderOrder = order; s.visible = false; group.add(s);
+      return s;
+    };
+    return { glow: mk(glow, 4), star: mk(glint, 4) };
+  });
+  let shed = 0;
+  // lights that fly to a place by themselves: to each seat a stop lights up
+  const flights = [];
+  const births = [];
+  let lastFocus = null;
+  let beamFrom = 0;
+
   // the age ring: seven years marked between each pair of outer points
   const dotPos = []; const dotOrder = []; const dotSize = [];
   AROUND.forEach((key, k) => {
@@ -235,14 +359,14 @@ export function createMatrix() {
         vA = smoothstep(aOrder, aOrder + 0.03, uShow) * (1.0 + 2.5 * exp(-pow((uShow - aOrder) * 14.0, 2.0)));
         vec4 mv = modelViewMatrix * vec4(position, 1.0);
         gl_Position = projectionMatrix * mv;
-        gl_PointSize = 0.2 * aSize * uProj / -mv.z;
+        gl_PointSize = 0.14 * aSize * uProj / -mv.z;
       }`,
     fragmentShader: `
       uniform float uDim; varying float vA;
       void main(){
         float r = length(gl_PointCoord - 0.5);
         float a = smoothstep(0.5, 0.05, r);
-        gl_FragColor = vec4(vec3(1.5, 1.3, 1.0), a * a * vA * uDim);
+        gl_FragColor = vec4(vec3(1.25, 1.02, 0.7), a * a * vA * uDim);
       }`,
     transparent: true, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending,
   });
@@ -358,10 +482,15 @@ export function createMatrix() {
   overlay.add(overlayRoot);
   overlayRoot.add(picture);
 
-  const pulse = (l, x, amp = 1) => {
+  // a light at `x` (0 to 1) of a line, running toward its end (dir 1) or its start (-1);
+  // with `head` it carries a star and sheds sparks
+  const pulse = (l, x, amp = 1, dir = 1, head = false) => {
     const live = x > 0 && x < 1;
+    const level = live ? amp * Math.sin(Math.PI * x) ** 0.35 : 0;
     l.u.uPulse.value = live ? x : -1;
-    l.u.uPulseAmp.value = live ? amp * Math.sin(Math.PI * x) ** 0.5 : 0;
+    l.u.uPulseAmp.value = level;
+    l.u.uDir.value = dir;
+    if (head && live) heads.push({ at: pointOn(l, x), amp: level, color: l.color });
   };
   const hideNumbers = () => {
     for (const s of [...Object.values(nodes), ...smalls, ...loveSeats]) { s.show = 0; s.flash = 0; }
@@ -399,7 +528,7 @@ export function createMatrix() {
         if (!s.off) s.num.material.map = numberTexture(value);
       }
       for (const s of loveSeats) s.num.material.map = numberTexture(m.loveMoney[s.field]);
-      for (const s of [...Object.values(nodes), ...smalls, ...loveSeats]) s.num.material.needsUpdate = true;
+      for (const s of [...Object.values(nodes), ...smalls, ...loveSeats]) { s.num.material.needsUpdate = true; s.born = false; }
       figGeo.attributes.aTarget.array.set(textPoints(String(m.points.centre), N, 4.3, 5.8));
       figGeo.attributes.aTarget.needsUpdate = true;
       this.setFigurePoints(null);
@@ -408,28 +537,49 @@ export function createMatrix() {
     // the numbers arriving, s seconds after the form was sent
     reveal(s) {
       api.drawBlank(1);
-      const show = (node, t0) => { node.show = easeOut(seg(s, t0, t0 + 0.5)); node.flash = bump(s, t0); };
+      // A number is born as the light reaches its place: the seat opens, a star flashes
+      // and sparks fly (see births in apply).
+      const show = (node, t0) => {
+        node.show = easeOut(seg(s, t0, t0 + 0.6)); node.flash = bump(s, t0);
+        if (s < t0) node.born = false;
+        else if (!node.born) { node.born = true; if (s - t0 < 0.3) births.push(node); }
+      };
+      // The light's way: round the upright cross from point to point, each number born as
+      // it arrives; in along the four arms to the heart, where the amin too is born; out
+      // along the slanted arms to the corners and round the square; then in along all
+      // eight arms at once, lighting the small numbers one after another as it passes.
       AXES.forEach((key, i) => show(nodes[key], i * 0.6));
-      rhombus.forEach((l, i) => pulse(l, seg(s, 0.15 + i * 0.6, 0.75 + i * 0.6)));
-      for (const key of AXES) pulse(spokes[key], 1 - seg(s, 2.4, 3.2));
+      rhombus.forEach((l, i) => pulse(l, seg(s, 0.15 + i * 0.6, 0.75 + i * 0.6), 1.1, 1, true));
+      const inward = 1 - (s - 4.6) / 1.8;
+      for (const key of AXES) {
+        if (s < 4.5) pulse(spokes[key], 1 - seg(s, 2.4, 3.15), 1.1, -1, true); else pulse(spokes[key], inward, 0.8, -1, true);
+      }
       show(nodes.centre, 3.1);
-      for (const key of DIAGONALS) pulse(spokes[key], seg(s, 3.5, 4.3));
+      for (const key of DIAGONALS) {
+        if (s < 4.5) pulse(spokes[key], seg(s, 3.5, 4.3), 1.1, 1, true); else pulse(spokes[key], inward, 0.8, -1, true);
+      }
       DIAGONALS.forEach((key, i) => show(nodes[key], 4.2 + i * 0.12));
-      square.forEach((l, i) => pulse(l, seg(s, 4.4 + i * 0.2, 5.1 + i * 0.2)));
+      square.forEach((l, i) => pulse(l, seg(s, 4.4 + i * 0.2, 5.1 + i * 0.2), 0.9, 1, true));
       for (const sm of smalls) show(sm, sm.t0);
       ageMat.uniforms.uShow.value = seg(s, 5.0, 6.8) * 1.1;
       love.u.uProgress.value = easeInOut(seg(s, 5.6, 6.4));
+      if (s > 5.6 && s < 6.4) heads.push({ at: pointOn(love, love.u.uProgress.value), amp: 0.9, color: ROSE });
       for (const ls of loveSeats) show(ls, ls.t0);
-      pulse(ring, seg(s, 5.0, 6.8), 0.6);
+      pulse(ring, seg(s, 5.0, 6.8), 0.9, 1, true);
     },
 
     // slow pulses that keep the matrix alive while nothing else happens
     idle(time) {
       lines.forEach((l, i) => {
         const x = ((time * 0.11 + i * 0.173) % 1) * 2.6 - 0.8;
-        pulse(l, x, 0.2);   // a faint glint, not a bright dash
+        pulse(l, x, 0.24);   // a faint glint, not a bright dash
       });
-      if (beamOn) pulse(beam, ((time * 0.42) % 1) * 1.3 - 0.15, 1.2);
+      // along the line that joins the places of a stop a light runs from the first to
+      // the last, shedding sparks, rests, and sets off again
+      if (beamOn) {
+        const run = 1.1 + 0.28 * beam.total;
+        pulse(beam, ((Math.max(0, time - beamFrom - 0.7)) % (run + 2.2)) / run, 1.15, 1, true);
+      }
     },
 
     // join two seats with a line of light, or take it away with null
@@ -437,9 +587,13 @@ export function createMatrix() {
       beamOn = Boolean(keys);
       if (keys) {
         beam.mesh.geometry.dispose();
-        beam.mesh.geometry = ribbon(keys.map((key) => seats[key].at), 0.1);
+        beam.mesh.geometry = ribbon(keys.map((key) => seats[key].at), BEAM_WIDTH * 4);
+        beam.points = keys.map((key) => seats[key].at);
+        measure(beam);
+        beamFrom = markTime;
       }
       beam.u.uProgress.value = beamOn ? 1 : 0;
+      beam.u.uOpacity.value = 0.5;
       beam.u.uPulseAmp.value = 0;
     },
 
@@ -456,7 +610,9 @@ export function createMatrix() {
     // and money line, the age marks and the lines of light drawn on request.
     setPainted(on) {
       api.painted = on;
-      for (const l of lines) if (l !== love) l.mesh.visible = !on;
+      // (the code's own lines stay in place but give no light of their own: only the
+      // light that runs along them shows, over the painted lines)
+      for (const l of lines) if (l !== love) l.u.uOpacity.value = on ? 0 : 1;
       dustMat.uniforms.uPainted.value = on ? 1 : 0;
       heart.visible = !on;
     },
@@ -522,17 +678,91 @@ export function createMatrix() {
       // once the amin too sits in its seat the heart steps back behind it
       heartMat.uniforms.uLevel.value = heartLevel * (1 - 0.8 * nodes.centre.show);
       const d = dim.value;
-      markerSprite.scale.setScalar(1.15 + 0.3 * Math.sin(figMat.uniforms.uTime.value * 3));
+      markerSprite.scale.setScalar(0.72 + 0.1 * Math.sin(figMat.uniforms.uTime.value * 2.2));
       markerSprite.material.opacity = d;
+      // A chosen place is marked by a ring of light around its seat (the marks), and
+      // the seat itself only grows a little and warms: brightening the whole seat
+      // floods its dark disc and the number drowns in a pale haze.
+      const chosenSeats = api.focus ? api.focus.map((key) => seats[key]).filter((s) => s && !s.off) : [];
+      const dt = Math.min(0.1, Math.max(0, time - markTime));
+      const ease = 1 - Math.exp(-dt * 5);
+      markTime = time;
+      sparkMat.uniforms.uProj.value = proj;
+
+      // a new stop: a light flies from the heart to each place it lights up, and the
+      // place answers with a flash (a stop with a line of light has its own runner)
+      if (api.focus !== lastFocus) {
+        lastFocus = api.focus;
+        flights.length = 0;
+        if (api.focus && !beamOn) {
+          api.focus.map((key) => seats[key]).filter((s) => s && !s.off).slice(0, 6).forEach((s, i) => {
+            const from = loveSeats.includes(s) ? loveFrom : s === nodes.centre ? nodes.top.at : centre;
+            flights.push({ from, to: s.at, seat: s, t0: time + 0.45 + i * 0.14, dur: 0.5 + 0.11 * from.distanceTo(s.at), color: s.color });
+          });
+        }
+      }
+      for (let i = flights.length - 1; i >= 0; i--) {
+        const f = flights[i];
+        const k = (time - f.t0) / f.dur;
+        if (k < 0) continue;
+        if (k >= 1) { f.seat.hit = time; emit(f.to, 26, 1.1, f.color); flights.splice(i, 1); continue; }
+        heads.push({ at: f.from.clone().lerp(f.to, easeInOut(k)), amp: 1.1, color: f.color, trail: 2 });
+      }
+      // a number being born throws out sparks
+      for (const node of births) emit(node.at, Math.round(8 + 22 * node.size), 0.5 + 0.75 * node.size, node.color);
+      births.length = 0;
+      // the lights of this frame: a star on each head and sparks behind it
+      shed += dt * 60;
+      const drops = Math.floor(shed); shed -= drops;
+      headSprites.forEach((h, i) => {
+        const head = heads[i];
+        h.glow.visible = h.star.visible = Boolean(head) && d > 0.01;
+        if (!head) return;
+        h.glow.position.copy(head.at); h.star.position.copy(head.at);
+        h.glow.scale.setScalar(0.34 * (0.6 + 0.4 * head.amp));
+        h.star.scale.setScalar(0.95 * (0.55 + 0.45 * head.amp) * (1 + 0.12 * Math.sin(time * 23 + i)));
+        h.glow.material.opacity = Math.min(1, head.amp) * d;
+        h.star.material.opacity = Math.min(1, head.amp) * d * 0.9;
+        h.glow.material.color.copy(head.color).lerp(HEAD, 0.75).multiplyScalar(1.5);
+        h.star.material.color.copy(head.color).lerp(HEAD, 0.6).multiplyScalar(1.35);
+        // slow sparks that stay where they fell: for a second the light's way is a stream of them
+        if (head.amp > 0.3) emit(head.at, drops * 3 * (head.trail ?? 1), 0.17, head.color, 1.3);
+      });
+      heads.length = 0;
+      stepSparks(dt);
+      marks.forEach((mark, i) => {
+        const s = chosenSeats[i] ?? null;
+        if (s && s !== mark.seat) { mark.seat = s; mark.level = 0; }
+        mark.level += ((s ? 1 : 0) - mark.level) * ease;
+        mark.sprite.visible = mark.level > 0.01 && Boolean(mark.seat);
+        if (!mark.sprite.visible) { if (!s) mark.seat = null; return; }
+        mark.sprite.position.copy(mark.seat.at);
+        const breath = 1 + 0.025 * Math.sin(time * 1.6 + i);
+        mark.sprite.scale.setScalar(mark.seat.size * 1.26 * breath * (1.3 - 0.3 * mark.level));
+        mark.sprite.material.rotation = time * 0.12;
+        mark.sprite.material.opacity = mark.level * d * mark.seat.show * (0.85 + 0.15 * Math.sin(time * 1.6 + i));
+      });
       const paint = (s) => {
-        const chosen = api.focus && api.focus.some((key) => seats[key] === s);
-        const size = s.size * (1 + 0.45 * s.flash) * (chosen ? 1.35 : 1);
+        const chosen = chosenSeats.includes(s);
+        // the flash of being born, or of a light arriving at a chosen place
+        const flash = Math.max(s.flash, time - s.hit < 3 ? Math.exp(-(time - s.hit) * 3.5) : 0);
+        // the seat opens from a point and settles; the number comes up inside it a moment
+        // later, golden at first and cooling to white
+        const open = s.show < 1 ? Math.max(0.02, backOut(s.show)) : 1;
+        const size = s.size * open * (1 + 0.16 * flash) * (chosen ? 1.12 : 1);
         s.ring.scale.setScalar(size);
         s.num.scale.setScalar(size * 0.8);
-        s.ring.material.opacity = s.off ? 0 : s.show * d;
-        s.num.material.opacity = s.off ? 0 : s.show * d;
-        s.ring.material.color.copy(s.color).multiplyScalar(1.1 + 3 * s.flash + (chosen ? 1.2 : 0));
-        s.num.material.color.setScalar(1 + 2.5 * s.flash);
+        s.ring.material.opacity = s.off ? 0 : seg(s.show, 0, 0.5) * d;
+        s.num.material.opacity = s.off ? 0 : seg(s.show, 0.35, 1) * d;
+        s.ring.material.color.copy(s.color).multiplyScalar(1.1 + 2.6 * flash);
+        if (chosen) s.ring.material.color.lerp(CHOSEN, 0.6).multiplyScalar(1.25);
+        s.num.material.color.setRGB(1 + 2.2 * flash, 1 + 1.5 * flash, 1 + 0.5 * flash).multiplyScalar(chosen ? 1.3 : 1);
+        s.star.visible = !s.off && flash > 0.03 && d > 0.01;
+        if (s.star.visible) {
+          s.star.scale.setScalar(s.size * (1.25 + 1.2 * (1 - flash)));
+          s.star.material.opacity = flash * d * 0.85;
+          s.star.material.rotation = 0.5 * (1 - flash);
+        }
         if (s.dot) {
           // the heart has its own light; the eight outer points get a small fine one
           s.dot.material.opacity = s === nodes.centre || api.painted ? 0 : s.dotShow * (1 - s.show) * d;

@@ -42,27 +42,78 @@ export const grainTexture = () => canvas(256, (g, s) => {
   }
 });
 
+// A star as a lens sees it: a small bright point with four fine rays. It flashes
+// where a number is born and rides at the head of a light running along a line.
+export const glintTexture = () => canvas(256, (g, s) => {
+  const c = s / 2;
+  g.globalCompositeOperation = 'lighter';
+  const ray = (x0, y0, x1, y1, half) => {
+    const grad = g.createLinearGradient(x0, y0, x1, y1);
+    grad.addColorStop(0, 'rgba(255,255,255,0)');
+    grad.addColorStop(0.5, 'rgba(255,255,255,0.95)');
+    grad.addColorStop(1, 'rgba(255,255,255,0)');
+    g.fillStyle = grad;
+    g.beginPath();
+    if (y0 === y1) { g.moveTo(x0, c); g.lineTo(c, c - half); g.lineTo(x1, c); g.lineTo(c, c + half); }
+    else { g.moveTo(c, y0); g.lineTo(c + half, c); g.lineTo(c, y1); g.lineTo(c - half, c); }
+    g.closePath(); g.fill();
+  };
+  ray(0, c, s, c, s * 0.012);
+  ray(c, 0, c, s, s * 0.012);
+  const core = g.createRadialGradient(c, c, 0, c, c, s * 0.14);
+  core.addColorStop(0, 'rgba(255,255,255,1)');
+  core.addColorStop(0.3, 'rgba(255,255,255,0.45)');
+  core.addColorStop(1, 'rgba(255,255,255,0)');
+  g.fillStyle = core;
+  g.fillRect(0, 0, s, s);
+});
+
 // the round seat of a number, a ringed orb: a dark disc so lines behind do
 // not cross the digits, a fine bright ring with a fainter one inside it, a
-// little light held within and a soft glow outside
+// little light held within and only a breath of glow outside. Forty-nine of
+// these stand together, so a wide glow on each turns the matrix to fog.
 export const seatTexture = () => canvas(256, (g, s) => {
   const c = s / 2;
-  const glow = g.createRadialGradient(c, c, s * 0.3, c, c, s * 0.5);
-  glow.addColorStop(0, 'rgba(255,255,255,0.3)');
-  glow.addColorStop(0.5, 'rgba(255,255,255,0.08)');
+  const glow = g.createRadialGradient(c, c, s * 0.32, c, c, s * 0.43);
+  glow.addColorStop(0, 'rgba(255,255,255,0.16)');
   glow.addColorStop(1, 'rgba(255,255,255,0)');
   g.fillStyle = glow;
   g.fillRect(0, 0, s, s);
   g.beginPath(); g.arc(c, c, s * 0.33, 0, Math.PI * 2);
-  g.fillStyle = 'rgba(9,6,22,0.9)'; g.fill();
+  g.fillStyle = 'rgba(7,5,18,0.94)'; g.fill();
   const held = g.createRadialGradient(c, c, 0, c, c, s * 0.33);
   held.addColorStop(0, 'rgba(255,255,255,0)');
-  held.addColorStop(0.72, 'rgba(255,255,255,0.03)');
-  held.addColorStop(1, 'rgba(255,255,255,0.2)');
+  held.addColorStop(0.78, 'rgba(255,255,255,0.02)');
+  held.addColorStop(1, 'rgba(255,255,255,0.13)');
   g.fillStyle = held; g.fill();
-  g.lineWidth = s * 0.013; g.strokeStyle = 'rgba(255,255,255,1)'; g.stroke();
-  g.beginPath(); g.arc(c, c, s * 0.285, 0, Math.PI * 2);
-  g.lineWidth = s * 0.005; g.strokeStyle = 'rgba(255,255,255,0.5)'; g.stroke();
+  g.lineWidth = s * 0.012; g.strokeStyle = 'rgba(255,255,255,1)'; g.stroke();
+  g.beginPath(); g.arc(c, c, s * 0.287, 0, Math.PI * 2);
+  g.lineWidth = s * 0.005; g.strokeStyle = 'rgba(255,255,255,0.45)'; g.stroke();
+});
+
+// The mark of a chosen place: a hair-fine ring of light a little outside the seat,
+// with a narrow glow hugging it and four small points of light on it, like a star
+// set in a ring. The light stays on the ring, so the number inside stays clear.
+export const chosenTexture = () => canvas(512, (g, s) => {
+  const c = s / 2; const r = s * 0.36;
+  const glow = g.createRadialGradient(c, c, r - s * 0.035, c, c, r + s * 0.05);
+  glow.addColorStop(0, 'rgba(255,255,255,0)');
+  glow.addColorStop(0.42, 'rgba(255,255,255,0.3)');
+  glow.addColorStop(1, 'rgba(255,255,255,0)');
+  g.fillStyle = glow;
+  g.fillRect(0, 0, s, s);
+  g.beginPath(); g.arc(c, c, r, 0, Math.PI * 2);
+  g.lineWidth = s * 0.006; g.strokeStyle = 'rgba(255,255,255,1)'; g.stroke();
+  for (let i = 0; i < 4; i++) {
+    const a = (i * Math.PI) / 2 + Math.PI / 4;
+    const x = c + Math.cos(a) * r; const y = c + Math.sin(a) * r;
+    const pt = g.createRadialGradient(x, y, 0, x, y, s * 0.035);
+    pt.addColorStop(0, 'rgba(255,255,255,1)');
+    pt.addColorStop(0.3, 'rgba(255,255,255,0.55)');
+    pt.addColorStop(1, 'rgba(255,255,255,0)');
+    g.fillStyle = pt;
+    g.fillRect(x - s * 0.035, y - s * 0.035, s * 0.07, s * 0.07);
+  }
 });
 
 const numbers = new Map();
@@ -239,20 +290,30 @@ export function lightMaterial(color, dim) {
       uOpacity: { value: 1 },
       uPulse: { value: -1 },
       uPulseAmp: { value: 0 },
+      uDir: { value: 1 },    // which way the light runs along the line: 1 from its start, -1 from its end
+      uLen: { value: 1 },    // the line's length, so the light's head and tail keep one size on every line
       uDim: dim,
     },
     vertexShader: 'varying vec2 vUv; varying vec2 vP; void main(){ vUv = uv; vP = position.xy; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
     fragmentShader: `
       varying vec2 vP;
-      uniform vec3 uColor; uniform float uProgress; uniform float uOpacity; uniform float uPulse; uniform float uPulseAmp; uniform float uDim;
+      uniform vec3 uColor; uniform float uProgress; uniform float uOpacity; uniform float uPulse; uniform float uPulseAmp; uniform float uDir; uniform float uLen; uniform float uDim;
       varying vec2 vUv;
       void main(){
         float across = 1.0 - abs(vUv.y * 2.0 - 1.0);
-        float core = smoothstep(0.0, 0.85, across);
+        // the ribbon is four times as wide as the line drawn on it: the line itself is the
+        // hairline down its middle, and the rest carries the soft light of what runs along it
+        float core = smoothstep(0.75, 0.9625, across);
+        float soft = across * across * across;
         float shown = 1.0 - smoothstep(uProgress - 0.012, uProgress, vUv.x);
         float growing = step(0.001, uProgress) * step(uProgress, 0.999);
         float head = exp(-pow((vUv.x - uProgress) * 26.0, 2.0)) * growing;
-        float pulse = exp(-pow((vUv.x - uPulse) * 11.0, 2.0)) * uPulseAmp * shown;
+        // the light that runs along the line, as a comet: a small hot head, a short
+        // sharp front, and a tail that fades behind it over a unit or two of length
+        float d = (vUv.x - uPulse) * uDir * uLen;
+        float hot = exp(-pow(d / 0.1, 2.0));
+        float tail = d < 0.0 ? exp(d / 1.5) : exp(-pow(d / 0.07, 2.0));
+        float pulse = (0.55 * tail + hot) * uPulseAmp * shown;
         float a = core * (shown * uOpacity + head) * uDim;
         float far = length(vP);
         float near = 0.6 + 0.55 * exp(-far * 0.5);
@@ -260,7 +321,9 @@ export function lightMaterial(color, dim) {
         // heart stays one clean point of light and not a knot of strokes
         float rise = 0.08 + 0.92 * smoothstep(0.12, 0.85, far);
         vec3 col = uColor * near * (1.0 + 3.0 * head + 3.5 * pulse);
-        gl_FragColor = vec4(col * a + uColor * pulse * core * uDim, a) * rise;
+        // the running light is warm gold on every line, whatever the line's own colour
+        vec3 run = mix(uColor, vec3(1.0, 0.7, 0.32), 0.75);
+        gl_FragColor = vec4(col * a + run * pulse * (core + 0.6 * soft) * uDim, a) * rise;
       }`,
     transparent: true,
     depthWrite: false,

@@ -91,7 +91,9 @@ matrix.setPainted(true);
 
 const composer = new EffectComposer(renderer, new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, samples: PHONE ? 2 : 4 }));
 composer.addPass(new RenderPass(scene, camera));
-const bloom = new UnrealBloomPass(new THREE.Vector2(1, 1), 0.8, 0.75, 0.8);
+// (strength, radius, threshold: a low strength and a short reach, so the glow stays a fine
+// edge on what is bright and does not spread into a haze over the dark of the matrix)
+const bloom = new UnrealBloomPass(new THREE.Vector2(1, 1), 0.42, 0.32, 0.86);
 composer.addPass(bloom);
 // the glow is soft by nature: a phone works it out at half size
 if (PHONE) { const full = bloom.setSize.bind(bloom); bloom.setSize = (w, h) => full(Math.round(w / 2), Math.round(h / 2)); }
@@ -772,6 +774,7 @@ async function goTo(stop) {
   $('r-kicker').textContent = kicker;
   $('r-title').textContent = title;
   body.append(...blocks);
+  glide.on = false;
   scroll.scrollTop = 0;
   scroll.classList.remove('swap');
 }
@@ -1009,6 +1012,25 @@ $('amin-figure-more').addEventListener('click', () => {
   $('amin-figure-more').textContent = open ? 'Хураах' : 'Дэлгэрэнгүй';
   $('amin-figure-more').setAttribute('aria-expanded', String(open));
 });
+// The wheel moves the reading's text in steps; here each step only sets where the text
+// should come to rest, and the text glides there, so a turn of the wheel reads as one
+// smooth movement. A finger on a phone, the scroll bar and the keys scroll as they do.
+const glide = { el: $('r-scroll'), at: 0, goal: 0, on: false };
+glide.el.addEventListener('wheel', (e) => {
+  if (e.ctrlKey) return;   // pinch to zoom
+  e.preventDefault();
+  const unit = e.deltaMode === 1 ? 34 : e.deltaMode === 2 ? glide.el.clientHeight * 0.9 : 1;
+  if (!glide.on) { glide.at = glide.el.scrollTop; glide.goal = glide.at; }
+  glide.goal = Math.min(Math.max(glide.goal + e.deltaY * unit, 0), glide.el.scrollHeight - glide.el.clientHeight);
+  glide.on = true;
+}, { passive: false });
+for (const type of ['pointerdown', 'keydown', 'touchstart']) glide.el.addEventListener(type, () => { glide.on = false; }, { passive: true });
+function glideStep(dt) {
+  if (!glide.on) return;
+  glide.at += (glide.goal - glide.at) * (1 - Math.exp(-dt * 10));
+  if (Math.abs(glide.goal - glide.at) < 0.4) { glide.at = glide.goal; glide.on = false; }
+  glide.el.scrollTop = glide.at;
+}
 let last = performance.now();
 // ?rec: the show stands still between frames and is moved only by matrixSite.tick,
 // so a recording made slower than real time still comes out smooth
@@ -1032,6 +1054,7 @@ function frame(now) {
   const dt = (now - last) / 1000;
   advance(recording ? 0 : Math.min(0.05, dt));
   last = now;
+  glideStep(Math.min(0.05, dt));
   watchSpeed(dt);
   // nothing of the scene shows while the film covers it
   if (!covered()) draw();
