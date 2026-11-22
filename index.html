@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600&display=swap">
-  <link rel="stylesheet" href="matrix/site/site.css?v=11">
+  <link rel="stylesheet" href="matrix/site/site.css?v=78">
   <!-- The server lets browsers keep scripts for an hour. Raise every ?v= number
        on this page together when any script or the style sheet changes, so a
        visitor never runs a new file against an old one. -->
@@ -17,25 +17,43 @@
       "imports": {
         "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
         "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/",
-        "./matrix/site/world.js": "./matrix/site/world.js?v=11",
-        "./matrix/site/matrix3d.js": "./matrix/site/matrix3d.js?v=11",
-        "./matrix/site/gfx.js": "./matrix/site/gfx.js?v=11",
-        "./matrix/matrix.js": "./matrix/matrix.js?v=11",
-        "./matrix/draw.js": "./matrix/draw.js?v=11",
-        "./matrix/talents.js": "./matrix/talents.js?v=11",
-        "./matrix/chapters.js": "./matrix/chapters.js?v=11",
-        "./matrix/report.js": "./matrix/report.js?v=11",
-        "./matrix/couple.js": "./matrix/couple.js?v=11"
+        "./matrix/site/world.js": "./matrix/site/world.js?v=78",
+        "./matrix/site/matrix3d.js": "./matrix/site/matrix3d.js?v=78",
+        "./matrix/site/gfx.js": "./matrix/site/gfx.js?v=78",
+        "./matrix/site/sound.js": "./matrix/site/sound.js?v=78",
+        "./matrix/site/backdrop.js": "./matrix/site/backdrop.js?v=78",
+        "./matrix/site/figures.js": "./matrix/site/figures.js?v=78",
+        "./matrix/matrix.js": "./matrix/matrix.js?v=78",
+        "./matrix/draw.js": "./matrix/draw.js?v=78",
+        "./matrix/talents.js": "./matrix/talents.js?v=78",
+        "./matrix/chapters.js": "./matrix/chapters.js?v=78",
+        "./matrix/report.js": "./matrix/report.js?v=78",
+        "./matrix/couple.js": "./matrix/couple.js?v=78"
       }
     }
   </script>
 </head>
 <body>
   <canvas id="scene"></canvas>
+  <div id="filmbox" class="filmbox" aria-hidden="true">
+    <video id="film" muted playsinline preload="auto" disableremoteplayback></video>
+    <video id="pairfilm" muted playsinline preload="auto" disableremoteplayback></video>
+  </div>
   <div id="veil" aria-hidden="true"></div>
-  <p class="brand">Хувь тавилангийн матриц</p>
-  <p class="credit">Тэнгэр, дэлхийн зураг: <a href="https://www.solarsystemscope.com/textures/" target="_blank" rel="noopener">Solar System Scope</a>, CC BY 4.0</p>
-  <button id="skip" class="ghost" type="button">Алгасах</button>
+  <!-- Sky and Earth pictures: Solar System Scope, https://www.solarsystemscope.com/textures/, CC BY 4.0.
+       The owner asked for no credit line on the scene (2026-11-20). -->
+  <div class="corner">
+    <button id="skip" class="ghost" type="button">Алгасах</button>
+    <button id="sound" class="sound" type="button" aria-pressed="false">
+      <svg class="sound__icon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+        <path class="sound__body" d="M3.5 9.6h3.2l4.8-3.8v12.4l-4.8-3.8H3.5z"/>
+        <path class="sound__wave sound__wave--1" d="M14.8 9.3a4 4 0 0 1 0 5.4"/>
+        <path class="sound__wave sound__wave--2" d="M17.4 6.9a7.3 7.3 0 0 1 0 10.2"/>
+        <path class="sound__mute" d="M15.4 9.6l4.8 4.8M20.2 9.6l-4.8 4.8"/>
+      </svg>
+      <span class="sound__label">Дуу нээх</span>
+    </button>
+  </div>
   <p id="caption" class="caption" aria-live="polite"></p>
   <p id="loader" class="loader">Одод цуглаж байна</p>
 
@@ -76,7 +94,15 @@
     <h1 id="amin-title"></h1>
     <p id="amin-name" class="amin__name"></p>
     <p id="amin-keys" class="amin__keys"></p>
-    <p id="amin-text" class="amin__text"></p>
+    <div class="amin__text">
+      <p id="amin-text"></p>
+      <div class="amin__figure">
+        <p class="amin__figure-head">Таны дүр <span id="amin-figure"></span></p>
+        <p id="amin-figure-story" class="amin__figure-story"></p>
+        <button id="amin-figure-more" class="amin__figure-more" type="button" aria-expanded="false">Дэлгэрэнгүй</button>
+      </div>
+      <p id="amin-more"></p>
+    </div>
     <div class="amin__actions">
       <button id="go" class="cta" type="button">Хөргөө унших</button>
       <button id="overview" class="ghost" type="button">Бүтэн матриц</button>
@@ -111,6 +137,6 @@
     </nav>
   </aside>
 
-  <script type="module" src="matrix/site/main.js?v=11"></script>
+  <script type="module" src="matrix/site/main.js?v=78"></script>
 </body>
 </html>

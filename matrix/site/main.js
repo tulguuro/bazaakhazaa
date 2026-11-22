@@ -1,6 +1,7 @@
-// The animated matrix site, as a working mock-up. An intro film (a light
-// leaves the stars, reaches the Earth, the steppe and a ger, and the toono
-// turns into the matrix), then the birth form, the numbers arriving, the
+// The animated matrix site, as a working mock-up. The opening film (the Blue
+// Wolf and the Fair Hind, from the turning sky to the toono of a ger) plays as
+// a video; where it ends the matrix draws itself around the star left in the
+// toono. Then the birth form, the numbers arriving, the
 // amin too formed out of stars and the journey through the matrix, where
 // every stop opens its chapters.
 // A second birth date opens the couple matrix and its own journey.
@@ -21,12 +22,15 @@ import {
   currentAge, nextAge, pairContextFile, pairName,
 } from '../report.js';
 import { TALENTS } from '../talents.js';
+import { FIGURES, PICTURES } from './figures.js';
 import {
   COUPLE_PARTS, COUPLE_TAIL_FILES, COUPLE_ZONE_IDS, FIELDS as COUPLE_FIELDS, TAIL_FIELDS as COUPLE_TAIL_FIELDS, WHERE as COUPLE_WHERE,
 } from '../couple.js';
 import { createWorld } from './world.js';
-import { REVEAL_T, createMatrix } from './matrix3d.js';
-import { easeIn, easeInOut, easeOut, lerp, seg, smooth } from './gfx.js';
+import { FIGURE_STARS, PHONE, REVEAL_T, createMatrix } from './matrix3d.js';
+import { easeIn, easeInOut, easeOut, figurePoints, lerp, seg, smooth } from './gfx.js';
+import { createSound } from './sound.js';
+import { NIGHT, createBackdrop } from './backdrop.js';
 
 const $ = (id) => document.getElementById(id);
 const query = new URLSearchParams(location.search);
@@ -41,30 +45,65 @@ renderer.toneMappingExposure = 1.05;
 const asset = (name) => new URL(`../../assets/${name}`, import.meta.url).href;
 const textUrl = (path) => new URL(`../texts/${path}.json`, import.meta.url).href;
 
+// The opening, on the site's song (film/edit/EDIT.md has the cut list): the film
+// of the legend, then the clip in which the pair of starlight turns into the
+// matrix (VIDEO-PROMPTS.md, clip 6). Seconds of the song:
+//   PAIR.start      the pair's clip begins, under the last moment of the film
+//   SCENE.from..to  the clip's last frame gives way to the scene, which shows
+//                   the same painted matrix in the same place
+//   FILM.end        the form comes (a drum hit of the song)
+const FILM = { length: 47.71, end: 57.98 };
+const PAIR = { start: 46.9, cross: 0.8, length: 10.04 };
+const SCENE = { from: 56.4, to: 57.0 };
+// where the clip's last frame has the matrix: centre and radius as shares of
+// the frame (measured on v1-pair-matrix.mp4 by registering matrix-plate.png on it)
+const CLIP = { cx: 0.4911, cy: 0.4681, r: 0.367 };
+const film = $('film');
+const pair = $('pairfilm');
+const noIntro = query.has('skip') || query.has('demo') || window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+if (noIntro) $('filmbox').hidden = true;
+else {
+  // a phone shows the film small and plays the lighter copy with ease
+  const large = window.innerWidth >= 900 && window.innerWidth * Math.min(window.devicePixelRatio, 2) > 1500;
+  film.src = asset(large ? 'film-1080.mp4' : 'film-720.mp4');
+  pair.src = asset(large ? 'pair-1080.mp4' : 'pair-720.mp4');
+}
+
 const loader = new THREE.TextureLoader();
-const [skyMap, day, clouds] = await Promise.all([
-  loader.loadAsync(asset('sky_4k.jpg')),
-  loader.loadAsync(asset('2k_earth_daymap.jpg')),
-  loader.loadAsync(asset('2k_earth_clouds.jpg')),
+const [ringMap] = await Promise.all([
+  loader.loadAsync(asset('matrix-plate.jpg')),
   document.fonts.load('600 40px "Cormorant Garamond"'),
   document.fonts.load('500 40px Inter'),
   document.fonts.load('600 40px Inter'),
 ]);
-const world = createWorld(skyMap, { day, clouds });
+// The first intro's sky photograph and Earth maps are no longer shown, so they
+// are not loaded: the world is given blank pictures in their place.
+const blank = () => { const t = new THREE.DataTexture(new Uint8Array([0, 0, 0, 255]), 1, 1); t.needsUpdate = true; return t; };
+const world = createWorld(blank(), { day: blank(), clouds: blank() });
 const { scene, camera } = world;
+world.sky.visible = false;
+scene.background = new THREE.Color(NIGHT);
+const backdrop = createBackdrop(ringMap);
+scene.add(backdrop.mesh);
 const matrix = createMatrix();
 scene.add(matrix.group);
+matrix.setPainted(true);
 
-const composer = new EffectComposer(renderer, new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, samples: 4 }));
+const composer = new EffectComposer(renderer, new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, samples: PHONE ? 2 : 4 }));
 composer.addPass(new RenderPass(scene, camera));
 const bloom = new UnrealBloomPass(new THREE.Vector2(1, 1), 0.8, 0.75, 0.8);
 composer.addPass(bloom);
+// the glow is soft by nature: a phone works it out at half size
+if (PHONE) { const full = bloom.setSize.bind(bloom); bloom.setSize = (w, h) => full(Math.round(w / 2), Math.round(h / 2)); }
 composer.addPass(new OutputPass());
 
 let W = 1; let H = 1; let proj = 600;
+// how sharp the scene is drawn: a phone starts at 1.5 screen pixels per point, and any
+// screen that cannot keep up is lowered step by step (see watchSpeed) down to 1
+let ratioCap = PHONE ? 1.5 : 2;
 function resize() {
   W = window.innerWidth; H = window.innerHeight;
-  const ratio = Math.min(window.devicePixelRatio, 2);
+  const ratio = Math.max(1, Math.min(window.devicePixelRatio, ratioCap));
   renderer.setPixelRatio(ratio);
   renderer.setSize(W, H, false);
   composer.setPixelRatio(ratio);
@@ -128,6 +167,96 @@ const caption = $('caption');
 const veil = $('veil');
 let captionText = '';
 
+// Where the eye should rest in each shot, as a share of the film's width. Where
+// the film is wider than its box, the part in view follows these points. Every shot begins with its own pair, so nothing slides across a cut.
+const FOCUS = [
+  [0, 0.50], [6.29, 0.53],
+  [6.29, 0.65], [9.5, 0.64], [13.04, 0.52],
+  [13.04, 0.58], [15.3, 0.60], [17.54, 0.57],
+  [17.54, 0.75], [20, 0.52], [22, 0.50], [24, 0.54], [26.5, 0.52],
+  [26.5, 0.78], [28.7, 0.68], [31, 0.48],
+  [31, 0.60], [33, 0.58], [35.5, 0.50],
+  [35.5, 0.50], [FILM.length, 0.50],
+];
+// The film's box and the film inside it. A wide screen is filled; an upright
+// one gets a square across its middle. The film is slid with a transform,
+// which the phone's graphics chip does by itself, and only when it has moved.
+const filmBox = $('filmbox');
+const laid = { box: '', move: '', fade: '' };
+function layoutFilm(t) {
+  const tall = W < H;
+  // a little taller than square: the toono, the ger and both animals fit whole with room to spare
+  const boxH = tall ? Math.min(H, Math.round(W * 1.15)) : H;
+  const top = Math.round((H - boxH) / 2);
+  const vidH = Math.max(boxH, (W * 9) / 16);
+  const vidW = (vidH * 16) / 9;
+  const box = `${W}|${boxH}|${top}`;
+  if (box !== laid.box) {
+    laid.box = box;
+    filmBox.classList.toggle('filmbox--tall', tall);
+    filmBox.style.width = `${W}px`;
+    filmBox.style.height = `${boxH}px`;
+    filmBox.style.top = `${top}px`;
+    for (const v of [film, pair]) { v.style.width = `${vidW}px`; v.style.height = `${vidH}px`; }
+  }
+  let focus = 0.5;
+  for (let i = 0; i < FOCUS.length - 1; i += 1) {
+    const [a, from] = FOCUS[i]; const [b, to] = FOCUS[i + 1];
+    if (t >= a && t < b) { focus = lerp(from, to, (t - a) / (b - a)); break; }
+  }
+  const x = -Math.min(Math.max(focus * vidW - W / 2, 0), vidW - W);
+  const y = -(vidH - boxH) / 2;
+  laid.geo = { vidW, vidH, x, y: top + y };
+  const move = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0)`;
+  if (move !== laid.move) { laid.move = move; film.style.transform = move; pair.style.transform = move; }
+}
+
+// The camera that shows the code's matrix exactly where the clip's last frame
+// shows it: same centre on the screen, same size. The scene takes over from the
+// clip in this view and then eases to its own.
+function matchClip() {
+  const { vidW, vidH, x, y } = laid.geo ?? { vidW: W, vidH: H, x: 0, y: 0 };
+  const sx = x + CLIP.cx * vidW;
+  const sy = y + CLIP.cy * vidH;
+  const rpx = CLIP.r * vidH;
+  const d = (R_WORLD * (H / 2)) / (Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * rpx);
+  return { d, side: W / 2 - sx, bottom: 2 * (H / 2 - sy) };
+}
+const R_WORLD = 4;
+
+// the scene is out of sight while the film covers it, and is left alone then
+const covered = () => state === 'intro' && introT < SCENE.from - 0.3;
+
+// the film, the pair's clip, and after them the scene, at second `t` of the song
+function filmAt(t) {
+  const fade = (1 - seg(t, SCENE.from, SCENE.to)).toFixed(3);
+  if (fade !== laid.fade) { laid.fade = fade; filmBox.style.opacity = fade; }
+  const cross = seg(t, PAIR.start, PAIR.start + PAIR.cross).toFixed(3);
+  if (cross !== laid.cross) { laid.cross = cross; pair.style.opacity = cross; film.style.opacity = (1 - cross).toFixed(3); }
+  layoutFilm(Math.min(t, FILM.length - 0.01));
+  veil.style.background = '#03050b';
+  veil.style.opacity = (1 - seg(t, 0, 1)).toFixed(3);
+  if (t < SCENE.from - 0.3) return;
+  // the scene, waiting under the clip in the clip's own view
+  world.space.visible = world.steppe.visible = false;
+  scene.fog = null;
+  world.light.set([V(0, 0, 0)], 0.4, 0);
+  const m = matchClip();
+  camera.position.set(0, 0, m.d);
+  camera.lookAt(0, 0, 0);
+  camera.setViewOffset(W, H, m.side, m.bottom / 2, W, H);
+  world.interior.userData.setFade(1);
+  matrix.group.visible = true;
+  matrix.dim.value = 1;
+  matrix.drawBlank(1);
+  matrix.setGather(1);
+  matrix.setFigure(0, 0);
+  caption.style.opacity = '0';
+}
+
+// The first intro, built in code: a light leaves the stars for the Earth and a
+// ger. The film has taken its place; only its last moment is still used, as
+// the state the form begins from.
 function introAt(t) {
   const shot = t < T.hit ? 'space' : t < T.ger ? 'steppe' : 'ger';
   world.space.visible = shot === 'space';
@@ -198,7 +327,10 @@ const held = query.has('t');
 let time = 0; let stateStart = 0;
 let gender = '';
 let person = null; // { matrix, name, who, entry }
-const view = { bottom: 0, wantBottom: 0, side: 0, wantSide: 0, pos: V(0, 0, 13), look: V(0, 0, 0), figure: 0, wantFigure: 0, wantDim: 1 };
+const view = { bottom: 0, wantBottom: 0, side: 0, wantSide: 0, pos: V(0, 0, 13), look: V(0, 0, 0), figure: 0, wantFigure: 0, wantDim: 1, hasFigure: false, morph: 1 };
+// seconds after the amin too opens: the figure has formed by 2.8, stays, then winds
+// into one star and opens as the number
+const FIGURE_HOLD = { from: 5.6, to: 10.0 };
 const pointer = { x: 0, y: 0 };
 
 function enter(next) {
@@ -219,20 +351,37 @@ function enter(next) {
   if (next === 'journey') {
     $('own').hidden = mode !== 'couple';
     $('pair').hidden = mode === 'couple';
-    $('hint').textContent = mode === 'couple'
-      ? `${couple.names.join(' + ')} · хосын матриц`
-      : 'Цэг дээр дарж тайлбарыг нь уншина уу. Хослол, холбоос, бүлгүүд «Агуулга» дотор бий.';
+    // one person's matrix stands without words; a couple's says whose it is
+    $('hint').textContent = mode === 'couple' ? `${couple.names.join(' + ')} · хосын матриц` : '';
+    $('hint').hidden = mode !== 'couple';
     show(journey);
     view.wantFigure = 0; view.wantDim = 1;
   }
 }
 
+const lift = () => { $('loader').classList.add('gone'); setTimeout(() => { $('loader').hidden = true; }, 600); };
+let filmOver = false;   // the film has played out, or cannot be played
+let tail = null;         // when the film ended, and the second it ended on
+let pairOn = false;      // the pair's clip has been started
+let pairWarm = false;    // the pair's clip has been woken ahead of its start
+
 function endIntro() {
+  film.pause();
+  pair.pause();
+  filmBox.hidden = true;
+  lift();
+  matrix.setGather(1);
+  matrix.setHeart(1);
   introAt(T.end);
-  world.light.set([V(0, 0, 0)], 1, 0);
+  world.light.set([V(0, 0, 0)], 0.4, 0);
   world.space.visible = world.steppe.visible = false;
   scene.fog = null;
-  view.pos.copy(camera.position);
+  // start from the clip's own view and ease from there to the form's
+  const m = matchClip();
+  view.pos.set(0, 0, m.d);
+  view.look.set(0, 0, 0);
+  view.side = m.side;
+  view.bottom = m.bottom;
   enter('form');
 }
 
@@ -248,20 +397,38 @@ async function submit() {
   const n = m.points.centre;
   const read = (path) => fetch(textUrl(path)).then((r) => (r.ok ? r.json() : null)).catch(() => null);
   // the portrait of the amin too, and what its energy means in general
-  const [texts, energy] = await Promise.all([read(`by-gender/${gender}/portrait`), read(`numbers/${n}`)]);
+  // the figure of the number in stars, where its picture is made: 7.2 units square fills the ring
+  // (?fig=N shows the figure of another number, for looking at a picture whose number
+  // no birth date gives as an amin too: 1, 2, 15, 17, 19 and 21 only come at other points)
+  const fig = Number(query.get('fig')) || n;
+  const [texts, energy, stars] = await Promise.all([read(`by-gender/${gender}/portrait`), read(`numbers/${n}`),
+    PICTURES.has(fig) ? figurePoints(asset(`figures/${fig}.jpg`), FIGURE_STARS, 7.2) : null]);
   const entry = texts?.texts?.[n];
   const character = String(energy?.sections?.character ?? '').split(/\n\n+/).filter(Boolean);
   const name = $('name').value.trim();
   const stamp = [year, String(month).padStart(2, '0'), String(day).padStart(2, '0')].join('.');
-  person = { m, n, portrait: entry, keywords: energy?.keywords ?? [], character, texts: loadTexts(gender) };
+  // the journey's texts (several megabytes) wait until the figure has formed, so on a
+  // phone they never compete with its picture; asking for the journey loads them at once
+  person = { m, n, portrait: entry, keywords: energy?.keywords ?? [], character, gender, texts: null };
+  const asked = person;
+  setTimeout(() => { if (person === asked) personTexts(); }, 12000);
   matrix.setMatrix(m);
+  matrix.setFigurePoints(stars);
+  view.hasFigure = Boolean(stars);
   $('who').textContent = [$('clan').value.trim(), $('father').value.trim(), name, stamp].filter(Boolean).join(' · ');
   $('amin-kicker').textContent = name ? `${name}, таны амин тоо` : 'Таны амин тоо';
   $('amin-title').textContent = entry?.title ?? TALENTS[n].name;
   $('amin-name').textContent = `${n} · ${TALENTS[n].name}`;
+  $('amin-figure').textContent = FIGURES[n].name;
+  $('amin-figure-story').textContent = FIGURES[n].story;
+  $('amin-figure-story').classList.add('short');
+  $('amin-figure-more').textContent = 'Дэлгэрэнгүй';
+  $('amin-figure-more').setAttribute('aria-expanded', 'false');
   // first what the energy means, not a scene from the portrait: that is read in the journey
   $('amin-keys').textContent = person.keywords.join(' · ');
-  $('amin-text').textContent = [TALENTS[n].text, character[0] ? sentences(character[0], 2) : ''].filter(Boolean).join(' ');
+  // what the energy means, then the figure of the number, then the person
+  $('amin-text').textContent = TALENTS[n].text;
+  $('amin-more').textContent = character[0] ? sentences(character[0], 2) : '';
   enter('reveal');
 }
 
@@ -273,6 +440,12 @@ for (const button of document.querySelectorAll('.gender button')) {
   });
 }
 $('skip').addEventListener('click', endIntro);
+// the song of the site, opened and closed by the visitor
+// while the film runs the song keeps to the film's second, afterwards it goes its own way
+const sound = createSound($('sound'), asset('urianhai-udgan.mp3'), {
+  position: () => (state === 'intro' && !held ? introT : null),
+  after: FILM.end,
+});
 $('go').addEventListener('click', () => { enter('journey'); goTo(route()[0]); });
 $('overview').addEventListener('click', () => enter('journey'));
 $('again').addEventListener('click', () => enter('form'));
@@ -346,6 +519,7 @@ const placeName = (key) => PLACE[key] ?? `${POINT_AGES[key]} нас · ${POINT_M
 // every text the journey shows: the chapters in the person's gender, the six
 // links, and the combinations (written for a pair of places, or the general one)
 const textCache = {};
+const personTexts = () => (person.texts ??= loadTexts(person.gender));
 function loadTexts(g) {
   const get = (path) => fetch(textUrl(path)).then((r) => (r.ok ? r.json() : null)).catch(() => null);
   const table = (list) => Promise.all(list).then(Object.fromEntries);
@@ -574,7 +748,7 @@ async function goTo(stop) {
   $('r-title').textContent = '';
   $('r-count').textContent = stop === CONTENTS ? '' : `${route().indexOf(stop) + 1} / ${route().length}`;
   show(reading);
-  const texts = await (mode === 'couple' ? couple : person).texts;
+  const texts = await (mode === 'couple' ? couple.texts : personTexts());
   if (current !== stop) return;
   const [kicker, title, blocks] = stopContent(stop, texts);
   $('r-kicker').textContent = kicker;
@@ -738,7 +912,11 @@ function interactive(dt) {
   matrix.dim.value = lerp(matrix.dim.value, view.wantDim, 1 - Math.exp(-dt * 2.2));
   const step = view.wantFigure > view.figure ? dt / 2.8 : -dt / 1.3;
   view.figure = Math.min(1, Math.max(0, Math.abs(view.wantFigure - view.figure) < Math.abs(step) ? view.wantFigure : view.figure + step));
-  matrix.setFigure(view.figure, time);
+  // on the amin too a number with a figure shows the figure first: the stars gather
+  // into it, it stays a while, then its stars flow on into the number
+  const figureFirst = view.hasFigure && state === 'amin';
+  view.morph = figureFirst ? seg(time - stateStart, FIGURE_HOLD.from, FIGURE_HOLD.to) : Math.min(1, view.morph + dt / 1.5);
+  matrix.setFigure(view.figure, time, view.morph);
   world.skyMat.color.setScalar(1.25);
 
   const s = time - stateStart;
@@ -758,34 +936,123 @@ function interactive(dt) {
 function advance(dt) {
   time += dt;
   if (state === 'intro') {
-    if (!held) introT += dt;
-    introAt(Math.min(introT, T.end));
-    if (introT >= T.end) endIntro();
+    // the film is the clock while it plays, so a pause to load never parts picture and song
+    // After its last frame the clock of the wall carries on, as the song does.
+    // the film is the clock, then the pair's clip; past the clip's last frame the wall clock
+    if (!held) {
+      // a few seconds ahead the clip is woken, so its first frames are decoded in time
+      if (!pairWarm && introT >= PAIR.start - 3) {
+        pairWarm = true;
+        pair.play().then(() => { if (!pairOn) { pair.pause(); pair.currentTime = 0; } }).catch(() => {});
+      }
+      if (!pairOn && introT >= PAIR.start) {
+        pairOn = true;
+        // started late: join the song where it is, so the clock never steps back
+        pair.currentTime = Math.max(0, introT - PAIR.start);
+        pair.play().catch(() => {});
+      }
+      const pairRuns = pairOn && !pair.ended && !pair.paused && pair.currentTime > 0;
+      const playing = pairOn ? pairRuns : !film.ended;
+      if (playing) { introT = pairOn ? PAIR.start + pair.currentTime : film.currentTime; tail = null; }
+      else {
+        tail ??= { at: performance.now(), from: introT };
+        introT = tail.from + (performance.now() - tail.at) / 1000;
+      }
+      if (playing) sound.follow(introT);
+    }
+    filmAt(Math.min(introT, FILM.end));
+    if (introT >= FILM.end) endIntro();
   } else {
     interactive(dt);
   }
-  matrix.apply(proj);
+  if (covered()) return;
+  // the painted matrix dims with the code's lines, under the amin too's figure
+  backdrop.uniforms.uLight.value = 0.92 * lerp(0.3, 1, matrix.dim.value);
+  matrix.apply(proj, time);
   world.tick(time);
 }
-let last = performance.now();
-function frame(now) {
-  advance(Math.min(0.05, (now - last) / 1000));
-  last = now;
+// the finished frame, then the figure's picture on top of it: the picture keeps its own
+// colours, untouched by the bloom and the tone mapping
+function draw() {
   composer.render();
+  matrix.syncOverlay();
+  renderer.autoClear = false;
+  renderer.render(matrix.overlay, camera);
+  renderer.autoClear = true;
+}
+// on a phone the figure's story is folded to three lines until asked for
+$('amin-figure-more').addEventListener('click', () => {
+  const open = $('amin-figure-story').classList.toggle('short') === false;
+  $('amin-figure-more').textContent = open ? 'Хураах' : 'Дэлгэрэнгүй';
+  $('amin-figure-more').setAttribute('aria-expanded', String(open));
+});
+let last = performance.now();
+// ?rec: the show stands still between frames and is moved only by matrixSite.tick,
+// so a recording made slower than real time still comes out smooth
+const recording = query.has('rec');
+// watch the first seconds of the scene: if frames take longer than about 1/40 s on
+// average, draw with fewer pixels (each step a quarter less sharp), at most three times
+let speedFrames = 0; let speedSum = 0; let speedSteps = 0;
+function watchSpeed(dt) {
+  if (recording || speedSteps >= 3 || covered() || dt > 0.25) return;
+  speedFrames += 1; speedSum += dt;
+  if (speedFrames < 90) return;
+  const slow = speedSum / speedFrames > 0.025;
+  speedFrames = 0; speedSum = 0;
+  if (!slow) { speedSteps = 3; return; }
+  const now = Math.min(window.devicePixelRatio, ratioCap);
+  if (now <= 1) { speedSteps = 3; return; }
+  ratioCap = Math.max(1, now - 0.25); speedSteps += 1;
+  resize();
+}
+function frame(now) {
+  const dt = (now - last) / 1000;
+  advance(recording ? 0 : Math.min(0.05, dt));
+  last = now;
+  watchSpeed(dt);
+  // nothing of the scene shows while the film covers it
+  if (!covered()) draw();
   requestAnimationFrame(frame);
 }
 // for checking by hand or by script: run the show forward without waiting
 window.matrixSite = {
+  // where the opening stands, for checking: the song's second, and whether the pair's clip runs
+  clock: () => ({ introT, pairOn, pairWarm, state }),
+  // how far the song stands from the film, in seconds, while both run
+  songOffset: () => (sound.state === 'on' ? sound.audio.currentTime - introT : null),
+  tick(seconds) {
+    for (let s = 0; s < seconds - 1e-6; s += 1 / 60) advance(Math.min(1 / 60, seconds - s));
+    draw();
+  },
   step(seconds) {
+    if (state === 'intro') endIntro();
     for (let s = 0; s < seconds; s += 1 / 30) advance(1 / 30);
-    composer.render();
+    draw();
     return state;
   },
 };
 
-$('loader').classList.add('gone');
-setTimeout(() => { $('loader').hidden = true; }, 600);
-if (query.has('skip') || query.has('demo') || window.matchMedia('(prefers-reduced-motion: reduce)').matches) endIntro();
+if (noIntro) endIntro();
+else {
+  layoutFilm(introT);   // the box has its size before the first frame is drawn
+  film.addEventListener('playing', lift, { once: true });
+  film.addEventListener('error', () => { filmOver = true; if (state === 'intro') endIntro(); });
+  if (held) {
+    // ?t= holds one moment of the film still
+    const hold = () => {
+      film.currentTime = Math.min(introT, FILM.length - 0.05);
+      if (introT >= PAIR.start) {
+        const toPair = () => { pair.currentTime = Math.min(introT - PAIR.start, PAIR.length - 0.05); };
+        if (pair.readyState >= 1) toPair(); else pair.addEventListener('loadedmetadata', toPair, { once: true });
+      }
+    };
+    film.addEventListener('seeked', lift, { once: true });
+    if (film.readyState >= 1) hold(); else film.addEventListener('loadedmetadata', hold, { once: true });
+  } else {
+    // a phone that is saving power will not start a film by itself: go straight to the form
+    film.play().catch(() => { filmOver = true; endIntro(); });
+  }
+}
 if (query.has('demo')) {
   const [date, g] = query.get('demo').split(',');
   const [y, mo, d] = date.split('-');

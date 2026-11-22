@@ -42,18 +42,27 @@ export const grainTexture = () => canvas(256, (g, s) => {
   }
 });
 
-// the round seat of a number: a dark disc so lines behind do not cross the
-// digits, a thin ring and a faint glow outside it
+// the round seat of a number, a ringed orb: a dark disc so lines behind do
+// not cross the digits, a fine bright ring with a fainter one inside it, a
+// little light held within and a soft glow outside
 export const seatTexture = () => canvas(256, (g, s) => {
   const c = s / 2;
   const glow = g.createRadialGradient(c, c, s * 0.3, c, c, s * 0.5);
-  glow.addColorStop(0, 'rgba(255,255,255,0.35)');
+  glow.addColorStop(0, 'rgba(255,255,255,0.3)');
+  glow.addColorStop(0.5, 'rgba(255,255,255,0.08)');
   glow.addColorStop(1, 'rgba(255,255,255,0)');
   g.fillStyle = glow;
   g.fillRect(0, 0, s, s);
   g.beginPath(); g.arc(c, c, s * 0.33, 0, Math.PI * 2);
-  g.fillStyle = 'rgba(4,7,16,0.92)'; g.fill();
-  g.lineWidth = s * 0.022; g.strokeStyle = 'rgba(255,255,255,1)'; g.stroke();
+  g.fillStyle = 'rgba(9,6,22,0.9)'; g.fill();
+  const held = g.createRadialGradient(c, c, 0, c, c, s * 0.33);
+  held.addColorStop(0, 'rgba(255,255,255,0)');
+  held.addColorStop(0.72, 'rgba(255,255,255,0.03)');
+  held.addColorStop(1, 'rgba(255,255,255,0.2)');
+  g.fillStyle = held; g.fill();
+  g.lineWidth = s * 0.013; g.strokeStyle = 'rgba(255,255,255,1)'; g.stroke();
+  g.beginPath(); g.arc(c, c, s * 0.285, 0, Math.PI * 2);
+  g.lineWidth = s * 0.005; g.strokeStyle = 'rgba(255,255,255,0.5)'; g.stroke();
 });
 
 const numbers = new Map();
@@ -62,10 +71,16 @@ export function numberTexture(n, weight = 500) {
   const key = `${n}/${weight}`;
   if (!numbers.has(key)) {
     numbers.set(key, canvas(128, (g, s) => {
-      g.font = `${weight} ${s * 0.56}px Inter, system-ui, sans-serif`;
-      g.textAlign = 'center'; g.textBaseline = 'middle';
+      g.font = `600 ${s * 0.66}px "Cormorant Garamond", Georgia, serif`;
+      g.textAlign = 'left'; g.textBaseline = 'alphabetic';
       g.fillStyle = '#fff';
-      g.fillText(String(n), s / 2, s / 2 + s * 0.03);
+      // Centre the ink itself, not the type's box: this face has old-style figures
+      // (a 6 rises, a 9 hangs below the line) and uneven side spaces, so by its box
+      // a digit sits off the middle of its seat.
+      const m = g.measureText(String(n));
+      const x = s / 2 - (m.actualBoundingBoxRight - m.actualBoundingBoxLeft) / 2;
+      const y = s / 2 + (m.actualBoundingBoxAscent - m.actualBoundingBoxDescent) / 2;
+      g.fillText(String(n), x, y);
     }));
   }
   return numbers.get(key);
@@ -107,6 +122,85 @@ export function textPoints(text, count, height, maxWidth) {
   return out;
 }
 
+// Stars of a figure picture (a figure of starlight on a dark night): `count`
+// positions where the picture is lit, more of them where it is brighter, each with
+// the picture's own colour there; centred on 0, the square picture `size` units wide.
+export function figurePoints(url, count, size) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onerror = () => resolve(null);
+    img.onload = () => {
+      const S = 512;
+      const c = document.createElement('canvas');
+      c.width = S; c.height = S;
+      const g = c.getContext('2d', { willReadFrequently: true });
+      g.drawImage(img, 0, 0, S, S);
+      const data = g.getImageData(0, 0, S, S).data;
+      const lum = new Float32Array(S * S);
+      for (let i = 0; i < S * S; i++) lum[i] = (0.3 * data[i * 4] + 0.55 * data[i * 4 + 1] + 0.15 * data[i * 4 + 2]) / 255;
+      // a pixel's weight is its light above the night, and more where the picture has an
+      // edge (an outline, the eyes, a wing's feathers): that is what makes the figure read
+      const cdf = new Float32Array(S * S);
+      let total = 0;
+      for (let i = 0; i < S * S; i++) {
+        const x = i % S; const y = (i / S) | 0;
+        let edge = 0;
+        if (x > 0 && y > 0 && x < S - 1 && y < S - 1) {
+          const gx = lum[i + 1] - lum[i - 1]; const gy = lum[i + S] - lum[i - S];
+          edge = Math.sqrt(gx * gx + gy * gy);
+        }
+        const light = Math.max(0, lum[i] - 0.13);
+        total += light > 0 ? light ** 1.5 + 1.4 * edge * Math.min(1, light * 6) : 0;
+        cdf[i] = total;
+      }
+      // the outline of the figure, for standing it in front of the matrix: lit pixels,
+      // smoothed, so small gaps inside the body close and loose specks of dust drop out
+      const blur = (src) => {
+        const r = 4; const mid = new Float32Array(S * S); const out = new Float32Array(S * S);
+        for (let y = 0; y < S; y++) for (let x = 0; x < S; x++) {
+          let sum = 0; for (let d = -r; d <= r; d++) sum += src[y * S + Math.min(S - 1, Math.max(0, x + d))];
+          mid[y * S + x] = sum / (2 * r + 1);
+        }
+        for (let y = 0; y < S; y++) for (let x = 0; x < S; x++) {
+          let sum = 0; for (let d = -r; d <= r; d++) sum += mid[Math.min(S - 1, Math.max(0, y + d)) * S + x];
+          out[y * S + x] = sum / (2 * r + 1);
+        }
+        return out;
+      };
+      const soft = blur(blur(lum.map((l) => Math.min(1, Math.max(0, (l - 0.05) / 0.05)))));
+      const matte = document.createElement('canvas');
+      matte.width = S; matte.height = S;
+      const mg = matte.getContext('2d');
+      const md = mg.createImageData(S, S);
+      for (let i = 0; i < S * S; i++) {
+        const v = 255 * Math.min(1, Math.max(0, (soft[i] - 0.32) / 0.3));
+        md.data.set([v, v, v, 255], i * 4);
+      }
+      mg.putImageData(md, 0, 0);
+      const pos = new Float32Array(count * 3); const col = new Float32Array(count * 3);
+      for (let k = 0; k < count; k++) {
+        const r = Math.random() * total;
+        let lo = 0; let hi = S * S - 1;
+        while (lo < hi) { const mid = (lo + hi) >> 1; if (cdf[mid] < r) lo = mid + 1; else hi = mid; }
+        const x = (lo % S) + Math.random(); const y = Math.floor(lo / S) + Math.random();
+        pos[k * 3] = (x / S - 0.5) * size;
+        pos[k * 3 + 1] = -(y / S - 0.5) * size;
+        pos[k * 3 + 2] = (Math.random() - 0.5) * 0.2;
+        // the picture's colour, lifted to the brightness of a star
+        const R = data[lo * 4] / 255; const G = data[lo * 4 + 1] / 255; const B = data[lo * 4 + 2] / 255;
+        // and its gold or silver deepened: many stars over one another wash out towards white
+        const peak = Math.max(R, G, B, 0.05);
+        const lift = 1.1 / peak;
+        const grey = (R + G + B) / 3;
+        const deep = (v) => Math.max(0, grey + (v - grey) * 1.8) * lift;
+        col.set([deep(R), deep(G), deep(B)], k * 3);
+      }
+      resolve({ pos, col, image: img, matte, size });
+    };
+    img.src = url;
+  });
+}
+
 // A flat strip along a path in the XY plane; uv.x runs 0..1 along it.
 export function ribbon(points, width) {
   const n = points.length;
@@ -134,7 +228,9 @@ export function ribbon(points, width) {
 }
 
 // A line of light: drawn up to uProgress, with a bright head while it grows
-// and a pulse that can run along it. uDim is shared by every line.
+// and a pulse that can run along it. The light has a source, the heart of the
+// matrix: a line is brightest near it and falls off outward. uDim is shared
+// by every line.
 export function lightMaterial(color, dim) {
   return new THREE.ShaderMaterial({
     uniforms: {
@@ -145,8 +241,9 @@ export function lightMaterial(color, dim) {
       uPulseAmp: { value: 0 },
       uDim: dim,
     },
-    vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
+    vertexShader: 'varying vec2 vUv; varying vec2 vP; void main(){ vUv = uv; vP = position.xy; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
     fragmentShader: `
+      varying vec2 vP;
       uniform vec3 uColor; uniform float uProgress; uniform float uOpacity; uniform float uPulse; uniform float uPulseAmp; uniform float uDim;
       varying vec2 vUv;
       void main(){
@@ -157,8 +254,13 @@ export function lightMaterial(color, dim) {
         float head = exp(-pow((vUv.x - uProgress) * 26.0, 2.0)) * growing;
         float pulse = exp(-pow((vUv.x - uPulse) * 11.0, 2.0)) * uPulseAmp * shown;
         float a = core * (shown * uOpacity + head) * uDim;
-        vec3 col = uColor * (1.0 + 3.0 * head + 3.5 * pulse);
-        gl_FragColor = vec4(col * a + uColor * pulse * core * uDim, a);
+        float far = length(vP);
+        float near = 0.6 + 0.55 * exp(-far * 0.5);
+        // eight lines meet at the heart; each fades as it nears it, so the
+        // heart stays one clean point of light and not a knot of strokes
+        float rise = 0.08 + 0.92 * smoothstep(0.12, 0.85, far);
+        vec3 col = uColor * near * (1.0 + 3.0 * head + 3.5 * pulse);
+        gl_FragColor = vec4(col * a + uColor * pulse * core * uDim, a) * rise;
       }`,
     transparent: true,
     depthWrite: false,

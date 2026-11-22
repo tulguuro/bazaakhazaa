@@ -249,7 +249,7 @@ export function readingHtml(hand, data, today = new Date(), { places = true, loc
   const now = currentAge(hand, today);
   out += `<p class="soft">Хамгийн их нөлөөтэй тоо: ${strongest.join(', ')} (матрицын ${total} тооноос ${count} удаа).`
     + (now ? ` Одоогийн насны тоо: ${now.value} (${now.years} настай, насны хүрээн дээрх ${esc(now.label)} насны цэг).` : '') + '</p>';
-  return `${out}<p class="source">Тайлбарын эх: «${esc(data.source)}», хэвлэмэл хуудастай тулгаж шивэлтийн алдааг зассан.</p>`;
+  return out;
 }
 
 const NUMBERS = Array.from({ length: 22 }, (_, k) => k + 1);
