@@ -45,28 +45,29 @@ renderer.toneMappingExposure = 1.05;
 const asset = (name) => new URL(`../../assets/${name}`, import.meta.url).href;
 const textUrl = (path) => new URL(`../texts/${path}.json`, import.meta.url).href;
 
-// The opening, on the site's song (film/edit/EDIT.md has the cut list): the film
-// of the legend, then the clip in which the pair of starlight turns into the
-// matrix (VIDEO-PROMPTS.md, clip 6). Seconds of the song:
-//   PAIR.start      the pair's clip begins, under the last moment of the film
-//   SCENE.from..to  the clip's last frame gives way to the scene, which shows
+// The opening, on the site's song (film/edit/EDIT.md has the cut list): one video,
+// the film of the legend and then, from 46.9 s, the clip in which the pair of
+// starlight turns into the matrix (VIDEO-PROMPTS.md, clip 6), joined with a 0.8 s
+// dissolve into one file (assets/film-all-*.mp4). One video and nothing else: a
+// phone plays one video steadily, where a second one started midway was left
+// standing on its first frame. Seconds of the song:
+//   SCENE.from..to  the video's last frame gives way to the scene, which shows
 //                   the same painted matrix in the same place
 //   FILM.end        the form comes (a drum hit of the song)
-const FILM = { length: 47.71, end: 57.98 };
-const PAIR = { start: 46.9, cross: 0.8, length: 10.04 };
+const FILM = { length: 56.96, end: 57.98 };
 const SCENE = { from: 56.4, to: 57.0 };
+// the film's own shots end at 47.7 s; from there the pair's clip keeps the framing it had
+const FRAMED = 47.7;
 // where the clip's last frame has the matrix: centre and radius as shares of
 // the frame (measured on v1-pair-matrix.mp4 by registering matrix-plate.png on it)
 const CLIP = { cx: 0.4911, cy: 0.4681, r: 0.367 };
 const film = $('film');
-const pair = $('pairfilm');
 const noIntro = query.has('skip') || query.has('demo') || window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 if (noIntro) $('filmbox').hidden = true;
 else {
   // a phone shows the film small and plays the lighter copy with ease
   const large = window.innerWidth >= 900 && window.innerWidth * Math.min(window.devicePixelRatio, 2) > 1500;
-  film.src = asset(large ? 'film-1080.mp4' : 'film-720.mp4');
-  pair.src = asset(large ? 'pair-1080.mp4' : 'pair-720.mp4');
+  film.src = asset(large ? 'film-all-1080.mp4' : 'film-all-720.mp4');
 }
 
 const loader = new THREE.TextureLoader();
@@ -199,7 +200,7 @@ function layoutFilm(t) {
     filmBox.style.width = `${W}px`;
     filmBox.style.height = `${boxH}px`;
     filmBox.style.top = `${top}px`;
-    for (const v of [film, pair]) { v.style.width = `${vidW}px`; v.style.height = `${vidH}px`; }
+    film.style.width = `${vidW}px`; film.style.height = `${vidH}px`;
   }
   let focus = 0.5;
   for (let i = 0; i < FOCUS.length - 1; i += 1) {
@@ -210,7 +211,7 @@ function layoutFilm(t) {
   const y = -(vidH - boxH) / 2;
   laid.geo = { vidW, vidH, x, y: top + y };
   const move = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0)`;
-  if (move !== laid.move) { laid.move = move; film.style.transform = move; pair.style.transform = move; }
+  if (move !== laid.move) { laid.move = move; film.style.transform = move; }
 }
 
 // The camera that shows the code's matrix exactly where the clip's last frame
@@ -227,22 +228,16 @@ function matchClip() {
 const R_WORLD = 4;
 
 // the scene is out of sight while the film covers it, and is left alone then
-const covered = () => state === 'intro' && introT < (pairStuck === null ? SCENE.from : pairStuck + 0.2) - 0.3;
+const covered = () => state === 'intro' && introT < SCENE.from - 0.3;
 
-// the film, the pair's clip, and after them the scene, at second `t` of the song
+// the film, and after it the scene, at second `t` of the song
 function filmAt(t) {
-  // a pair's clip that will not play (see pairStuck) gives way to the scene at once,
-  // calmly, rather than standing still on its first frame until the scene's time
-  const from = pairStuck === null ? SCENE.from : Math.min(SCENE.from, pairStuck + 0.2);
-  const fade = (1 - seg(t, from, from + (pairStuck === null ? SCENE.to - SCENE.from : 1.6))).toFixed(3);
+  const fade = (1 - seg(t, SCENE.from, SCENE.to)).toFixed(3);
   if (fade !== laid.fade) { laid.fade = fade; filmBox.style.opacity = fade; }
-  // (never quite 0 once woken: a phone's browser pauses a video it takes to be out of sight)
-  const cross = Math.max(seg(t, PAIR.start, PAIR.start + PAIR.cross), pairWarm ? 0.004 : 0).toFixed(3);
-  if (cross !== laid.cross) { laid.cross = cross; pair.style.opacity = cross; film.style.opacity = (1 - cross).toFixed(3); }
-  layoutFilm(Math.min(t, FILM.length - 0.01));
+  layoutFilm(Math.min(t, FRAMED));
   veil.style.background = '#03050b';
   veil.style.opacity = (1 - seg(t, 0, 1)).toFixed(3);
-  if (t < from - 0.3) return;
+  if (t < SCENE.from - 0.3) return;
   sceneUnderClip();
 }
 // the scene, waiting under the clip in the clip's own view
@@ -372,14 +367,9 @@ function enter(next) {
 const lift = () => { $('loader').classList.add('gone'); setTimeout(() => { $('loader').hidden = true; }, 600); };
 let filmOver = false;   // the film has played out, or cannot be played
 let tail = null;         // when the film ended, and the second it ended on
-let pairOn = false;      // the pair's clip has been started
-let pairWarm = false;    // the pair's clip has been woken ahead of its start
-let pairStuck = null;    // the second the pair's clip was found not to play, if it does not
-let pairTry = 0;         // when it was last asked to play
 
 function endIntro() {
   film.pause();
-  pair.pause();
   filmBox.hidden = true;
   lift();
   matrix.setGather(1);
@@ -471,6 +461,7 @@ $('skip').addEventListener('click', endIntro);
 const sound = createSound($('sound'), asset('urianhai-udgan.mp3'), {
   position: () => (state === 'intro' && !held ? introT : null),
   after: FILM.end,
+  waitForStart: !noIntro && !held,   // the start screen's tap opens it with the film
 });
 $('go').addEventListener('click', () => { enter('journey'); goTo(route()[0]); });
 $('overview').addEventListener('click', () => enter('journey'));
@@ -1032,39 +1023,16 @@ function interactive(dt) {
 function advance(dt) {
   time += dt;
   if (state === 'intro') {
-    // the film is the clock while it plays, so a pause to load never parts picture and song
-    // After its last frame the clock of the wall carries on, as the song does.
-    // the film is the clock, then the pair's clip; past the clip's last frame the wall clock
+    // The film is the clock while it plays; past its last frame the clock of the wall
+    // carries on, as the song does. Song and film start together in one tap and run
+    // side by side from files already in memory, so neither is ever moved to meet the
+    // other (moving a playing song is heard as a gap).
     if (!held) {
-      // a few seconds ahead the clip is woken, so its first frames are decoded in time
-      if (!pairWarm && introT >= PAIR.start - 3) {
-        pairWarm = true;
-        pair.play().then(() => { if (!pairOn) { pair.pause(); pair.currentTime = 0; } }).catch(() => {});
-        pair.style.opacity = '0.004';   // in sight for the browser, out of sight for the eye
-      }
-      if (!pairOn && introT >= PAIR.start) {
-        pairOn = true;
-        // started late: join the song where it is, so the clock never steps back
-        pair.currentTime = Math.max(0, introT - PAIR.start);
-        pair.play().catch(() => {});
-        pairTry = introT;
-      }
-      // A phone may refuse or pause the clip (an iPhone did, leaving its first frame
-      // standing for ten seconds): ask again now and then, and if it still stands
-      // still after a second and a half, let the scene take over from that frame.
-      if (pairOn && pairStuck === null && !pair.ended && introT < PAIR.start + PAIR.length - 0.5) {
-        const moving = !pair.paused && pair.currentTime > 0.05;
-        if (!moving && introT - pairTry > 0.4) { pairTry = introT; pair.play().catch(() => {}); }
-        if (!moving && introT > PAIR.start + 1.5) pairStuck = introT;
-      }
-      const pairRuns = pairOn && !pair.ended && !pair.paused && pair.currentTime > 0;
-      const playing = pairOn ? pairRuns : !film.ended;
-      if (playing) { introT = pairOn ? PAIR.start + pair.currentTime : film.currentTime; tail = null; }
+      if (!film.ended) { introT = film.currentTime; tail = null; }
       else {
         tail ??= { at: performance.now(), from: introT };
         introT = tail.from + (performance.now() - tail.at) / 1000;
       }
-      if (playing) sound.follow(introT);
     }
     filmAt(Math.min(introT, FILM.end));
     if (introT >= FILM.end) endIntro();
@@ -1146,7 +1114,7 @@ function frame(now) {
 // for checking by hand or by script: run the show forward without waiting
 window.matrixSite = {
   // where the opening stands, for checking: the song's second, and whether the pair's clip runs
-  clock: () => ({ introT, pairOn, pairWarm, state }),
+  clock: () => ({ introT, state }),
   // where the matrix stands on the screen (its heart and its top point), for checking motion
   probe: () => ({ c: matrix.screen('centre', camera, W, H), t: matrix.screen('top', camera, W, H), state, introT }),
   // how far the song stands from the film, in seconds, while both run
@@ -1170,34 +1138,80 @@ function warmScene() {
   draw();
   matrix.warm(false);
 }
+// The start screen. The song and the film are loaded whole first, into memory,
+// so a phone never stops for the network midway (the ring fills as they come); then
+// one tap starts film and song together, the only way a browser lets sound begin.
+async function load(url, type, onBytes, onSize) {
+  try {
+    const response = await fetch(url);
+    if (!response.ok || !response.body) throw new Error(String(response.status));
+    const size = Number(response.headers.get('content-length'));
+    if (size > 0) onSize(size);
+    const reader = response.body.getReader();
+    const parts = [];
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      parts.push(value);
+      onBytes(value.length);
+    }
+    return URL.createObjectURL(new Blob(parts, { type }));
+  } catch {
+    return null;   // the files are then played from the network as before
+  }
+}
+function startScreen() {
+  const screen = $('opening'); const go = $('opening-go');
+  screen.hidden = false;
+  lift();
+  const sizes = { song: 3.2e6, film: film.src.includes('1080') ? 17e6 : 7e6 };
+  const got = { song: 0, film: 0 };
+  const show = () => screen.style.setProperty('--p', Math.min(1, (got.song + got.film) / (sizes.song + sizes.film)).toFixed(3));
+  const take = (key) => (n) => { got[key] += n; show(); };
+  const sized = (key) => (n) => { sizes[key] = n; };
+  const loads = Promise.all([
+    load(asset('urianhai-udgan.mp3'), 'audio/mpeg', take('song'), sized('song')).then((url) => { if (url) sound.useSource(url); }),
+    load(film.src, 'video/mp4', take('film'), sized('film')).then((url) => { if (url) film.src = url; film.load(); }),
+  ]);
+  return new Promise((resolve) => {
+    loads.then(() => {
+      screen.style.setProperty('--p', '1');
+      screen.classList.add('ready');
+      go.disabled = false;
+      go.focus({ preventScroll: true });
+    });
+    go.addEventListener('click', () => {
+      // the song is started inside the tap, the only way it may sound; the film (silent,
+      // so free to start by itself) the moment the song is really playing, so the two
+      // begin on the same beat
+      const song = sound.wanted() ? sound.open() : Promise.resolve(false);
+      song.catch(() => false).then(() => film.play()).catch(() => { filmOver = true; endIntro(); });
+      screen.classList.add('gone');
+      setTimeout(() => { screen.hidden = true; }, 900);
+      resolve();
+    }, { once: true });
+  });
+}
 if (noIntro) { endIntro(); warmScene(); }
 else {
   layoutFilm(introT);   // the box has its size before the first frame is drawn
-  film.addEventListener('playing', lift, { once: true });
   film.addEventListener('error', () => { filmOver = true; if (state === 'intro') endIntro(); });
   if (held) {
     // ?t= holds one moment of the film still
-    const hold = () => {
-      film.currentTime = Math.min(introT, FILM.length - 0.05);
-      if (introT >= PAIR.start) {
-        const toPair = () => { pair.currentTime = Math.min(introT - PAIR.start, PAIR.length - 0.05); };
-        if (pair.readyState >= 1) toPair(); else pair.addEventListener('loadedmetadata', toPair, { once: true });
-      }
-    };
+    const hold = () => { film.currentTime = Math.min(introT, FILM.length - 0.05); };
     film.addEventListener('seeked', lift, { once: true });
     if (film.readyState >= 1) hold(); else film.addEventListener('loadedmetadata', hold, { once: true });
   } else {
     // The scene's first drawing builds its shaders and sends its pictures to the
     // graphics chip: a stop of a fifth of a second on a computer, longer on a phone.
-    // It is done here, behind the loader and under the film, so the handover from
-    // the clip to the scene has nothing left to build.
+    // It is done here, behind the start screen and under the film, so the handover
+    // from the clip to the scene has nothing left to build.
     layoutFilm(SCENE.from);
     sceneUnderClip();
     matrix.apply(proj, 0);
     world.tick(0);
     warmScene();
-    // a phone that is saving power will not start a film by itself: go straight to the form
-    film.play().catch(() => { filmOver = true; endIntro(); });
+    startScreen();
   }
 }
 if (query.has('demo')) {

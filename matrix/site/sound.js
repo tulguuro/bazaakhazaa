@@ -1,15 +1,19 @@
 // The song of the site and the button that opens and closes it.
 //
 // The opening film is cut to this song and carries no sound of its own, so
-// the two are never heard on top of each other. While the film runs the song
-// is held at the film's own second (`position`); a visitor who first opens
-// the song after the film hears it from where the film ended (`after`).
+// the two are never heard on top of each other. The song is placed once at the
+// film's own second (`position`) when it opens and is never moved after that:
+// every jump of a playing song is heard, a phone falls silent for almost half a
+// second on each (an earlier version pulled it back to the film every second).
+// A visitor who first opens the song after the film hears it from where the film
+// ended (`after`).
 //
 // The song is open by default (owner, 2026-11-20). Browsers do not let a page
-// start sound before the visitor has touched it, so the song begins at once
-// where the browser allows and otherwise on the first touch or key anywhere
-// on the page; until then the button invites a press. Only a visitor who
-// closed the song is left in quiet, and that choice is remembered.
+// start sound before the visitor has touched it: the opening has a start screen
+// whose one tap starts film and song together (main.js calls `open`). Without the
+// opening, the song begins on the first touch or key anywhere on the page; until
+// then the button invites a press. Only a visitor who closed the song is left in
+// quiet, and that choice is remembered.
 const LEVEL = 0.8;      // how loud the song plays
 const FADE = 600;       // ms, the song comes and goes softly
 const KEY = 'matrix-sound';
@@ -17,7 +21,7 @@ const KEY = 'matrix-sound';
 const remembered = () => { try { return localStorage.getItem(KEY); } catch { return null; } };
 const remember = (value) => { try { localStorage.setItem(KEY, value); } catch { /* private window */ } };
 
-export function createSound(button, src, { position = () => null, after = 0 } = {}) {
+export function createSound(button, src, { position = () => null, after = 0, waitForStart = false } = {}) {
   const label = button.querySelector('.sound__label');
   const audio = new Audio();
   audio.preload = 'none';   // nothing is downloaded until the visitor asks for the song
@@ -28,22 +32,18 @@ export function createSound(button, src, { position = () => null, after = 0 } = 
   let state = 'off';        // off, loading, on
   let fading = 0;
   let begun = false;        // has the song been placed once already
-  let lastSeek = 0;
 
   // a jump takes the player about a twentieth of a second, so it aims that much ahead
   const LEAD = 0.05;
-  const seek = (t) => { try { audio.currentTime = t; lastSeek = performance.now(); } catch { /* not loaded yet */ } };
+  const seek = (t) => { try { audio.currentTime = t; } catch { /* not loaded yet */ } };
   // where the song should be: with the film while it runs, after it the first time, else where it was left
   function place() {
     const p = position();
     if (p != null) seek(p); else if (!begun) seek(after);
     begun = true;
   }
-  // called while the film runs: pull the song back if it has wandered from the picture
-  function follow(t) {
-    if (state !== 'on' || audio.seeking || performance.now() - lastSeek < 1000) return;
-    if (Math.abs(audio.currentTime - t) > 0.06) seek(t + LEAD);
-  }
+  // a song loaded ahead (a whole file in memory) plays without waiting on the network
+  function useSource(url) { if (state === 'off' && !begun) audio.src = url; }
 
   function paint() {
     button.dataset.state = state;
@@ -117,8 +117,9 @@ export function createSound(button, src, { position = () => null, after = 0 } = 
   // no song on the server: a button that does nothing would only mislead
   audio.addEventListener('error', () => { stopWaiting(); button.hidden = true; });
 
-  paint();
-  if (remembered() !== 'off') {
+  // open by default: at once where the browser allows, else on the first touch
+  function invite() {
+    if (remembered() === 'off') return;
     open().then((ok) => {
       if (ok) return;
       button.classList.add('sound--invite');
@@ -126,5 +127,8 @@ export function createSound(button, src, { position = () => null, after = 0 } = 
       window.addEventListener('keydown', firstTouch, true);
     });
   }
-  return { open, close, follow, get state() { return state; }, audio };
+  paint();
+  if (!waitForStart) invite();
+  const wanted = () => remembered() !== 'off';
+  return { open, close, useSource, invite, wanted, get state() { return state; }, audio };
 }

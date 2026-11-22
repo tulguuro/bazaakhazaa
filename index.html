@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600&display=swap">
-  <link rel="stylesheet" href="matrix/site/site.css?v=84">
+  <link rel="stylesheet" href="matrix/site/site.css?v=86">
   <!-- The server lets browsers keep scripts for an hour. Raise every ?v= number
        on this page together when any script or the style sheet changes, so a
        visitor never runs a new file against an old one. -->
@@ -17,18 +17,18 @@
       "imports": {
         "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
         "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/",
-        "./matrix/site/world.js": "./matrix/site/world.js?v=84",
-        "./matrix/site/matrix3d.js": "./matrix/site/matrix3d.js?v=84",
-        "./matrix/site/gfx.js": "./matrix/site/gfx.js?v=84",
-        "./matrix/site/sound.js": "./matrix/site/sound.js?v=84",
-        "./matrix/site/backdrop.js": "./matrix/site/backdrop.js?v=84",
-        "./matrix/site/figures.js": "./matrix/site/figures.js?v=84",
-        "./matrix/matrix.js": "./matrix/matrix.js?v=84",
-        "./matrix/draw.js": "./matrix/draw.js?v=84",
-        "./matrix/talents.js": "./matrix/talents.js?v=84",
-        "./matrix/chapters.js": "./matrix/chapters.js?v=84",
-        "./matrix/report.js": "./matrix/report.js?v=84",
-        "./matrix/couple.js": "./matrix/couple.js?v=84"
+        "./matrix/site/world.js": "./matrix/site/world.js?v=86",
+        "./matrix/site/matrix3d.js": "./matrix/site/matrix3d.js?v=86",
+        "./matrix/site/gfx.js": "./matrix/site/gfx.js?v=86",
+        "./matrix/site/sound.js": "./matrix/site/sound.js?v=86",
+        "./matrix/site/backdrop.js": "./matrix/site/backdrop.js?v=86",
+        "./matrix/site/figures.js": "./matrix/site/figures.js?v=86",
+        "./matrix/matrix.js": "./matrix/matrix.js?v=86",
+        "./matrix/draw.js": "./matrix/draw.js?v=86",
+        "./matrix/talents.js": "./matrix/talents.js?v=86",
+        "./matrix/chapters.js": "./matrix/chapters.js?v=86",
+        "./matrix/report.js": "./matrix/report.js?v=86",
+        "./matrix/couple.js": "./matrix/couple.js?v=86"
       }
     }
   </script>
@@ -37,7 +37,6 @@
   <canvas id="scene"></canvas>
   <div id="filmbox" class="filmbox" aria-hidden="true">
     <video id="film" muted playsinline preload="auto" disableremoteplayback></video>
-    <video id="pairfilm" muted playsinline preload="auto" disableremoteplayback></video>
   </div>
   <div id="veil" aria-hidden="true"></div>
   <!-- Sky and Earth pictures: Solar System Scope, https://www.solarsystemscope.com/textures/, CC BY 4.0.
@@ -56,6 +55,12 @@
   </div>
   <p id="caption" class="caption" aria-live="polite"></p>
   <p id="loader" class="loader">Одод цуглаж байна</p>
+  <div id="opening" class="start" hidden>
+    <button id="opening-go" class="start__go" type="button" disabled aria-label="Эхлэх">
+      <span class="start__ring" aria-hidden="true"></span>
+      <span class="start__word">Эхлэх</span>
+    </button>
+  </div>
 
   <form id="form" class="birth" hidden novalidate>
     <p class="birth__lead">Төрсөн өдрөө оруулна уу</p>
@@ -137,6 +142,6 @@
     </nav>
   </aside>
 
-  <script type="module" src="matrix/site/main.js?v=84"></script>
+  <script type="module" src="matrix/site/main.js?v=86"></script>
 </body>
 </html>

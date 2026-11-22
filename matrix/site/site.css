@@ -23,8 +23,6 @@ html, body {
    the dark. The script sizes the box and slides the film inside it. */
 .filmbox { position: fixed; left: 0; top: 0; overflow: hidden; background: #03050b; pointer-events: none; }
 .filmbox video { position: absolute; left: 0; top: 0; max-width: none; will-change: transform; }
-/* the pair of starlight lies over the end of the film and takes its place */
-#pairfilm { opacity: 0; }
 .filmbox--tall::before, .filmbox--tall::after {
   content: ""; position: absolute; left: 0; right: 0; height: 13%; z-index: 1;
 }
@@ -88,6 +86,36 @@ html, body {
   font: italic 500 22px var(--serif); color: var(--dim); transition: opacity 0.4s;
 }
 .loader.gone { opacity: 0; }
+
+/* the start screen: one gold ring that fills as the song and the films load, and
+   opens into a press when they are in */
+.start {
+  --p: 0;
+  position: fixed; inset: 0; z-index: 30; display: grid; place-items: center;
+  background: radial-gradient(circle at 50% 50%, rgba(232, 199, 140, 0.06), transparent 40%), #03050b;
+  transition: opacity 0.9s ease;
+}
+.start.gone { opacity: 0; pointer-events: none; }
+.start__go {
+  position: relative; width: 132px; height: 132px; border: 0; border-radius: 50%; padding: 0;
+  background: none; cursor: pointer; color: var(--dim);
+}
+.start__go:disabled { cursor: progress; }
+.start__ring {
+  position: absolute; inset: 0; border-radius: 50%;
+  background: conic-gradient(var(--gold) calc(var(--p) * 360deg), rgba(232, 199, 140, 0.14) 0);
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 1.5px), #000 calc(100% - 1px));
+  mask: radial-gradient(farthest-side, transparent calc(100% - 1.5px), #000 calc(100% - 1px));
+  transition: background 0.3s;
+}
+.start__word {
+  position: relative; font: 500 12px/1 var(--sans); letter-spacing: 0.24em; text-transform: uppercase;
+  opacity: 0.35; transition: opacity 0.6s, color 0.6s;
+}
+.start.ready .start__word { opacity: 1; color: var(--gold); }
+.start.ready .start__ring { box-shadow: 0 0 28px rgba(232, 199, 140, 0.25); animation: start-breathe 2.6s ease-in-out infinite; }
+.start.ready .start__go:hover .start__ring { box-shadow: 0 0 36px rgba(232, 199, 140, 0.45); }
+@keyframes start-breathe { 50% { box-shadow: 0 0 40px rgba(232, 199, 140, 0.4); } }
 
 .cta {
   background: none; border: 1px solid var(--gold); border-radius: 999px; padding: 13px 28px; cursor: pointer;
