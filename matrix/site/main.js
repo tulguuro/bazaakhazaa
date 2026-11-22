@@ -227,18 +227,22 @@ function matchClip() {
 const R_WORLD = 4;
 
 // the scene is out of sight while the film covers it, and is left alone then
-const covered = () => state === 'intro' && introT < SCENE.from - 0.3;
+const covered = () => state === 'intro' && introT < (pairStuck === null ? SCENE.from : pairStuck + 0.2) - 0.3;
 
 // the film, the pair's clip, and after them the scene, at second `t` of the song
 function filmAt(t) {
-  const fade = (1 - seg(t, SCENE.from, SCENE.to)).toFixed(3);
+  // a pair's clip that will not play (see pairStuck) gives way to the scene at once,
+  // calmly, rather than standing still on its first frame until the scene's time
+  const from = pairStuck === null ? SCENE.from : Math.min(SCENE.from, pairStuck + 0.2);
+  const fade = (1 - seg(t, from, from + (pairStuck === null ? SCENE.to - SCENE.from : 1.6))).toFixed(3);
   if (fade !== laid.fade) { laid.fade = fade; filmBox.style.opacity = fade; }
-  const cross = seg(t, PAIR.start, PAIR.start + PAIR.cross).toFixed(3);
+  // (never quite 0 once woken: a phone's browser pauses a video it takes to be out of sight)
+  const cross = Math.max(seg(t, PAIR.start, PAIR.start + PAIR.cross), pairWarm ? 0.004 : 0).toFixed(3);
   if (cross !== laid.cross) { laid.cross = cross; pair.style.opacity = cross; film.style.opacity = (1 - cross).toFixed(3); }
   layoutFilm(Math.min(t, FILM.length - 0.01));
   veil.style.background = '#03050b';
   veil.style.opacity = (1 - seg(t, 0, 1)).toFixed(3);
-  if (t < SCENE.from - 0.3) return;
+  if (t < from - 0.3) return;
   sceneUnderClip();
 }
 // the scene, waiting under the clip in the clip's own view
@@ -370,6 +374,8 @@ let filmOver = false;   // the film has played out, or cannot be played
 let tail = null;         // when the film ended, and the second it ended on
 let pairOn = false;      // the pair's clip has been started
 let pairWarm = false;    // the pair's clip has been woken ahead of its start
+let pairStuck = null;    // the second the pair's clip was found not to play, if it does not
+let pairTry = 0;         // when it was last asked to play
 
 function endIntro() {
   film.pause();
@@ -1034,12 +1040,22 @@ function advance(dt) {
       if (!pairWarm && introT >= PAIR.start - 3) {
         pairWarm = true;
         pair.play().then(() => { if (!pairOn) { pair.pause(); pair.currentTime = 0; } }).catch(() => {});
+        pair.style.opacity = '0.004';   // in sight for the browser, out of sight for the eye
       }
       if (!pairOn && introT >= PAIR.start) {
         pairOn = true;
         // started late: join the song where it is, so the clock never steps back
         pair.currentTime = Math.max(0, introT - PAIR.start);
         pair.play().catch(() => {});
+        pairTry = introT;
+      }
+      // A phone may refuse or pause the clip (an iPhone did, leaving its first frame
+      // standing for ten seconds): ask again now and then, and if it still stands
+      // still after a second and a half, let the scene take over from that frame.
+      if (pairOn && pairStuck === null && !pair.ended && introT < PAIR.start + PAIR.length - 0.5) {
+        const moving = !pair.paused && pair.currentTime > 0.05;
+        if (!moving && introT - pairTry > 0.4) { pairTry = introT; pair.play().catch(() => {}); }
+        if (!moving && introT > PAIR.start + 1.5) pairStuck = introT;
       }
       const pairRuns = pairOn && !pair.ended && !pair.paused && pair.currentTime > 0;
       const playing = pairOn ? pairRuns : !film.ended;
