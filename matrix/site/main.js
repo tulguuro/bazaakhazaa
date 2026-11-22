@@ -237,7 +237,10 @@ function filmAt(t) {
   veil.style.background = '#03050b';
   veil.style.opacity = (1 - seg(t, 0, 1)).toFixed(3);
   if (t < SCENE.from - 0.3) return;
-  // the scene, waiting under the clip in the clip's own view
+  sceneUnderClip();
+}
+// the scene, waiting under the clip in the clip's own view
+function sceneUnderClip() {
   world.space.visible = world.steppe.visible = false;
   scene.fog = null;
   world.light.set([V(0, 0, 0)], 0.4, 0);
@@ -327,7 +330,8 @@ const held = query.has('t');
 let time = 0; let stateStart = 0;
 let gender = '';
 let person = null; // { matrix, name, who, entry }
-const view = { bottom: 0, wantBottom: 0, side: 0, wantSide: 0, pos: V(0, 0, 13), look: V(0, 0, 0), figure: 0, wantFigure: 0, wantDim: 1, hasFigure: false, morph: 1 };
+const view = { bottom: 0, wantBottom: 0, side: 0, wantSide: 0, pos: V(0, 0, 13), look: V(0, 0, 0), figure: 0, wantFigure: 0, wantDim: 1, hasFigure: false, morph: 1,
+  mid: { pos: V(0, 0, 13), look: V(0, 0, 0), side: 0, bottom: 0 } };
 // seconds after the amin too opens: the figure has formed by 2.8, stays, then winds
 // into one star and opens as the number
 const FIGURE_HOLD = { from: 5.6, to: 10.0 };
@@ -382,7 +386,13 @@ function endIntro() {
   view.look.set(0, 0, 0);
   view.side = m.side;
   view.bottom = m.bottom;
+  settleView();
   enter('form');
+}
+// the view's halfway point stands where the view is, so the next move sets off from rest
+function settleView() {
+  view.mid.pos.copy(view.pos); view.mid.look.copy(view.look);
+  view.mid.side = view.side; view.mid.bottom = view.bottom;
 }
 
 const sentences = (text, n) => text.split(/(?<=[.!?])\s+/).slice(0, n).join(' ');
@@ -740,8 +750,16 @@ async function goTo(stop) {
   // the chapters about age mark the person's place on the age ring
   const agePoint = stop?.kind === 'age' ? (stop.id === 'age-now' ? currentAge(person.m) : nextAge(person.m)) : null;
   matrix.setMarker(agePoint ? agePoint.years ?? agePoint.from : null);
-  if (!stop) { hide(reading); if (state === 'journey') show(journey); return; }
+  if (!stop) { $('r-scroll').classList.remove('swap'); hide(reading); if (state === 'journey') show(journey); return; }
   hide(journey);
+  // from one stop to the next the words fade out and the new ones fade in, rather than
+  // the panel going blank and filling at once while the view moves
+  const scroll = $('r-scroll');
+  if (!reading.hidden) {
+    scroll.classList.add('swap');
+    await new Promise((done) => { setTimeout(done, 200); });
+    if (current !== stop) return;
+  }
   const body = $('r-body');
   body.replaceChildren();
   $('r-kicker').textContent = '';
@@ -754,7 +772,8 @@ async function goTo(stop) {
   $('r-kicker').textContent = kicker;
   $('r-title').textContent = title;
   body.append(...blocks);
-  $('r-scroll').scrollTop = 0;
+  scroll.scrollTop = 0;
+  scroll.classList.remove('swap');
 }
 const travel = (step) => goTo(route()[(route().indexOf(current) + step + route().length) % route().length]);
 // the stop that reads one seat: its own stop, or in a couple matrix the zone that reads that place alone
@@ -890,9 +909,13 @@ function interactive(dt) {
   const reads = current && !reading.hidden;
   view.wantBottom = reads ? (wide ? 0 : reading.offsetHeight * 0.9) : el && !el.hidden ? el.offsetHeight + 8 : 0;
   view.wantSide = reads && wide ? reading.offsetWidth * 0.5 : 0;
-  const a = 1 - Math.exp(-dt * 3.2);
-  view.bottom = lerp(view.bottom, view.wantBottom, a);
-  view.side = lerp(view.side, view.wantSide, a);
+  // The view follows its goal through a halfway point that follows the goal in the
+  // same way: each move sets off from rest and comes to rest, without the jolt of a
+  // move that starts at full speed (after the film, and from one stop to the next).
+  const a = 1 - Math.exp(-dt * 5.5);
+  const mid = view.mid;
+  mid.bottom = lerp(mid.bottom, view.wantBottom, a); view.bottom = lerp(view.bottom, mid.bottom, a);
+  mid.side = lerp(mid.side, view.wantSide, a); view.side = lerp(view.side, mid.side, a);
   // a chosen stop is brought close: one place, or two places and the line between them.
   // The portrait keeps the whole matrix, with the amin too in stars over it.
   const portrait = current?.kind === 'portrait';
@@ -903,8 +926,8 @@ function interactive(dt) {
   const goal = focus
     ? V(focus.x, focus.y, fitDistance(0) * Math.min(1, Math.max(wide ? 0.74 : 0.6, (span + 4.6) / 9.7)))
     : V(-pointer.x * 0.45, pointer.y * 0.3, fitDistance(view.bottom));
-  view.pos.lerp(goal, a);
-  view.look.lerp(focus ? V(focus.x, focus.y, 0) : V(0, 0, 0), a);
+  mid.pos.lerp(goal, a); view.pos.lerp(mid.pos, a);
+  mid.look.lerp(focus ? V(focus.x, focus.y, 0) : V(0, 0, 0), a); view.look.lerp(mid.look, a);
   camera.position.copy(view.pos);
   camera.lookAt(view.look);
   camera.setViewOffset(W, H, view.side, view.bottom / 2, W, H);
@@ -1049,6 +1072,15 @@ else {
     film.addEventListener('seeked', lift, { once: true });
     if (film.readyState >= 1) hold(); else film.addEventListener('loadedmetadata', hold, { once: true });
   } else {
+    // The scene's first drawing builds its shaders and sends its pictures to the
+    // graphics chip: a stop of a fifth of a second on a computer, longer on a phone.
+    // It is done here, behind the loader and under the film, so the handover from
+    // the clip to the scene has nothing left to build.
+    layoutFilm(SCENE.from);
+    sceneUnderClip();
+    matrix.apply(proj, 0);
+    world.tick(0);
+    draw();
     // a phone that is saving power will not start a film by itself: go straight to the form
     film.play().catch(() => { filmOver = true; endIntro(); });
   }

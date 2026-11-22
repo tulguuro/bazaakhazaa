@@ -176,6 +176,8 @@ html, body {
   -webkit-mask-image: linear-gradient(transparent, #000 26px, #000 calc(100% - 38px), transparent);
   mask-image: linear-gradient(transparent, #000 26px, #000 calc(100% - 38px), transparent);
 }
+.reading__scroll { transition: opacity 0.3s ease; }
+.reading__scroll.swap { opacity: 0; transition-duration: 0.2s; }
 .reading .kicker { margin: 0; }
 .reading h2 { margin: 8px 0 26px; font: 600 clamp(36px, 4vw, 54px)/1.05 var(--serif); }
 .chapter { margin: 0 0 38px; }
