@@ -143,7 +143,9 @@ export function textPoints(text, count, height, maxWidth) {
   const W = 900; const H = 420;
   const c = document.createElement('canvas');
   c.width = W; c.height = H;
-  const g = c.getContext('2d');
+  // (a canvas that is read back is kept off the graphics chip: reading one there waits for
+  // the chip to finish all it is doing, a stop of a twentieth of a second as the matrix opens)
+  const g = c.getContext('2d', { willReadFrequently: true });
   g.font = '600 380px "Cormorant Garamond", Georgia, serif';
   g.textAlign = 'center'; g.textBaseline = 'alphabetic';
   g.fillStyle = '#fff';
@@ -176,80 +178,45 @@ export function textPoints(text, count, height, maxWidth) {
 // Stars of a figure picture (a figure of starlight on a dark night): `count`
 // positions where the picture is lit, more of them where it is brighter, each with
 // the picture's own colour there; centred on 0, the square picture `size` units wide.
-export function figurePoints(url, count, size) {
+// The work is done in a worker where the browser can (figure-worker.js), so the page
+// does not stop for it; the picture itself is decoded off the page too.
+const FIG_S = 512;
+let figureWorker = null; let figureJob = 0;
+const figureJobs = new Map();
+function workerFigure(url, count, size) {
+  if (typeof Worker === 'undefined' || typeof OffscreenCanvas === 'undefined' || typeof createImageBitmap === 'undefined') return null;
+  try {
+    if (!figureWorker) {
+      const here = new URL(import.meta.url);
+      figureWorker = new Worker(new URL(`./figure-worker.js${here.search}`, here), { type: 'module' });
+      figureWorker.onmessage = ({ data }) => { figureJobs.get(data.id)?.(data); figureJobs.delete(data.id); };
+    }
+  } catch { return null; }
+  const id = ++figureJob;
   return new Promise((resolve) => {
-    const img = new Image();
-    img.onerror = () => resolve(null);
-    img.onload = () => {
-      const S = 512;
-      const c = document.createElement('canvas');
-      c.width = S; c.height = S;
-      const g = c.getContext('2d', { willReadFrequently: true });
-      g.drawImage(img, 0, 0, S, S);
-      const data = g.getImageData(0, 0, S, S).data;
-      const lum = new Float32Array(S * S);
-      for (let i = 0; i < S * S; i++) lum[i] = (0.3 * data[i * 4] + 0.55 * data[i * 4 + 1] + 0.15 * data[i * 4 + 2]) / 255;
-      // a pixel's weight is its light above the night, and more where the picture has an
-      // edge (an outline, the eyes, a wing's feathers): that is what makes the figure read
-      const cdf = new Float32Array(S * S);
-      let total = 0;
-      for (let i = 0; i < S * S; i++) {
-        const x = i % S; const y = (i / S) | 0;
-        let edge = 0;
-        if (x > 0 && y > 0 && x < S - 1 && y < S - 1) {
-          const gx = lum[i + 1] - lum[i - 1]; const gy = lum[i + S] - lum[i - S];
-          edge = Math.sqrt(gx * gx + gy * gy);
-        }
-        const light = Math.max(0, lum[i] - 0.13);
-        total += light > 0 ? light ** 1.5 + 1.4 * edge * Math.min(1, light * 6) : 0;
-        cdf[i] = total;
-      }
-      // the outline of the figure, for standing it in front of the matrix: lit pixels,
-      // smoothed, so small gaps inside the body close and loose specks of dust drop out
-      const blur = (src) => {
-        const r = 4; const mid = new Float32Array(S * S); const out = new Float32Array(S * S);
-        for (let y = 0; y < S; y++) for (let x = 0; x < S; x++) {
-          let sum = 0; for (let d = -r; d <= r; d++) sum += src[y * S + Math.min(S - 1, Math.max(0, x + d))];
-          mid[y * S + x] = sum / (2 * r + 1);
-        }
-        for (let y = 0; y < S; y++) for (let x = 0; x < S; x++) {
-          let sum = 0; for (let d = -r; d <= r; d++) sum += mid[Math.min(S - 1, Math.max(0, y + d)) * S + x];
-          out[y * S + x] = sum / (2 * r + 1);
-        }
-        return out;
-      };
-      const soft = blur(blur(lum.map((l) => Math.min(1, Math.max(0, (l - 0.05) / 0.05)))));
-      const matte = document.createElement('canvas');
-      matte.width = S; matte.height = S;
-      const mg = matte.getContext('2d');
-      const md = mg.createImageData(S, S);
-      for (let i = 0; i < S * S; i++) {
-        const v = 255 * Math.min(1, Math.max(0, (soft[i] - 0.32) / 0.3));
-        md.data.set([v, v, v, 255], i * 4);
-      }
-      mg.putImageData(md, 0, 0);
-      const pos = new Float32Array(count * 3); const col = new Float32Array(count * 3);
-      for (let k = 0; k < count; k++) {
-        const r = Math.random() * total;
-        let lo = 0; let hi = S * S - 1;
-        while (lo < hi) { const mid = (lo + hi) >> 1; if (cdf[mid] < r) lo = mid + 1; else hi = mid; }
-        const x = (lo % S) + Math.random(); const y = Math.floor(lo / S) + Math.random();
-        pos[k * 3] = (x / S - 0.5) * size;
-        pos[k * 3 + 1] = -(y / S - 0.5) * size;
-        pos[k * 3 + 2] = (Math.random() - 0.5) * 0.2;
-        // the picture's colour, lifted to the brightness of a star
-        const R = data[lo * 4] / 255; const G = data[lo * 4 + 1] / 255; const B = data[lo * 4 + 2] / 255;
-        // and its gold or silver deepened: many stars over one another wash out towards white
-        const peak = Math.max(R, G, B, 0.05);
-        const lift = 1.1 / peak;
-        const grey = (R + G + B) / 3;
-        const deep = (v) => Math.max(0, grey + (v - grey) * 1.8) * lift;
-        col.set([deep(R), deep(G), deep(B)], k * 3);
-      }
-      resolve({ pos, col, image: img, matte, size });
-    };
-    img.src = url;
+    figureJobs.set(id, (data) => resolve(data.error ? null : data));
+    figureWorker.postMessage({ id, url: new URL(url, location.href).href, count, size });
   });
+}
+async function pageFigure(img, count, size) {
+  const { figureFromPixels } = await import(`./figure-math.js${new URL(import.meta.url).search}`);
+  const c = document.createElement('canvas');
+  c.width = FIG_S; c.height = FIG_S;
+  const g = c.getContext('2d', { willReadFrequently: true });
+  g.drawImage(img, 0, 0, FIG_S, FIG_S);
+  return figureFromPixels(g.getImageData(0, 0, FIG_S, FIG_S).data, FIG_S, count, size);
+}
+export async function figurePoints(url, count, size) {
+  const img = new Image();
+  img.src = url;
+  const shown = img.decode().then(() => img, () => null);
+  const [image, stars] = await Promise.all([shown, workerFigure(url, count, size)]);
+  if (!image) return null;
+  const result = stars ?? await pageFigure(image, count, size);
+  const matte = new THREE.DataTexture(result.matte, FIG_S, FIG_S);
+  matte.magFilter = THREE.LinearFilter; matte.minFilter = THREE.LinearFilter;
+  matte.needsUpdate = true;
+  return { pos: result.pos, col: result.col, image, matte, size };
 }
 
 // A flat strip along a path in the XY plane; uv.x runs 0..1 along it.
@@ -314,7 +281,8 @@ export function lightMaterial(color, dim) {
         float hot = exp(-pow(d / 0.1, 2.0));
         float tail = d < 0.0 ? exp(d / 1.5) : exp(-pow(d / 0.07, 2.0));
         float pulse = (0.55 * tail + hot) * uPulseAmp * shown;
-        float a = core * (shown * uOpacity + head) * uDim;
+        // (a line that gives no light of its own, under the painted matrix, shows no head either)
+        float a = core * (shown + head) * uOpacity * uDim;
         float far = length(vP);
         float near = 0.6 + 0.55 * exp(-far * 0.5);
         // eight lines meet at the heart; each fades as it nears it, so the

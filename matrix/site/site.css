@@ -187,6 +187,10 @@ html, body {
 .chapter p:not(.chapter__asks) { margin: 0; font: 400 15px/1.72 var(--sans); color: rgba(244, 236, 220, 0.9); }
 .reading__p, .blessing { margin: 0 0 16px; font: 400 15px/1.72 var(--sans); color: rgba(244, 236, 220, 0.9); }
 .reading__p + .chapter { margin-top: 30px; }
+.chapter__open {
+  margin: 4px 0 0; padding: 6px 14px; border: 1px solid rgba(232, 199, 140, 0.5); border-radius: 999px; background: none; cursor: pointer;
+  font: 500 11px/1.4 var(--sans); letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold);
+}
 .blessing { margin-top: -10px; font: italic 500 21px/1.4 var(--serif); color: var(--gold); }
 .reading__ask { margin: -14px 0 24px; font: italic 500 19px/1.35 var(--serif); color: var(--dim); }
 .reading__list { margin: 8px 0 0; padding-left: 18px; font: 400 15px/1.7 var(--sans); color: rgba(244, 236, 220, 0.9); }
@@ -237,9 +241,15 @@ html, body {
   .amin__keys, #amin-more { display: none; }
 }
 /* on a phone or a short screen the figure's story opens in two lines; the whole of it
-   on a tap, so the figure above keeps its room */
+   on a tap, so the figure above keeps its room. The panel never rises above 70% of the
+   screen: the figure keeps the top 30% (the scene leaves it that much, see fitDistance),
+   and a long story scrolls inside the panel instead of climbing over the figure. */
 @media (max-width: 640px), (max-height: 1000px) {
-  .amin { max-height: 100dvh; overflow-y: auto; }
+  .amin {
+    max-height: 70dvh; overflow-y: auto; overscroll-behavior: contain; padding-top: 22px;
+    -webkit-mask-image: linear-gradient(transparent, #000 22px);
+    mask-image: linear-gradient(transparent, #000 22px);
+  }
   .amin__figure-story.short { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
   .amin__figure-more {
     display: inline-block; margin: 2px auto 0; padding: 4px 10px; border: 0; background: none; cursor: pointer;

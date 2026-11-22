@@ -389,8 +389,16 @@ function endIntro() {
   view.side = m.side;
   view.bottom = m.bottom;
   settleView();
+  // the frame drawn now must already be in the clip's view: introAt above leaves the
+  // camera where the old code-built intro ended, and one frame of that made the
+  // matrix jump and come back as the film handed over
+  camera.position.copy(view.pos);
+  camera.lookAt(view.look);
+  camera.setViewOffset(W, H, view.side, view.bottom / 2, W, H);
+  handedOver = noIntro ? null : time;
   enter('form');
 }
+let handedOver = null;   // when the film handed over to the scene
 // the view's halfway point stands where the view is, so the next move sets off from rest
 function settleView() {
   view.mid.pos.copy(view.pos); view.mid.look.copy(view.look);
@@ -556,9 +564,12 @@ const make = (tag, cls, text) => {
   node.textContent = text;
   return node;
 };
-// a titled block: heading, an optional line under it, then label and text rows
-function block(title, lead, rows) {
+// a titled block: heading, an optional line under it, then label and text rows;
+// `seats`, where given, are the places on the matrix the block reads: they light up
+// while the block is being read (see followReading)
+function block(title, lead, rows, seats = null) {
   const section = make('section', 'chapter', '');
+  if (seats) section.dataset.seats = seats.join(' ');
   section.append(make('h3', '', title));
   if (lead) section.append(make('p', 'chapter__asks', lead));
   for (const [label, text] of rows) {
@@ -580,9 +591,26 @@ function listBlock(title, items, cls = 'reading__list') {
 }
 const bullets = (title, items) => listBlock(title, (items ?? []).map((text) => make('li', '', text)));
 const fieldRows = (entry, fields = FIELDS) => fields.map(([field, label]) => [label, entry[field]]);
-const pairBlock = (x, y, pair, rows = PAIR_ROWS, lead = '') => block(
+const pairBlock = (x, y, pair, rows = PAIR_ROWS, lead = '', seats = null) => block(
   `${x} + ${y} · ${pairName(TALENTS[x].name, TALENTS[y].name)}`, lead,
-  [['', pair.together], ...rows.map(([field, label]) => [label, pair[field]])]);
+  [['', pair.together], ...rows.map(([field, label]) => [label, pair[field]])], seats);
+
+// The karmic tail, the three numbers of the bottom line from the centre outwards,
+// written as it is known (9-9-18); its name, and a short reading of it.
+const TAIL_SEATS = ['bottom.inner', 'bottom.mid', 'bottom'];
+const tailCode = (m) => TAIL_SEATS.map((key) => valueAt(m, key)).join('-');
+function tailBlock(m, texts) {
+  const code = tailCode(m);
+  const tail = texts.tails?.tails?.[code];
+  if (!tail) return null;
+  const section = block(`Үйлийн үрийн гурван тоо ${code} · ${tail.name}`, 'Доод шугамын гурван тоо хамтдаа: 60 нас, доод дунд тоо, доод дотор тоо',
+    [['', tail.present], ['Зөвлөгөө', tail.step]], TAIL_SEATS);
+  const open = make('button', 'chapter__open', 'Бүтнээр нь унших');
+  open.type = 'button';
+  open.addEventListener('click', () => goTo(ROUTE.find((stop) => stop.kind === 'tail')));
+  section.append(open);
+  return section;
+}
 
 // the name of a stop in the contents, and the numbers it reads
 function stopLabel(stop, texts) {
@@ -597,7 +625,8 @@ function stopLabel(stop, texts) {
   if (stop.kind === 'famous') return [texts.famous?.title ?? 'Алдартнууд', ''];
   if (stop.kind === 'one') return [chapterOf(stop.id).name, String(valueAt(m, stop.key))];
   if (stop.kind === 'age') return [chapterOf(stop.id).name, ''];
-  return [chapterOf(stop.id).name, numbers(stop.kind === 'tail' ? [...stop.seats].reverse() : stop.seats)];
+  if (stop.kind === 'tail') return [chapterOf(stop.id).name, tailCode(m)];
+  return [chapterOf(stop.id).name, numbers(stop.seats)];
 }
 
 // what one stop says: [kicker, title, blocks]
@@ -640,23 +669,30 @@ function stopContent(stop, texts) {
       out.push(block('Ирээдүй', '', [['Сургамжаа ойлгоогүй үед', deep.future_unworked], ['Сургамжаа давж гарсан үед', deep.future_worked]]));
       out.push(bullets('Чөлөөлөх алхмууд', deep.steps));
     }
-    return [`${c.name} · ${[...values].reverse().join(' · ')}`, tail?.name ?? c.name, out];
+    return [c.name, `${code} · ${tail?.name ?? c.name}`, out];
   }
   if (stop.kind === 'many') {
     // every number once, with the places where it stands; then the numbers two at a time
     const where = new Map();
     for (const key of c.at) {
       const n = valueAt(m, key);
-      where.set(n, [...(where.get(n) ?? []), placeName(key)]);
+      where.set(n, [...(where.get(n) ?? []), key]);
     }
+    const names = (keys) => keys.map(placeName).join(' · ');
     const written = texts.chapters[c.id] ?? {};
     const out = [para(c.asks, 'reading__ask')];
-    for (const [n, names] of where) if (written[n]) out.push(block(numberName(n), names.join(' · '), fieldRows(written[n])));
+    for (const [n, keys] of where) if (written[n]) out.push(block(numberName(n), names(keys), fieldRows(written[n]), keys));
+    // each pair of numbers says where both stand, and lights both places as it is read
     const distinct = [...where.keys()].sort((a, b) => a - b);
     distinct.forEach((a, i) => distinct.slice(i + 1).forEach((b) => {
       const pair = texts.own[c.id]?.[`${a}-${b}`] ?? texts.generic[a]?.[b];
-      if (pair) out.push(pairBlock(a, b, pair, PAIR_ROWS, 'Эрчмүүдийн хослол'));
+      if (pair) out.push(pairBlock(a, b, pair, PAIR_ROWS, `${a}: ${names(where.get(a))} ба ${b}: ${names(where.get(b))}`, [...where.get(a), ...where.get(b)]));
     }));
+    // a chapter that reads the bottom line also reads its three numbers together
+    if (c.at.some((key) => TAIL_SEATS.includes(key))) {
+      const tail = tailBlock(m, texts);
+      if (tail) out.push(tail);
+    }
     return [partOf(c.id), c.name, out];
   }
   if (stop.kind === 'career') {
@@ -777,7 +813,30 @@ async function goTo(stop) {
   glide.on = false;
   scroll.scrollTop = 0;
   scroll.classList.remove('swap');
+  followed = null;
 }
+// While a stop is read, the places of the block in view light up on the matrix: a
+// number's places, both places of a pair, the three of the tail. Above the first such
+// block the whole stop is lit, as when it opened.
+let followed = null;
+function followReading() {
+  if (!current || reading.hidden) return;
+  const scroll = $('r-scroll');
+  const line = scroll.getBoundingClientRect().top + scroll.clientHeight * 0.38;
+  let chosen = null;
+  for (const section of $('r-body').querySelectorAll('[data-seats]')) {
+    if (section.getBoundingClientRect().top <= line) chosen = section; else break;
+  }
+  const seats = chosen ? chosen.dataset.seats.split(' ') : null;
+  const key = seats ? seats.join(' ') : '';
+  if (key === followed) return;
+  followed = key;
+  const stopSeats = current.kind !== 'portrait' ? current.seats : null;
+  matrix.focus = seats ?? stopSeats;
+  const path = seats && seats.length > 1 ? (seats.length === 3 && seats.every((s) => TAIL_SEATS.includes(s)) ? ['bottom.inner', 'bottom'] : seats.slice(0, 2)) : null;
+  matrix.setBeam(seats ? path : current.beam ?? (current.seats.length === 2 ? current.seats : null));
+}
+$('r-scroll').addEventListener('scroll', followReading, { passive: true });
 const travel = (step) => goTo(route()[(route().indexOf(current) + step + route().length) % route().length]);
 // the stop that reads one seat: its own stop, or in a couple matrix the zone that reads that place alone
 const placeStop = (key) => route().find((stop) => (stop.kind === 'place' && stop.id === key)
@@ -915,7 +974,10 @@ function interactive(dt) {
   // The view follows its goal through a halfway point that follows the goal in the
   // same way: each move sets off from rest and comes to rest, without the jolt of a
   // move that starts at full speed (after the film, and from one stop to the next).
-  const a = 1 - Math.exp(-dt * 5.5);
+  // Right after the film the view eases out of the clip's framing more slowly, so the
+  // matrix settles into place in one long, calm move as the form comes up.
+  const calm = handedOver === null ? 1 : smooth(seg(time - handedOver, 1.2, 3.2));
+  const a = 1 - Math.exp(-dt * lerp(2.0, 5.5, calm));
   const mid = view.mid;
   mid.bottom = lerp(mid.bottom, view.wantBottom, a); view.bottom = lerp(view.bottom, mid.bottom, a);
   mid.side = lerp(mid.side, view.wantSide, a); view.side = lerp(view.side, mid.side, a);
@@ -928,7 +990,9 @@ function interactive(dt) {
   const span = focus ? Math.max(...places.map((p) => p.distanceTo(focus))) * 2 : 0;
   const goal = focus
     ? V(focus.x, focus.y, fitDistance(0) * Math.min(1, Math.max(wide ? 0.74 : 0.6, (span + 4.6) / 9.7)))
-    : V(-pointer.x * 0.45, pointer.y * 0.3, fitDistance(view.bottom));
+    // (the distance is set from where the panel will be, not where it is on the way: the
+    // matrix then shrinks or grows in one go, in step with its move up or down)
+    : V(-pointer.x * 0.45, pointer.y * 0.3, fitDistance(view.wantBottom));
   mid.pos.lerp(goal, a); view.pos.lerp(mid.pos, a);
   mid.look.lerp(focus ? V(focus.x, focus.y, 0) : V(0, 0, 0), a); view.look.lerp(mid.look, a);
   camera.position.copy(view.pos);
@@ -1011,6 +1075,9 @@ $('amin-figure-more').addEventListener('click', () => {
   const open = $('amin-figure-story').classList.toggle('short') === false;
   $('amin-figure-more').textContent = open ? 'Хураах' : 'Дэлгэрэнгүй';
   $('amin-figure-more').setAttribute('aria-expanded', String(open));
+  // the opened story is brought into view inside the panel, which does not grow over the figure
+  const story = $('amin-figure-story');
+  amin.scrollTo({ top: open ? Math.max(0, story.offsetTop - 70) : 0, behavior: 'smooth' });
 });
 // The wheel moves the reading's text in steps; here each step only sets where the text
 // should come to rest, and the text glides there, so a turn of the wheel reads as one
@@ -1064,6 +1131,8 @@ function frame(now) {
 window.matrixSite = {
   // where the opening stands, for checking: the song's second, and whether the pair's clip runs
   clock: () => ({ introT, pairOn, pairWarm, state }),
+  // where the matrix stands on the screen (its heart and its top point), for checking motion
+  probe: () => ({ c: matrix.screen('centre', camera, W, H), t: matrix.screen('top', camera, W, H), state, introT }),
   // how far the song stands from the film, in seconds, while both run
   songOffset: () => (sound.state === 'on' ? sound.audio.currentTime - introT : null),
   tick(seconds) {
@@ -1078,7 +1147,14 @@ window.matrixSite = {
   },
 };
 
-if (noIntro) endIntro();
+// the scene's first drawing, done ahead (see where it is called): its shaders, every
+// number's picture and the sprites that only come later, all sent to the graphics chip
+function warmScene() {
+  for (const texture of matrix.warm(true)) renderer.initTexture(texture);
+  draw();
+  matrix.warm(false);
+}
+if (noIntro) { endIntro(); warmScene(); }
 else {
   layoutFilm(introT);   // the box has its size before the first frame is drawn
   film.addEventListener('playing', lift, { once: true });
@@ -1103,7 +1179,7 @@ else {
     sceneUnderClip();
     matrix.apply(proj, 0);
     world.tick(0);
-    draw();
+    warmScene();
     // a phone that is saving power will not start a film by itself: go straight to the form
     film.play().catch(() => { filmOver = true; endIntro(); });
   }

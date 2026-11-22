@@ -649,7 +649,7 @@ export function createMatrix() {
         map.colorSpace = THREE.SRGBColorSpace;
         map.needsUpdate = true;
         picMat.uniforms.uMap.value = map;
-        picMat.uniforms.uMatte.value = new THREE.CanvasTexture(points.matte);
+        picMat.uniforms.uMatte.value = points.matte;   // a texture already (see figurePoints)
         picture.scale.setScalar(points.size);
       }
       for (const key of ['aFig', 'aCol', 'aDelay']) figGeo.attributes[key].needsUpdate = true;
@@ -665,6 +665,20 @@ export function createMatrix() {
       picture.visible = show > 0.001;
       figMat.uniforms.uTime.value = time;
       figure.visible = form > 0.001;
+    },
+
+    // Before the first person's matrix: send every number's picture and the star
+    // textures to the graphics chip, and show the sprites that only appear later for one
+    // drawing (`on` true, at no strength; false after), so the numbers' arrival has
+    // nothing left to build. Returns the textures to send.
+    warm(on) {
+      for (const h of headSprites) { h.glow.visible = on; h.star.visible = on; }
+      for (const s of [...Object.values(nodes), ...smalls, ...loveSeats]) s.star.visible = on;
+      for (const m of marks) m.sprite.visible = on;
+      if (!on) return [];
+      const textures = [glint, glow, chosenMap];
+      for (let n = 1; n <= 22; n++) textures.push(numberTexture(n), numberTexture(n, 600));
+      return textures;
     },
 
     // write the state to the sprites; called every frame
