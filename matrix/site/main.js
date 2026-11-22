@@ -200,7 +200,6 @@ function layoutFilm(t) {
     laid.box = box;
     filmBox.classList.toggle('filmbox--tall', tall);
     glow.hidden = !tall;
-    glow.height = Math.round(glow.width * (H / W));
     filmBox.style.width = `${W}px`;
     filmBox.style.height = `${boxH}px`;
     filmBox.style.top = `${top}px`;
@@ -213,7 +212,7 @@ function layoutFilm(t) {
   }
   const x = -Math.min(Math.max(focus * vidW - W / 2, 0), vidW - W);
   const y = -(vidH - boxH) / 2;
-  laid.geo = { vidW, vidH, x, y: top + y };
+  laid.geo = { vidW, vidH, x, y: top + y, boxTop: top, boxH };
   laid.focus = focus;
   const move = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0)`;
   if (move !== laid.move) { laid.move = move; film.style.transform = move; }
@@ -246,15 +245,68 @@ function filmAt(t) {
   if (t < SCENE.from - 0.3) return;
   sceneUnderClip();
 }
-// The film around its box on an upright screen: the same frame, enlarged to the
-// screen's height about the same point of the film, drawn tiny and left to the
-// browser to blur (site.css, .filmglow).
+// The screen above and below the film's box on an upright screen carries on the
+// film's own edge: the colours along the top edge of the picture rise from it and
+// sink into the dark, those along the bottom edge fall from it. Colour only, no
+// shapes: the film's edge strip is averaged down to a few patches (halving step by
+// step, so every pixel of the strip counts) and laid out as one smooth field. The
+// colours are taken a few times a second and the field passes evenly from each
+// taking to the next, so a cut or a twinkling star does not make it flicker. (Each
+// frame is one blend of two exact takings: easing by painting faintly over the last
+// frame again and again loses the colour in the rounding, and it goes grey and pink.)
+const EDGE = { share: 0.09, across: 4, every: 0.12, dark: 0.92 };
+const tiny = (w, h) => { const c = document.createElement('canvas'); c.width = w; c.height = h; return c.getContext('2d', { alpha: false }); };
+const edgeSteps = [[96, 8], [48, 4], [24, 2], [12, 1]].map(([w, h]) => tiny(w, h));
+const pairOf = () => ({ was: tiny(EDGE.across, 1), next: tiny(EDGE.across, 1) });
+const edgeHeld = { top: pairOf(), bottom: pairOf(), at: 0 };
+// the patches are spread in two steps (here, then by the browser over the screen):
+// spread in one, the places where one patch hands over to the next show as upright bands
+const edgeWide = tiny(10, 2);
+function edgeColour(held, sx, sy, sw, sh, first) {
+  edgeSteps[0].drawImage(film, sx, sy, sw, sh, 0, 0, 96, 8);
+  for (let i = 1; i < edgeSteps.length; i += 1) {
+    const from = edgeSteps[i - 1].canvas; const to = edgeSteps[i].canvas;
+    edgeSteps[i].drawImage(from, 0, 0, from.width, from.height, 0, 0, to.width, to.height);
+  }
+  [held.was, held.next] = [held.next, held.was];
+  held.next.drawImage(edgeSteps[edgeSteps.length - 1].canvas, 0, 0, 12, 1, 0, 0, EDGE.across, 1);
+  if (first) held.was.drawImage(held.next.canvas, 0, 0);
+}
 function drawGlow() {
-  if (glow.hidden || film.readyState < 2) return;
-  const vw = film.videoWidth; const vh = film.videoHeight;
-  const sw = vh * (W / H);
-  const sx = Math.min(Math.max((laid.focus ?? 0.5) * vw - sw / 2, 0), vw - sw);
-  glowPaint.drawImage(film, sx, 0, sw, vh, 0, 0, glow.width, glow.height);
+  if (glow.hidden || film.readyState < 2 || !laid.geo) return;
+  const { vidW, vidH, x, y, boxTop, boxH } = laid.geo;
+  const scale = film.videoHeight / vidH;                 // film pixels per screen pixel
+  const sx = -x * scale; const sw = W * scale;
+  const sy = (boxTop - y) * scale; const sh = boxH * scale;
+  const strip = sh * EDGE.share;
+  const now = performance.now() / 1000;
+  if (!edgeHeld.at || now - edgeHeld.at >= EDGE.every) {
+    edgeColour(edgeHeld.top, sx, sy, sw, strip, !edgeHeld.at);
+    edgeColour(edgeHeld.bottom, sx, sy + sh - strip, sw, strip, !edgeHeld.at);
+    edgeHeld.at = now;
+  }
+  const passed = Math.min(1, (now - edgeHeld.at) / EDGE.every);
+  // the two rows of colour, each over its half of the screen, and the dark they sink into
+  const w = glow.width; const h = glow.height;
+  const mid = Math.round(h / 2);
+  [edgeHeld.top, edgeHeld.bottom].forEach((held, row) => {
+    edgeWide.globalAlpha = 1;
+    edgeWide.drawImage(held.was.canvas, 0, 0, EDGE.across, 1, 0, row, 10, 1);
+    edgeWide.globalAlpha = passed;
+    edgeWide.drawImage(held.next.canvas, 0, 0, EDGE.across, 1, 0, row, 10, 1);
+  });
+  glowPaint.drawImage(edgeWide.canvas, 0, 0, 10, 1, 0, 0, w, mid);
+  glowPaint.drawImage(edgeWide.canvas, 0, 1, 10, 1, 0, mid, w, h - mid);
+  const a = boxTop / H; const b = (boxTop + boxH) / H;
+  const shade = glowPaint.createLinearGradient(0, 0, 0, h);
+  const dark = (v) => `rgba(3,5,11,${(v * EDGE.dark).toFixed(3)})`;
+  // (eased at both ends, so neither the film's edge nor the screen's shows as a line)
+  for (const [at, v] of [[0, 1], [0.35, 0.9], [0.65, 0.58], [0.88, 0.18], [1, 0]]) {
+    shade.addColorStop(a * at, dark(v));
+    shade.addColorStop(1 - (1 - b) * at, dark(v));
+  }
+  glowPaint.fillStyle = shade;
+  glowPaint.fillRect(0, 0, w, h);
 }
 // the scene, waiting under the clip in the clip's own view
 function sceneUnderClip() {
