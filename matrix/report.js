@@ -511,7 +511,7 @@ function careerHtml([talent, money], written, hand, gender) {
   const list = (title, items) => (items?.length ? `<h5>${title}</h5><ul>${items.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>` : '');
   const card = (n, label) => `<span class="pa-card">${arcana(n)}<small>${label}<br>${n} · ${esc(TALENTS[n].name)}</small></span>`;
   return `<p class="pair-arcana">${card(talent, 'Авьяас')}<span>+</span>${card(money, 'Мөнгөний цэг')}</p>`
-    + `<p class="soft">Танд тохирох ажил хоёр цэгийн хослолоос тодорхойлогддог. Матрицын дээд цэг (${talent}) таны юу хийж чаддгийг, `
+    + `<p class="soft">Танд тохирох ажил хоёр цэгийн хослолоос тодорхойлогддог. Матрицын дээд цэг (${talent}) таны юу хийж чаддагийг, `
     + `хайр ба мөнгөний шугам дээрх мөнгөний цэг (${money}) мөнгө танд ямар замаар ирдгийг хэлдэг.</p>`
     + `<div class="dlg-long"><p class="lead">${esc(pair.summary)}</p>`
     + list('Тохирох ажил мэргэжил', pair.professions) + list('Таны ажлын чадварууд', pair.skills)
