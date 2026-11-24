@@ -312,7 +312,7 @@ export const MAP_POINTS = {
 const PERSON_INNER = {
   topMid: 'Оюуны авьяас', topInner: 'Нийгмийн авьяас', left: 'Эцэг эх, хүүхэд', rightMid: 'Санхүүгийн эрчим', rightInner: 'Мөнгөний эхлэл',
   bottomInner: 'Өнгөрсний шарх', bottomMid: 'Одоогийн цуурай', love: 'Тохирох хань', cross: 'Мөнгө ба хүмүүс', money: 'Санхүүгийн суваг',
-  centre: 'Цөм чанар', centreSub: 'амин тоо, тав тухын бүс',
+  centre: 'Цөм чанар', centreSub: 'амин тоо, сэтгэл зүйн тухтай орон зай',
 };
 const COUPLE_INNER = {
   topMid: '', topInner: '', left: 'Эцэг эх болохдоо', rightMid: '', rightInner: 'Мөнгөний суваг',

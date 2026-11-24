@@ -63,7 +63,7 @@ async function card(person) {
   const end = died ? ringPointAt(m, ageAt(born, died)) : null;
   const img = await photo(person);
   const tiles = [
-    [p.centre, 'Тав тухын бүс'], [p.left, 'Зан чанар'], [p.top, 'Авьяас'], [p.right, 'Сүнсний зорилго'],
+    [p.centre, 'Сэтгэл зүйн тухтай орон зай'], [p.left, 'Зан чанар'], [p.top, 'Авьяас'], [p.right, 'Сүнсний зорилго'],
     [p.bottom, 'Сүнсний сорилт'], [m.purposes.personal, 'Хувийн зорилго'], [m.purposes.social, 'Нийгмийн зорилго'], [m.purposes.spiritual, 'Сүнслэг зорилго'],
     [m.loveMoney.love, 'Хайрын цэг'], [m.loveMoney.money, 'Мөнгөний цэг'],
   ];

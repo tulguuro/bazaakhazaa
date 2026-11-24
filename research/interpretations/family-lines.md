@@ -10,7 +10,7 @@ Researched 2026-11-13. Notes are paraphrased themes, not quotes. The method is e
 | TR (`tr`, G) | B + C | 30 | mother's line, spiritual task/talent | Эхийн үйлийн үр (Mother's Karma), Эхээс өгсөн авьяас (Mother's Talents) |
 | BR (`br`, I) | C + D | 50 | father's line, **material** karma of the kin | Удмын хөтөлбөр (Family programmes) |
 | BL (`bl`, H) | D + A | 70 | mother's line, material karma | Удмын хөтөлбөр |
-| familyCentre (U) | TL+TR+BR+BL | — | сила рода: combined resource, "peacemaker" of both lines | Удмын тав тухын бүс (Family Comfort Zone), Удмын хөтөлбөр |
+| familyCentre (U) | TL+TR+BR+BL | — | сила рода: combined resource, "peacemaker" of both lines | Удмын мэдээлэл (Family Comfort Zone), Удмын хөтөлбөр |
 
 - Father's line = TL + BR, mother's line = TR + BL (MU, matrix-destiny.com, zones.md). Upper corners = talents/spiritual tasks
   (read plus first); lower corners = material/hereditary karma (read minus first). Everyone carries both lines.

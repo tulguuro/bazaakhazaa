@@ -13,7 +13,7 @@ const guide = computeMatrix(born, 'guide');
 const name = (n) => `${n} ${TALENTS[n].name}`;
 const p = guide.points;
 const rows = {
-  'Тав тухын бүс (төв)': name(p.centre),
+  'Сэтгэл зүйн тухтай орон зай (төв)': name(p.centre),
   'Зан чанар (зүүн орой)': name(p.left),
   'Авьяас (дээд орой)': name(p.top),
   'Сүнсний зорилго, мөнгө (баруун орой)': name(p.right),
