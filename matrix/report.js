@@ -371,7 +371,7 @@ export const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X
 
 export function sourceText(chapter) {
   if (chapter.id === 'age-now' || chapter.id === 'age-next') {
-    return 'Насны хүрээ: зүүн оройгоос (0 нас) цагийн зүүний дагуу, арван жил бүрт долоон цэг.';
+    return 'Насны хүрээ: зүүн оройгоос (0 нас) цагийн зүүний дагуу, арван жил бүрд долоон цэг.';
   }
   if (chapter.at.length === 1) return SOURCES[chapter.at[0]]?.[1] ?? '';
   if (chapter.id === 'karmic-tails') return 'Доод оройн шугам, төвөөс гадагш: доод дотор тоо, доод дунд тоо, доод орой.';
