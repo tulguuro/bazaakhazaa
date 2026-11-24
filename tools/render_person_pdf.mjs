@@ -214,15 +214,15 @@ function portraitHtml(hand, gender, history) {
   // are examples of it and follow (the owner, 2026-11-17)
   const energy = readText(matrixDir, 'numbers', `${n}.json`);
   const meaning = energy
-    ? `<h3>Энэ эрчим юуг илэрхийлдэг вэ</h3><p class="keys">${esc(energy.keywords.join(' · '))}</p><p>${esc(TALENTS[n].text)}</p>`
-      + `${paras(energy.sections.character)}<h3>Таны амьдралд хэрхэн илэрдэг вэ</h3>`
+    ? `<h3>Энэ эрчим юуг илэрхийлдэг вэ?</h3><p class="keys">${esc(energy.keywords.join(' · '))}</p><p>${esc(TALENTS[n].text)}</p>`
+      + `${paras(energy.sections.character)}<h3>Таны амьдралд хэрхэн илэрдэг вэ?</h3>`
     : '';
   return `<section class="part opening" id="portrait"><p class="kicker">Амин тоо ${n} · ${esc(TALENTS[n].name)}</p><h2>Таны хөрөг</h2>`
     + `<div class="portrait-head"><span class="side-loc">${renderLocator(hand, ['centre'])}</span>${arcana(n, true)}<p class="ptitle">${esc(t.title)}</p></div>`
     + meaning
     + paras(t.who.join('\n\n'))
     + `<h3>Таны хүрч болох дээд боломж</h3>${paras(t.greatness.join('\n\n'))}`
-    + `<h3>Тэр боломжоо хэрэгжүүлэх зам</h3>${paras(t.path)}`
+    + `<h3>Дээд боломжоо хэрэгжүүлэх зам</h3>${paras(t.path)}`
     + (history ? history.portrait(n) : '')
     + `<p class="blessing">${esc(t.blessing)}</p></section>`;
 }
@@ -249,7 +249,7 @@ function famousHtml(hand) {
   if (!list?.length) return '';
   const groups = Object.entries(FAMOUS_FIELDS).map(([region, title]) => [title, list.filter((p) => p.region === region)]).filter(([, l]) => l.length);
   return `<section class="part opening" id="famous"><h2>Тантай ижил амин тоотой алдартнууд</h2>`
-    + `<p class="lead">Эдгээр алдартан тантай ижил ${n} · ${esc(TALENTS[n].name)} амин тоотой. Нэг эрчим хүн бүрт өөр замаар илэрдэг ч тэдний амьдралаас өөрийнхөө хүчийг таньж болно.</p>`
+    + `<p class="lead">Эдгээр алдартан тантай ижил ${n} · ${esc(TALENTS[n].name)} амин тоотой. Нэг эрчим хүн бүрд өөр замаар илэрдэг ч тэдний амьдралаас өөрийнхөө хүчийг таньж болно.</p>`
     + groups.map(([title, l]) => `<h3>${title}</h3><ul class="famous">${l.map((p) => `<li><b>${esc(p.name)}</b><span>${esc(p.born.split('-').reverse().join('.'))}</span><small>${esc(p.who)}</small></li>`).join('')}</ul>`).join('')
     + '</section>';
 }
@@ -316,7 +316,7 @@ function timelineHtml(hand, gender, nowHtml, today = new Date()) {
   }
   // the three purposes, each the task of its own stretch of life
   const P = hand.purposes;
-  const stage = (from, to, n, label, text, at) => `<li class="${age >= from && (to === null || age < to) ? 'cur' : ''}"><span class="strong-loc">${renderLocator(hand, [at])}</span>${arcana(n)}<span><b>${from}${to ? `-${to}` : ''} нас · ${label} · ${n} ${esc(TALENTS[n].name)}</b><small>${text}</small></span></li>`;
+  const stage = (from, to, n, label, text, at) => `<li class="${age >= from && (to === null || age < to) ? 'cur' : ''}"><span class="strong-loc">${renderLocator(hand, [at])}</span>${arcana(n)}<span><b>${from}${to ? `-${to} нас` : ' наснаас хойш'} · ${label} · ${n} ${esc(TALENTS[n].name)}</b><small>${text}</small></span></li>`;
   const purposes = `<h3>Насны зорилгууд</h3><ul class="stages">`
     + stage(20, 40, P.personal, 'Хувийн зорилго', 'Өөрийгөө олж, чадвараа хөгжүүлэх үе', 'purposes.personal')
     + stage(40, 60, P.social, 'Нийгмийн зорилго', 'Олж авснаа гэр бүл, хамт олондоо өгөх үе', 'purposes.social')
@@ -346,7 +346,7 @@ function tailDeepHtml(hand, gender) {
       + [['love', 'Хайр, хань'], ['work_money', 'Ажил, мөнгө'], ['family', 'Гэр бүл, ураг төрөл'], ['body', 'Бие, эрч хүч']]
         .map(([k, label]) => `<p><b>${label}.</b> ${esc(t.present[k])}</p>`).join('')
       + `<h4>Энэ гурван тооны хослол таны амьдралд идэвхтэй байгаагийн шинж</h4>${list(t.signs)}`
-      + `<h4>Ирээдүй</h4><p><b>Сургамжаа ойлгоогүй үед.</b> ${esc(t.future_unworked)}</p><p><b>Сургамжаа давж гарсан үед.</b> ${esc(t.future_worked)}</p>`
+      + `<h4>Ирээдүй</h4><p><b>Сургамжаа ойлгоогүй үед.</b> ${esc(t.future_unworked)}</p><p><b>Сургамжаа авсан үед.</b> ${esc(t.future_worked)}</p>`
       + `<h4>Чөлөөлөх алхмууд</h4>${list(t.steps)}</div>`;
   }
   const famous = readText(matrixDir, 'famous-by-tail.json')?.texts?.[key] ?? [];
@@ -535,7 +535,7 @@ function coupleBook(people, method = 'all', kind = 'couple') {
     + `<table class="short scores">${AREAS.map(([k, title]) => `<tr><th>${title}</th><td>${'●'.repeat(t[k].score)}${'○'.repeat(5 - t[k].score)} ${t[k].score}/5</td></tr>`).join('')}</table>`
     + `<div class="ov">${paras(t.overview)}</div>`
     + AREAS.map(([k, title]) => `<h3>${title}</h3>${paras(t[k].text)}`).join('')
-    + `<h3>Юу сайн ажилладаг</h3><ul>${t.strengths.map((s) => `<li>${esc(s)}</li>`).join('')}</ul>`
+    + `<h3>Юугаараа сайн зохицдог</h3><ul>${t.strengths.map((s) => `<li>${esc(s)}</li>`).join('')}</ul>`
     + `<h3>Хаана мөргөлддөг</h3><ul>${t.tensions.map((s) => `<li>${esc(s)}</li>`).join('')}</ul>`
     + `<h3>Зөвлөгөө</h3>${paras(t.advice)}</section>`
     + `<section class="drawing" id="couple-map"><h2>${business ? 'Түншлэлийн матриц' : 'Хосын матриц'}</h2>${renderMap(couple)}<p class="note">${METHOD_NOTE[method]}</p></section>`

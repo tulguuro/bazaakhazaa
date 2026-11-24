@@ -8,7 +8,7 @@ import { arcana, chapterValues, esc, locatorHtml, whereHtml } from './report.js'
 export const COUPLE_PARTS = [
   { title: 'Хосын мөн чанар', zones: [
     { id: 'couple-centre', name: 'Хосын уур амьсгал', at: ['centre'] },
-    { id: 'couple-why', name: 'Яагаад учирсан бэ', at: ['left', 'top'] },
+    { id: 'couple-why', name: 'Яагаад учирсан бэ?', at: ['left', 'top'] },
     { id: 'couple-image', name: 'Бусдад харагдах байдал', at: ['left'] },
     { id: 'couple-resources', name: 'Хосын нөөц, авьяас', at: ['top'] },
   ] },
@@ -16,8 +16,8 @@ export const COUPLE_PARTS = [
     { id: 'couple-lesson', name: 'Хосын гол сургамж', at: ['bottom'] },
     { id: 'couple-trouble', name: 'Бэрхшээл, сорилт', at: ['right', 'bottom'] },
     { id: 'couple-tail', name: 'Хосын үйлийн үрийн гурван тоо', at: ['bottom', 'bottom.mid', 'bottom.inner'] },
-    { id: 'couple-hold', name: 'Холбоог юу барьж байдаг вэ', at: ['tl'] },
-    { id: 'couple-risk', name: 'Харилцааг юу эвдэж болох вэ', at: ['tr'] },
+    { id: 'couple-hold', name: 'Холбоог юу барьж байдаг вэ?', at: ['tl'] },
+    { id: 'couple-risk', name: 'Харилцааг юу эвдэж болох вэ?', at: ['tr'] },
   ] },
   { title: 'Хайр ба харилцаа', zones: [
     { id: 'couple-channel', name: 'Харилцааны суваг', at: ['bottom.inner', 'loveMoney.mid', 'loveMoney.love'] },
@@ -41,7 +41,7 @@ export const COUPLE_ZONE_IDS = COUPLE_PARTS.flatMap((part) => part.zones.map((zo
 export const BUSINESS_PARTS = [
   { title: 'Түншлэлийн мөн чанар', zones: [
     { id: 'biz-centre', name: 'Түншлэлийн уур амьсгал', at: ['centre'] },
-    { id: 'biz-why', name: 'Яагаад хамтарсан бэ', at: ['left', 'top'] },
+    { id: 'biz-why', name: 'Яагаад хамтарсан бэ?', at: ['left', 'top'] },
     { id: 'biz-image', name: 'Зах зээлд харагдах байдал', at: ['left'] },
     { id: 'biz-resources', name: 'Хамтын нөөц, давуу тал', at: ['top'] },
   ] },
@@ -49,8 +49,8 @@ export const BUSINESS_PARTS = [
     { id: 'biz-lesson', name: 'Түншлэлийн гол сургамж', at: ['bottom'] },
     { id: 'biz-trouble', name: 'Бэрхшээл, эрсдэл', at: ['right', 'bottom'] },
     { id: 'biz-tail', name: 'Түншлэлийн хуучин хэв маяг', at: ['bottom', 'bottom.mid', 'bottom.inner'] },
-    { id: 'biz-hold', name: 'Түншлэлийг юу барьдаг вэ', at: ['tl'] },
-    { id: 'biz-risk', name: 'Түншлэлийг юу эвдэж болох вэ', at: ['tr'] },
+    { id: 'biz-hold', name: 'Түншлэлийг юу барьдаг вэ?', at: ['tl'] },
+    { id: 'biz-risk', name: 'Түншлэлийг юу эвдэж болох вэ?', at: ['tr'] },
   ] },
   { title: 'Хамтын ажил ба баг', zones: [
     { id: 'biz-channel', name: 'Хамтран ажиллах суваг', at: ['bottom.inner', 'loveMoney.mid', 'loveMoney.love'] },

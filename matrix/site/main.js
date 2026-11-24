@@ -793,7 +793,7 @@ function stopContent(stop, texts) {
   if (stop.kind === 'famous') {
     const n = m.points.centre;
     const people = texts.famous?.texts?.[n] ?? [];
-    const out = [para(`Эдгээр алдартан тантай ижил ${numberName(n)} амин тоотой. Нэг эрчим хүн бүрт өөр замаар илэрдэг ч тэдний амьдралаас өөрийнхөө хүчийг таньж болно.`)];
+    const out = [para(`Эдгээр алдартан тантай ижил ${numberName(n)} амин тоотой. Нэг эрчим хүн бүрд өөр замаар илэрдэг ч тэдний амьдралаас өөрийнхөө хүчийг таньж болно.`)];
     for (const [region, title] of [['mongolia', 'Монгол'], ['world', 'Дэлхий']]) {
       const group = people.filter((p) => p.region === region);
       if (!group.length) continue;
@@ -809,11 +809,11 @@ function stopContent(stop, texts) {
     const entry = person.portrait;
     const n = m.points.centre;
     // what the energy means comes first, then the person's own portrait
-    const meaning = block('Энэ эрчим юуг илэрхийлдэг вэ', person.keywords.join(' · '), [['', TALENTS[n].text], ...person.character.map((text) => ['', text])]);
+    const meaning = block('Энэ эрчим юуг илэрхийлдэг вэ?', person.keywords.join(' · '), [['', TALENTS[n].text], ...person.character.map((text) => ['', text])]);
     if (!entry) return [`Таны амин тоо ${n}`, TALENTS[n].name, [meaning]];
-    const out = [meaning, block('Таны амьдралд хэрхэн илэрдэг вэ', '', (entry.who ?? []).map((text) => ['', text]))];
+    const out = [meaning, block('Таны амьдралд хэрхэн илэрдэг вэ?', '', (entry.who ?? []).map((text) => ['', text]))];
     if (entry.greatness?.length) out.push(block('Таны хүрч болох дээд боломж', '', entry.greatness.map((text) => ['', text])));
-    if (entry.path) out.push(block('Тэр боломжоо хэрэгжүүлэх зам', '', [['', entry.path]]));
+    if (entry.path) out.push(block('Дээд боломжоо хэрэгжүүлэх зам', '', [['', entry.path]]));
     if (entry.blessing) out.push(make('p', 'blessing', entry.blessing));
     return [`Таны хөрөг · ${numberName(n)}`, entry.title, out];
   }
@@ -978,7 +978,7 @@ function coupleContent(stop, texts) {
     return [`Амин тоо ${a} + ${b}`, title, [
       para(text.headline, 'blessing'), scores, ...paragraphs(text.overview).map(([, line]) => para(line)),
       ...AREAS.filter(([key]) => text[key]).map(([key, name]) => block(name, '', paragraphs(text[key].text))),
-      bullets('Юу сайн ажилладаг', text.strengths), bullets('Хаана мөргөлддөг', text.tensions),
+      bullets('Юугаараа сайн зохицдог', text.strengths), bullets('Хаана мөргөлддөг', text.tensions),
       block('Зөвлөгөө', '', paragraphs(text.advice)),
     ]];
   }

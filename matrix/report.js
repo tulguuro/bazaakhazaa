@@ -70,7 +70,7 @@ export function differenceHtml(hand, guide) {
   } else {
     const items = differing.map((key) =>
       `<li>${DIAGONAL_NAMES[key]}: гар зургийн ${hand.lines[key].mid}, ${hand.lines[key].inner} · зааврын ${guide.lines[key].mid}, ${guide.lines[key].inner}</li>`);
-    out = `<p>Удмын шугамын дотоод хоёр тоо зөрж байна. Гар зургийн төрөл гол төв ${hand.points.centre}-г, зааврын төрөл удмын төв ${guide.familyCentre}-г нэмдэг.</p><ul>${items.join('')}</ul>`;
+    out = `<p>Удмын шугамын дотоод хоёр тоо зөрж байна. Гар зургийн төрөл гол төвийг (${hand.points.centre}), зааврын төрөл удмын төвийг (${guide.familyCentre}) нэмдэг.</p><ul>${items.join('')}</ul>`;
   }
   return `${out}<p>Үндсэн есөн тоо, хайр ба мөнгө, жилийн тоонууд хоёр төрөлд ижил. Гар зургийн төрөл шугам бүрийн дотор талд гурван тоо нэмж бичдэг. Зааврын төрөл төвийн хажууд удмын төв болон дотоод хүчний кодыг, мөн насны хүрээ, эрүүл мэндийн хүснэгтийг харуулдаг.</p>`;
 }
@@ -175,7 +175,7 @@ function talentsHtml(hand, locate = false) {
     const items = [...new Set(values)].map((n) => {
       const first = !told.has(n);
       told.add(n);
-      return `<p class="place"><b>${esc(TALENTS[n].name)} (${n}).</b> ${first ? esc(TALENTS[n].text) : '<span class="soft">дээрх тайлбарыг үзнэ үү</span>'}</p>`;
+      return `<p class="place"><b>${esc(TALENTS[n].name)} (${n}).</b> ${first ? esc(TALENTS[n].text) : '<span class="soft">Дээрх тайлбарыг үзнэ үү</span>'}</p>`;
     }).join('');
     if (locate) return `<h4>${title}</h4>${locatorHtml(hand, at, `<dt>Байрлал</dt><dd>${esc(words)}</dd><dt>Тоонууд</dt><dd>${values.join(' · ')}</dd>`)}${items}`;
     return `<h4>${title} <span class="soft">· ${where}: ${values.join(' · ')}</span></h4>${items}`;
@@ -511,7 +511,7 @@ function careerHtml([talent, money], written, hand, gender) {
   const list = (title, items) => (items?.length ? `<h5>${title}</h5><ul>${items.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>` : '');
   const card = (n, label) => `<span class="pa-card">${arcana(n)}<small>${label}<br>${n} · ${esc(TALENTS[n].name)}</small></span>`;
   return `<p class="pair-arcana">${card(talent, 'Авьяас')}<span>+</span>${card(money, 'Мөнгөний цэг')}</p>`
-    + `<p class="soft">Танд тохирох ажил хоёр цэгийн нийлбэрээс тодорхойлогддог. Матрицын дээд цэг (${talent}) таны юу хийж чаддагийг, `
+    + `<p class="soft">Танд тохирох ажил хоёр цэгийн хослолоос тодорхойлогддог. Матрицын дээд цэг (${talent}) таны юу хийж чаддгийг, `
     + `хайр ба мөнгөний шугам дээрх мөнгөний цэг (${money}) мөнгө танд ямар замаар ирдгийг хэлдэг.</p>`
     + `<div class="dlg-long"><p class="lead">${esc(pair.summary)}</p>`
     + list('Тохирох ажил мэргэжил', pair.professions) + list('Таны ажлын чадварууд', pair.skills)
@@ -689,7 +689,7 @@ export function chaptersHtml(hand, texts, today = new Date(), gender = '') {
     for (const chapter of part.chapters) {
       const values = chapterValuesFor(chapter, hand, now, next, today);
       let note = '';
-      if (chapter.id === 'age-now' && now) note = `Одоо ${now.years} нас: ${now.label} насны цэг.`;
+      if (chapter.id === 'age-now' && now) note = `Одоо ${now.years} настай: ${now.label} насны цэг.`;
       if (chapter.id === 'age-next' && next) note = `${String(next.from).replace('.', ',')} наснаас эхэлнэ.`;
       const shown = chapter.id === 'karmic-tails' ? [...values].reverse() : chapter.id === 'decades' ? values : [...new Set(values)];
       const written = isWritten(chapter, values, texts);
